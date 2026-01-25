@@ -1,0 +1,32 @@
+# Django
+Django>=5.0,<6.0
+django-environ>=0.11.2
+django-extensions>=3.2.3
+django-cors-headers>=4.3.1
+
+# Database
+psycopg[binary]>=3.1.18
+
+# Cache & Queue
+redis>=5.0.1
+celery>=5.3.6
+django-celery-beat>=2.5.0
+django-celery-results>=2.5.1
+
+# Authentication
+django-allauth>=0.61.1
+pyotp>=2.9.0
+qrcode[pil]>=7.4.2
+
+# API & Forms
+django-crispy-forms>=2.1
+crispy-tailwind>=1.0.1
+
+# Security
+argon2-cffi>=23.1.0
+django-csp>=3.8
+
+# Utils
+pillow>=10.2.0
+python-dateutil>=2.8.2
+uuid6>=2024.1.12

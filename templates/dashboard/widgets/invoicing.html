@@ -1,0 +1,21 @@
+<div>
+    <h3 class="text-lg font-medium text-gray-900 mb-4">Facturation</h3>
+    <div class="grid grid-cols-2 gap-4">
+        <div class="bg-gray-50 rounded-lg p-4">
+            <p class="text-2xl font-bold text-gray-900">{{ pending_quotes }}</p>
+            <p class="text-sm text-gray-500">Devis en attente</p>
+        </div>
+        <div class="bg-gray-50 rounded-lg p-4">
+            <p class="text-2xl font-bold text-gray-900">{{ pending_invoices }}</p>
+            <p class="text-sm text-gray-500">Factures impayées</p>
+        </div>
+        <div class="bg-gray-50 rounded-lg p-4">
+            <p class="text-2xl font-bold text-red-600">{{ unpaid_amount|default:"0" }} €</p>
+            <p class="text-sm text-gray-500">Montant dû</p>
+        </div>
+        <div class="bg-gray-50 rounded-lg p-4">
+            <p class="text-2xl font-bold text-green-600">{{ monthly_revenue|default:"0" }} €</p>
+            <p class="text-sm text-gray-500">CA mensuel</p>
+        </div>
+    </div>
+</div>

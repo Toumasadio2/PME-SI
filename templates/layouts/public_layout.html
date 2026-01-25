@@ -1,0 +1,36 @@
+<div class="min-h-full flex flex-col">
+    <!-- Header -->
+    <header class="bg-white border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <a href="{% url 'core:home' %}" class="text-xl font-bold text-primary-600">
+                    PME-SI
+                </a>
+                <nav class="flex items-center space-x-4">
+                    <a href="{% url 'accounts:login' %}"
+                       class="text-sm font-medium text-gray-700 hover:text-primary-600">
+                        Connexion
+                    </a>
+                    <a href="{% url 'accounts:register' %}"
+                       class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700">
+                        Commencer
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main content -->
+    <main class="flex-1">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-50 border-t border-gray-200">
+        <div class="max-w-7xl mx-auto py-8 px-4 sm:px-6 lg:px-8">
+            <p class="text-center text-sm text-gray-500">
+                &copy; {% now "Y" %} PME-SI. Tous droits réservés.
+            </p>
+        </div>
+    </footer>
+</div>

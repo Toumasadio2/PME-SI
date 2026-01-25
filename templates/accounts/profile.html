@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}Mon profil - PME-SI{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <h1 class="text-2xl font-bold text-gray-900 mb-6">Mon profil</h1>
+
+    <div class="bg-white shadow rounded-lg">
+        <form method="post" enctype="multipart/form-data" class="p-6 space-y-6">
+            {% csrf_token %}
+
+            <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                <div>
+                    <label for="id_first_name" class="block text-sm font-medium text-gray-700">Prénom</label>
+                    {{ form.first_name }}
+                </div>
+                <div>
+                    <label for="id_last_name" class="block text-sm font-medium text-gray-700">Nom</label>
+                    {{ form.last_name }}
+                </div>
+            </div>
+
+            <div>
+                <label for="id_phone" class="block text-sm font-medium text-gray-700">Téléphone</label>
+                {{ form.phone }}
+            </div>
+
+            <div>
+                <label for="id_job_title" class="block text-sm font-medium text-gray-700">Fonction</label>
+                {{ form.job_title }}
+            </div>
+
+            <div>
+                <label for="id_avatar" class="block text-sm font-medium text-gray-700">Avatar</label>
+                {{ form.avatar }}
+            </div>
+
+            <div class="flex justify-end">
+                <button type="submit" class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700">
+                    Enregistrer
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- 2FA Section -->
+    <div class="mt-8 bg-white shadow rounded-lg p-6">
+        <h2 class="text-lg font-medium text-gray-900 mb-4">Authentification à deux facteurs</h2>
+
+        {% if user.is_2fa_enabled %}
+            <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                        Activée
+                    </span>
+                    <p class="ml-3 text-sm text-gray-600">L'authentification à deux facteurs est activée.</p>
+                </div>
+                <form method="post" action="{% url 'accounts:disable_2fa' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="text-sm text-red-600 hover:text-red-700">
+                        Désactiver
+                    </button>
+                </form>
+            </div>
+        {% else %}
+            <div class="flex items-center justify-between">
+                <p class="text-sm text-gray-600">Renforcez la sécurité de votre compte avec l'authentification à deux facteurs.</p>
+                <a href="{% url 'accounts:setup_2fa' %}" class="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 text-sm">
+                    Configurer
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,21 @@
+<div>
+    <h3 class="text-lg font-medium text-gray-900 mb-4">CRM</h3>
+    <div class="grid grid-cols-2 gap-4">
+        <div class="bg-gray-50 rounded-lg p-4">
+            <p class="text-2xl font-bold text-gray-900">{{ contacts_count }}</p>
+            <p class="text-sm text-gray-500">Contacts</p>
+        </div>
+        <div class="bg-gray-50 rounded-lg p-4">
+            <p class="text-2xl font-bold text-gray-900">{{ companies_count }}</p>
+            <p class="text-sm text-gray-500">Entreprises</p>
+        </div>
+        <div class="bg-gray-50 rounded-lg p-4">
+            <p class="text-2xl font-bold text-gray-900">{{ opportunities_count }}</p>
+            <p class="text-sm text-gray-500">Opportunités</p>
+        </div>
+        <div class="bg-gray-50 rounded-lg p-4">
+            <p class="text-2xl font-bold text-primary-600">{{ pipeline_value|default:"0" }} €</p>
+            <p class="text-sm text-gray-500">Pipeline</p>
+        </div>
+    </div>
+</div>

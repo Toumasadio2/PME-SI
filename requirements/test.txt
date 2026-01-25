@@ -1,0 +1,4 @@
+-r development.txt
+
+# CI specific
+coverage[toml]>=7.4.1
