@@ -1,0 +1,100 @@
+{% extends "layouts/app_layout.html" %}
+
+{% block title %}{% if object %}Modifier {{ object.name }}{% else %}Nouvelle entreprise{% endif %} - CRM{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-gray-900">{% if object %}Modifier l'entreprise{% else %}Nouvelle entreprise{% endif %}</h1>
+    </div>
+
+    <form method="post" class="space-y-6">
+        {% csrf_token %}
+
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-lg font-medium text-gray-900 mb-4">Informations générales</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700">Raison sociale *</label>
+                    {{ form.name }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Catégorie</label>
+                    {{ form.category }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Secteur d'activité</label>
+                    {{ form.industry }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">SIRET</label>
+                    {{ form.siret }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">N° TVA</label>
+                    {{ form.vat_number }}
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-lg font-medium text-gray-900 mb-4">Coordonnées</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Email</label>
+                    {{ form.email }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Téléphone</label>
+                    {{ form.phone }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Site web</label>
+                    {{ form.website }}
+                </div>
+            </div>
+            <div class="mt-4">
+                <label class="block text-sm font-medium text-gray-700">Adresse</label>
+                {{ form.address }}
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Code postal</label>
+                    {{ form.postal_code }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Ville</label>
+                    {{ form.city }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Pays</label>
+                    {{ form.country }}
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-lg font-medium text-gray-900 mb-4">Commercial</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Assigné à</label>
+                    {{ form.assigned_to }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Nombre d'employés</label>
+                    {{ form.employees_count }}
+                </div>
+            </div>
+            <div class="mt-4">
+                <label class="block text-sm font-medium text-gray-700">Notes</label>
+                {{ form.notes }}
+            </div>
+        </div>
+
+        <div class="flex justify-end space-x-3">
+            <a href="{% if object %}{{ object.get_absolute_url }}{% else %}{% url 'crm:company_list' %}{% endif %}" class="btn-secondary">Annuler</a>
+            <button type="submit" class="btn-primary">{% if object %}Enregistrer{% else %}Créer{% endif %}</button>
+        </div>
+    </form>
+</div>
+{% endblock %}

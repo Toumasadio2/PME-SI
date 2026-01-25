@@ -13,6 +13,7 @@ urlpatterns = [
     path("dashboard/", include("apps.dashboard.urls", namespace="dashboard")),
     path("search/", include("apps.search.urls", namespace="search")),
     path("notifications/", include("apps.notifications.urls", namespace="notifications")),
+    path("crm/", include("apps.crm.urls", namespace="crm")),
     path("", include("apps.core.urls", namespace="core")),
 ]
 

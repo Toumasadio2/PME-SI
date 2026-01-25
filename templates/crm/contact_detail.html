@@ -1,0 +1,285 @@
+{% extends "layouts/app_layout.html" %}
+{% load humanize %}
+
+{% block title %}{{ contact.display_name }} - CRM{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex justify-between items-start">
+        <div class="flex items-center space-x-4">
+            <div class="h-16 w-16 bg-primary-100 rounded-full flex items-center justify-center">
+                <span class="text-primary-700 font-bold text-xl">
+                    {{ contact.first_name|slice:":1" }}{{ contact.last_name|slice:":1" }}
+                </span>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">{{ contact.display_name }}</h1>
+                {% if contact.job_title %}
+                <p class="text-gray-600">{{ contact.job_title }}
+                    {% if contact.company %} chez <a href="{{ contact.company.get_absolute_url }}" class="text-primary-600 hover:underline">{{ contact.company.name }}</a>{% endif %}
+                </p>
+                {% endif %}
+                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
+                    {% if contact.category == 'CLIENT' %}bg-green-100 text-green-800
+                    {% elif contact.category == 'PROSPECT' %}bg-blue-100 text-blue-800
+                    {% elif contact.category == 'PARTNER' %}bg-purple-100 text-purple-800
+                    {% else %}bg-gray-100 text-gray-800{% endif %}">
+                    {{ contact.get_category_display }}
+                </span>
+            </div>
+        </div>
+        <div class="flex space-x-3">
+            <a href="{% url 'crm:activity_create' %}?contact={{ contact.pk }}" class="btn-secondary">
+                + Activité
+            </a>
+            <a href="{% url 'crm:contact_update' contact.pk %}" class="btn-primary">
+                Modifier
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Main Info -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Contact Info -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-lg font-medium text-gray-900 mb-4">Informations de contact</h2>
+                <dl class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {% if contact.email %}
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Email</dt>
+                        <dd class="mt-1">
+                            <a href="mailto:{{ contact.email }}" class="text-primary-600 hover:underline">
+                                {{ contact.email }}
+                            </a>
+                        </dd>
+                    </div>
+                    {% endif %}
+
+                    {% if contact.phone %}
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Téléphone</dt>
+                        <dd class="mt-1">
+                            <a href="tel:{{ contact.phone }}" class="text-primary-600 hover:underline">
+                                {{ contact.phone }}
+                            </a>
+                        </dd>
+                    </div>
+                    {% endif %}
+
+                    {% if contact.mobile %}
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Mobile</dt>
+                        <dd class="mt-1">
+                            <a href="tel:{{ contact.mobile }}" class="text-primary-600 hover:underline">
+                                {{ contact.mobile }}
+                            </a>
+                        </dd>
+                    </div>
+                    {% endif %}
+
+                    {% if contact.department %}
+                    <div>
+                        <dt class="text-sm font-medium text-gray-500">Service</dt>
+                        <dd class="mt-1 text-gray-900">{{ contact.department }}</dd>
+                    </div>
+                    {% endif %}
+                </dl>
+
+                {% if contact.address %}
+                <div class="mt-4 pt-4 border-t border-gray-200">
+                    <dt class="text-sm font-medium text-gray-500">Adresse</dt>
+                    <dd class="mt-1 text-gray-900">
+                        {{ contact.address }}<br>
+                        {% if contact.postal_code or contact.city %}
+                        {{ contact.postal_code }} {{ contact.city }}
+                        {% endif %}
+                        {% if contact.country %}<br>{{ contact.country }}{% endif %}
+                    </dd>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Quick Activity Form -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-lg font-medium text-gray-900 mb-4">Ajouter une activité</h2>
+                <form hx-post="{% url 'crm:activity_quick_create' %}" hx-swap="outerHTML" class="space-y-4">
+                    {% csrf_token %}
+                    <input type="hidden" name="contact_id" value="{{ contact.pk }}">
+
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div>
+                            <select name="activity_type" class="form-select w-full">
+                                <option value="CALL">Appel</option>
+                                <option value="EMAIL">Email</option>
+                                <option value="MEETING">Réunion</option>
+                                <option value="NOTE" selected>Note</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-3">
+                            <input type="text" name="subject" class="form-input w-full" placeholder="Sujet" required>
+                        </div>
+                    </div>
+
+                    <div>
+                        <textarea name="description" class="form-textarea w-full" rows="2" placeholder="Description..."></textarea>
+                    </div>
+
+                    <div class="flex justify-end">
+                        <button type="submit" class="btn-primary">Enregistrer l'activité</button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- Activities Timeline -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h2 class="text-lg font-medium text-gray-900 mb-4">Historique des activités</h2>
+
+                {% if activities %}
+                <div class="flow-root">
+                    <ul class="-mb-8">
+                        {% for activity in activities %}
+                        <li>
+                            <div class="relative pb-8">
+                                {% if not forloop.last %}
+                                <span class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200"></span>
+                                {% endif %}
+                                <div class="relative flex space-x-3">
+                                    <div>
+                                        <span class="h-8 w-8 rounded-full flex items-center justify-center ring-8 ring-white
+                                            {% if activity.activity_type == 'CALL' %}bg-blue-500
+                                            {% elif activity.activity_type == 'EMAIL' %}bg-green-500
+                                            {% elif activity.activity_type == 'MEETING' %}bg-purple-500
+                                            {% else %}bg-gray-500{% endif %}">
+                                            <span class="text-white text-xs">
+                                                {% if activity.activity_type == 'CALL' %}📞
+                                                {% elif activity.activity_type == 'EMAIL' %}📧
+                                                {% elif activity.activity_type == 'MEETING' %}📅
+                                                {% else %}📝{% endif %}
+                                            </span>
+                                        </span>
+                                    </div>
+                                    <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+                                        <div>
+                                            <p class="text-sm text-gray-900 font-medium">{{ activity.subject }}</p>
+                                            {% if activity.description %}
+                                            <p class="text-sm text-gray-500 mt-1">{{ activity.description|truncatewords:30 }}</p>
+                                            {% endif %}
+                                        </div>
+                                        <div class="text-right text-sm whitespace-nowrap text-gray-500">
+                                            {{ activity.created_at|date:"d/m/Y H:i" }}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% else %}
+                <p class="text-sm text-gray-500 text-center py-4">Aucune activité enregistrée</p>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="space-y-6">
+            <!-- Company Card -->
+            {% if contact.company %}
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-sm font-medium text-gray-500 mb-2">Entreprise</h3>
+                <a href="{{ contact.company.get_absolute_url }}" class="block hover:bg-gray-50 -mx-2 p-2 rounded">
+                    <p class="font-medium text-gray-900">{{ contact.company.name }}</p>
+                    {% if contact.company.city %}
+                    <p class="text-sm text-gray-500">{{ contact.company.city }}</p>
+                    {% endif %}
+                </a>
+            </div>
+            {% endif %}
+
+            <!-- Tags -->
+            {% if contact.tags.all %}
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-sm font-medium text-gray-500 mb-2">Tags</h3>
+                <div class="flex flex-wrap gap-2">
+                    {% for tag in contact.tags.all %}
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
+                        style="background-color: {{ tag.color }}20; color: {{ tag.color }}">
+                        {{ tag.name }}
+                    </span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Opportunities -->
+            {% if opportunities %}
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-sm font-medium text-gray-500 mb-2">Opportunités</h3>
+                <ul class="space-y-2">
+                    {% for opp in opportunities %}
+                    <li>
+                        <a href="{{ opp.get_absolute_url }}" class="block hover:bg-gray-50 -mx-2 p-2 rounded">
+                            <p class="font-medium text-gray-900 text-sm">{{ opp.name }}</p>
+                            <div class="flex justify-between text-xs">
+                                <span class="text-gray-500">{{ opp.stage.name }}</span>
+                                <span class="font-medium">{{ opp.amount|floatformat:0|intcomma }} €</span>
+                            </div>
+                        </a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% endif %}
+
+            <!-- Notes -->
+            {% if contact.notes %}
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-sm font-medium text-gray-500 mb-2">Notes</h3>
+                <p class="text-sm text-gray-700 whitespace-pre-wrap">{{ contact.notes }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Metadata -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-sm font-medium text-gray-500 mb-2">Informations</h3>
+                <dl class="space-y-2 text-sm">
+                    <div class="flex justify-between">
+                        <dt class="text-gray-500">Créé le</dt>
+                        <dd class="text-gray-900">{{ contact.created_at|date:"d/m/Y" }}</dd>
+                    </div>
+                    {% if contact.last_activity_date %}
+                    <div class="flex justify-between">
+                        <dt class="text-gray-500">Dernière activité</dt>
+                        <dd class="text-gray-900">{{ contact.last_activity_date|date:"d/m/Y" }}</dd>
+                    </div>
+                    {% endif %}
+                    {% if contact.assigned_to %}
+                    <div class="flex justify-between">
+                        <dt class="text-gray-500">Assigné à</dt>
+                        <dd class="text-gray-900">{{ contact.assigned_to.full_name }}</dd>
+                    </div>
+                    {% endif %}
+                </dl>
+            </div>
+
+            <!-- Actions -->
+            <div class="bg-white rounded-lg shadow p-6">
+                <h3 class="text-sm font-medium text-gray-500 mb-4">Actions</h3>
+                <div class="space-y-2">
+                    <a href="{% url 'crm:opportunity_create' %}?contact={{ contact.pk }}{% if contact.company %}&company={{ contact.company.pk }}{% endif %}"
+                        class="btn-secondary w-full justify-center">
+                        Créer une opportunité
+                    </a>
+                    <a href="{% url 'crm:contact_delete' contact.pk %}"
+                        class="btn-danger w-full justify-center"
+                        onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce contact ?')">
+                        Supprimer
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

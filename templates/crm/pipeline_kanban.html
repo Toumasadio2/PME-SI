@@ -1,0 +1,222 @@
+{% extends "layouts/app_layout.html" %}
+{% load humanize %}
+
+{% block title %}Pipeline - CRM{% endblock %}
+
+{% block content %}
+<div class="h-full flex flex-col">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Pipeline</h1>
+            <p class="text-gray-600">
+                {{ total_opportunities }} opportunité{{ total_opportunities|pluralize }} -
+                <span class="font-medium">{{ total_value|floatformat:0|intcomma }} €</span> au total
+            </p>
+        </div>
+        <div class="flex space-x-3">
+            <a href="{% url 'crm:pipeline_stage_list' %}" class="btn-secondary">
+                Gérer les étapes
+            </a>
+            <a href="{% url 'crm:opportunity_create' %}" class="btn-primary">
+                + Nouvelle opportunité
+            </a>
+        </div>
+    </div>
+
+    <!-- Kanban Board -->
+    <div class="flex-1 overflow-x-auto pb-4">
+        <div class="inline-flex space-x-4 h-full min-w-full">
+            {% for data in pipeline_data %}
+            <div class="flex-shrink-0 w-80 flex flex-col bg-gray-100 rounded-lg"
+                 data-stage-id="{{ data.stage.pk }}">
+                <!-- Stage Header -->
+                <div class="p-4 border-b border-gray-200">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-2">
+                            <div class="w-3 h-3 rounded-full" style="background-color: {{ data.stage.color }}"></div>
+                            <h3 class="font-medium text-gray-900">{{ data.stage.name }}</h3>
+                        </div>
+                        <span class="text-sm text-gray-500">{{ data.count }}</span>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-1">
+                        {{ data.total|floatformat:0|intcomma }} €
+                        {% if data.stage.probability %}
+                        <span class="text-xs">({{ data.stage.probability }}%)</span>
+                        {% endif %}
+                    </p>
+                </div>
+
+                <!-- Cards Container -->
+                <div class="flex-1 p-2 space-y-2 overflow-y-auto kanban-column"
+                     data-stage-id="{{ data.stage.pk }}"
+                     ondrop="drop(event)" ondragover="allowDrop(event)">
+
+                    {% for opp in data.opportunities %}
+                    <div class="bg-white rounded-lg shadow p-4 cursor-move hover:shadow-md transition-shadow kanban-card"
+                         draggable="true"
+                         ondragstart="drag(event)"
+                         data-opportunity-id="{{ opp.pk }}">
+                        <!-- Card Header -->
+                        <div class="flex items-start justify-between mb-2">
+                            <a href="{{ opp.get_absolute_url }}" class="text-sm font-medium text-gray-900 hover:text-primary-600">
+                                {{ opp.name }}
+                            </a>
+                            <span class="text-xs px-2 py-1 rounded-full
+                                {% if opp.priority == 'HIGH' %}bg-orange-100 text-orange-800
+                                {% elif opp.priority == 'CRITICAL' %}bg-red-100 text-red-800
+                                {% else %}bg-gray-100 text-gray-600{% endif %}">
+                                {{ opp.get_priority_display }}
+                            </span>
+                        </div>
+
+                        <!-- Company -->
+                        <a href="{{ opp.company.get_absolute_url }}" class="text-sm text-gray-600 hover:text-primary-600 block mb-2">
+                            {{ opp.company.name }}
+                        </a>
+
+                        <!-- Amount & Probability -->
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="font-medium text-gray-900">{{ opp.amount|floatformat:0|intcomma }} €</span>
+                            <span class="text-gray-500">{{ opp.probability }}%</span>
+                        </div>
+
+                        <!-- Progress Bar -->
+                        <div class="mt-2 w-full bg-gray-200 rounded-full h-1.5">
+                            <div class="bg-primary-600 h-1.5 rounded-full" style="width: {{ opp.probability }}%"></div>
+                        </div>
+
+                        <!-- Footer -->
+                        <div class="mt-3 pt-2 border-t border-gray-100 flex items-center justify-between text-xs text-gray-500">
+                            {% if opp.contact %}
+                            <span>{{ opp.contact.display_name }}</span>
+                            {% else %}
+                            <span>-</span>
+                            {% endif %}
+
+                            {% if opp.expected_close_date %}
+                            <span class="{% if opp.expected_close_date < today %}text-red-500{% endif %}">
+                                {{ opp.expected_close_date|date:"d/m/Y" }}
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="text-center py-8 text-gray-400 text-sm">
+                        Aucune opportunité
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <!-- Add Button -->
+                <div class="p-2 border-t border-gray-200">
+                    <a href="{% url 'crm:opportunity_create' %}?stage={{ data.stage.pk }}"
+                       class="block w-full text-center py-2 text-sm text-gray-600 hover:text-gray-900 hover:bg-gray-200 rounded transition">
+                        + Ajouter
+                    </a>
+                </div>
+            </div>
+            {% empty %}
+            <div class="flex-1 flex items-center justify-center">
+                <div class="text-center">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                    <h3 class="mt-2 text-sm font-medium text-gray-900">Aucune étape configurée</h3>
+                    <p class="mt-1 text-sm text-gray-500">Commencez par créer des étapes pour votre pipeline.</p>
+                    <div class="mt-6">
+                        <a href="{% url 'crm:pipeline_stage_create' %}" class="btn-primary">
+                            Créer une étape
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<style>
+.kanban-column {
+    min-height: 200px;
+}
+.kanban-card.dragging {
+    opacity: 0.5;
+}
+.kanban-column.drag-over {
+    background-color: #E5E7EB;
+}
+</style>
+
+<script>
+let draggedCard = null;
+
+function drag(ev) {
+    draggedCard = ev.target;
+    ev.target.classList.add('dragging');
+    ev.dataTransfer.setData("text/plain", ev.target.dataset.opportunityId);
+}
+
+function allowDrop(ev) {
+    ev.preventDefault();
+    ev.currentTarget.classList.add('drag-over');
+}
+
+function drop(ev) {
+    ev.preventDefault();
+    ev.currentTarget.classList.remove('drag-over');
+
+    const opportunityId = ev.dataTransfer.getData("text/plain");
+    const newStageId = ev.currentTarget.dataset.stageId;
+
+    if (draggedCard) {
+        draggedCard.classList.remove('dragging');
+
+        // Move card visually
+        ev.currentTarget.appendChild(draggedCard);
+
+        // Send update to server
+        fetch(`/crm/opportunities/${opportunityId}/move-stage/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || getCookie('csrftoken'),
+                'HX-Request': 'true'
+            },
+            body: `stage_id=${newStageId}`
+        }).then(response => {
+            if (!response.ok) {
+                // Revert on error
+                location.reload();
+            }
+        });
+    }
+}
+
+// Remove drag-over class when leaving
+document.querySelectorAll('.kanban-column').forEach(col => {
+    col.addEventListener('dragleave', (e) => {
+        if (!col.contains(e.relatedTarget)) {
+            col.classList.remove('drag-over');
+        }
+    });
+});
+
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>
+
+{% csrf_token %}
+{% endblock %}

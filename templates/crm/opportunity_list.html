@@ -1,0 +1,134 @@
+{% extends "layouts/app_layout.html" %}
+{% load humanize %}
+
+{% block title %}Opportunités - CRM{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Opportunités</h1>
+            <p class="text-gray-600">
+                {{ total_count }} opportunité{{ total_count|pluralize }} -
+                <span class="font-medium">{{ total_amount|floatformat:0|intcomma }} €</span>
+            </p>
+        </div>
+        <div class="flex space-x-3">
+            <a href="{% url 'crm:pipeline_kanban' %}" class="btn-secondary">
+                Vue Kanban
+            </a>
+            <a href="{% url 'crm:opportunity_create' %}" class="btn-primary">
+                + Nouvelle opportunité
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-lg shadow p-4">
+        <form method="get" class="flex flex-wrap gap-4">
+            <div class="flex-1 min-w-[200px]">
+                <input type="text" name="q" value="{{ request.GET.q }}"
+                    class="form-input w-full"
+                    placeholder="Rechercher...">
+            </div>
+            <div>
+                <select name="stage" class="form-select">
+                    <option value="">Toutes les étapes</option>
+                    {% for stage in search_form.fields.stage.queryset %}
+                    <option value="{{ stage.pk }}" {% if request.GET.stage == stage.pk|stringformat:"s" %}selected{% endif %}>
+                        {{ stage.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="flex items-center">
+                <label class="inline-flex items-center">
+                    <input type="checkbox" name="show_closed" value="1"
+                        {% if request.GET.show_closed %}checked{% endif %}
+                        class="rounded border-gray-300 text-primary-600 focus:ring-primary-500">
+                    <span class="ml-2 text-sm text-gray-600">Afficher les clôturées</span>
+                </label>
+            </div>
+            <button type="submit" class="btn-secondary">Filtrer</button>
+        </form>
+    </div>
+
+    <!-- Opportunity List -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        {% if opportunities %}
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-gray-50">
+                <tr>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Opportunité</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Entreprise</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Étape</th>
+                    <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Montant</th>
+                    <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase">Probabilité</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Clôture prévue</th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Actions</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-200">
+                {% for opp in opportunities %}
+                <tr class="hover:bg-gray-50 {% if opp.is_won %}bg-green-50{% elif opp.is_lost %}bg-red-50{% endif %}">
+                    <td class="px-6 py-4">
+                        <a href="{{ opp.get_absolute_url }}" class="font-medium text-gray-900 hover:text-primary-600">
+                            {{ opp.name }}
+                        </a>
+                        {% if opp.contact %}
+                        <p class="text-sm text-gray-500">{{ opp.contact.display_name }}</p>
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-sm">
+                        <a href="{{ opp.company.get_absolute_url }}" class="text-gray-600 hover:text-primary-600">
+                            {{ opp.company.name }}
+                        </a>
+                    </td>
+                    <td class="px-6 py-4">
+                        <span class="px-2 py-1 text-xs font-medium rounded-full"
+                            style="background-color: {{ opp.stage.color }}20; color: {{ opp.stage.color }}">
+                            {{ opp.stage.name }}
+                        </span>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-900 text-right font-medium">
+                        {{ opp.amount|floatformat:0|intcomma }} €
+                    </td>
+                    <td class="px-6 py-4 text-center">
+                        <div class="flex items-center justify-center">
+                            <div class="w-16 bg-gray-200 rounded-full h-2 mr-2">
+                                <div class="bg-primary-600 h-2 rounded-full" style="width: {{ opp.probability }}%"></div>
+                            </div>
+                            <span class="text-sm text-gray-600">{{ opp.probability }}%</span>
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-gray-500">
+                        {% if opp.expected_close_date %}
+                        {{ opp.expected_close_date|date:"d/m/Y" }}
+                        {% else %}
+                        -
+                        {% endif %}
+                    </td>
+                    <td class="px-6 py-4 text-sm">
+                        <a href="{{ opp.get_absolute_url }}" class="text-primary-600 hover:text-primary-900 mr-3">Voir</a>
+                        <a href="{% url 'crm:opportunity_update' opp.pk %}" class="text-gray-600 hover:text-gray-900">Modifier</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="text-center py-12">
+            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+            </svg>
+            <h3 class="mt-2 text-sm font-medium text-gray-900">Aucune opportunité</h3>
+            <p class="mt-1 text-sm text-gray-500">Créez votre première opportunité.</p>
+            <div class="mt-6">
+                <a href="{% url 'crm:opportunity_create' %}" class="btn-primary">+ Nouvelle opportunité</a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

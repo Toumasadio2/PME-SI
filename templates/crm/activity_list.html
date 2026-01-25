@@ -1,0 +1,81 @@
+{% extends "layouts/app_layout.html" %}
+
+{% block title %}Activités - CRM{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Activités</h1>
+        </div>
+        <a href="{% url 'crm:activity_create' %}" class="btn-primary">+ Nouvelle activité</a>
+    </div>
+
+    <div class="bg-white rounded-lg shadow p-4">
+        <form method="get" class="flex flex-wrap gap-4">
+            <select name="type" class="form-select">
+                <option value="">Tous types</option>
+                {% for value, label in activity_types %}
+                <option value="{{ value }}" {% if request.GET.type == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <select name="status" class="form-select">
+                <option value="">Tous statuts</option>
+                {% for value, label in statuses %}
+                <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <label class="inline-flex items-center">
+                <input type="checkbox" name="upcoming" value="1" {% if request.GET.upcoming %}checked{% endif %} class="rounded">
+                <span class="ml-2 text-sm">À venir uniquement</span>
+            </label>
+            <button type="submit" class="btn-secondary">Filtrer</button>
+        </form>
+    </div>
+
+    <div class="bg-white rounded-lg shadow">
+        {% if activities %}
+        <ul class="divide-y">
+            {% for activity in activities %}
+            <li class="p-4 hover:bg-gray-50 flex items-start space-x-4">
+                <div class="flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center
+                    {% if activity.activity_type == 'CALL' %}bg-blue-100 text-blue-600
+                    {% elif activity.activity_type == 'EMAIL' %}bg-green-100 text-green-600
+                    {% elif activity.activity_type == 'MEETING' %}bg-purple-100 text-purple-600
+                    {% else %}bg-gray-100 text-gray-600{% endif %}">
+                    {% if activity.activity_type == 'CALL' %}📞{% elif activity.activity_type == 'EMAIL' %}📧{% elif activity.activity_type == 'MEETING' %}📅{% else %}📝{% endif %}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex items-center justify-between">
+                        <p class="font-medium text-gray-900">{{ activity.subject }}</p>
+                        <span class="px-2 py-1 text-xs rounded-full
+                            {% if activity.status == 'COMPLETED' %}bg-green-100 text-green-800
+                            {% elif activity.status == 'PLANNED' %}bg-blue-100 text-blue-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ activity.get_status_display }}
+                        </span>
+                    </div>
+                    <p class="text-sm text-gray-500 mt-1">
+                        {% if activity.contact %}{{ activity.contact.display_name }}{% endif %}
+                        {% if activity.company %}{% if activity.contact %} - {% endif %}{{ activity.company.name }}{% endif %}
+                    </p>
+                    <p class="text-xs text-gray-400 mt-1">
+                        {% if activity.scheduled_date %}{{ activity.scheduled_date|date:"d/m/Y H:i" }}{% else %}{{ activity.created_at|date:"d/m/Y H:i" }}{% endif %}
+                    </p>
+                </div>
+                {% if activity.status == 'PLANNED' %}
+                <button hx-post="{% url 'crm:activity_complete' activity.pk %}" hx-swap="outerHTML" class="text-sm text-green-600 hover:text-green-800">
+                    Terminer
+                </button>
+                {% endif %}
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <div class="text-center py-12">
+            <p class="text-gray-500">Aucune activité</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,286 @@
+{% extends "layouts/app_layout.html" %}
+{% load humanize %}
+
+{% block title %}CRM - Dashboard{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">CRM</h1>
+            <p class="text-gray-600">Vue d'ensemble de votre activité commerciale</p>
+        </div>
+        <div class="flex space-x-3">
+            <a href="{% url 'crm:contact_create' %}" class="btn-secondary">
+                + Contact
+            </a>
+            <a href="{% url 'crm:company_create' %}" class="btn-secondary">
+                + Entreprise
+            </a>
+            <a href="{% url 'crm:opportunity_create' %}" class="btn-primary">
+                + Opportunité
+            </a>
+        </div>
+    </div>
+
+    <!-- KPI Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Contacts -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500">Contacts</p>
+                    <p class="text-3xl font-bold text-gray-900">{{ contacts_count|default:0 }}</p>
+                </div>
+                <div class="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                </div>
+            </div>
+            <a href="{% url 'crm:contact_list' %}" class="text-sm text-blue-600 hover:underline mt-2 inline-block">
+                Voir tous les contacts →
+            </a>
+        </div>
+
+        <!-- Entreprises -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500">Entreprises</p>
+                    <p class="text-3xl font-bold text-gray-900">{{ companies_count|default:0 }}</p>
+                </div>
+                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                    </svg>
+                </div>
+            </div>
+            <a href="{% url 'crm:company_list' %}" class="text-sm text-green-600 hover:underline mt-2 inline-block">
+                Voir toutes les entreprises →
+            </a>
+        </div>
+
+        <!-- Pipeline -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500">Pipeline</p>
+                    <p class="text-3xl font-bold text-gray-900">{{ pipeline_value|floatformat:0|intcomma }} €</p>
+                    <p class="text-sm text-gray-500">{{ opportunities_count }} opportunités</p>
+                </div>
+                <div class="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                    </svg>
+                </div>
+            </div>
+            <a href="{% url 'crm:pipeline_kanban' %}" class="text-sm text-purple-600 hover:underline mt-2 inline-block">
+                Voir le pipeline →
+            </a>
+        </div>
+
+        <!-- Won this month -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex items-center justify-between">
+                <div>
+                    <p class="text-sm font-medium text-gray-500">Gagnées ce mois</p>
+                    <p class="text-3xl font-bold text-green-600">{{ won_this_month|floatformat:0|intcomma }} €</p>
+                    <p class="text-sm text-gray-500">{{ won_count_month }} affaires - {{ conversion_rate }}% taux</p>
+                </div>
+                <div class="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
+                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Pipeline by Stage Chart -->
+        <div class="lg:col-span-2 bg-white rounded-lg shadow p-6">
+            <h2 class="text-lg font-medium text-gray-900 mb-4">Pipeline par étape</h2>
+            <canvas id="pipelineChart" height="200"></canvas>
+        </div>
+
+        <!-- Activities -->
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-medium text-gray-900">Activités à venir</h2>
+                {% if overdue_activities > 0 %}
+                <span class="px-2 py-1 text-xs font-medium text-red-700 bg-red-100 rounded-full">
+                    {{ overdue_activities }} en retard
+                </span>
+                {% endif %}
+            </div>
+
+            {% if upcoming_activities %}
+            <ul class="space-y-3">
+                {% for activity in upcoming_activities %}
+                <li class="flex items-start space-x-3 p-2 hover:bg-gray-50 rounded">
+                    <div class="flex-shrink-0">
+                        {% if activity.activity_type == 'CALL' %}
+                        <span class="text-blue-500">📞</span>
+                        {% elif activity.activity_type == 'EMAIL' %}
+                        <span class="text-green-500">📧</span>
+                        {% elif activity.activity_type == 'MEETING' %}
+                        <span class="text-purple-500">📅</span>
+                        {% else %}
+                        <span class="text-gray-500">📝</span>
+                        {% endif %}
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-gray-900 truncate">{{ activity.subject }}</p>
+                        <p class="text-xs text-gray-500">
+                            {{ activity.scheduled_date|date:"d/m H:i" }}
+                            {% if activity.contact %} - {{ activity.contact.display_name }}{% endif %}
+                        </p>
+                    </div>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <p class="text-sm text-gray-500 text-center py-4">Aucune activité planifiée</p>
+            {% endif %}
+
+            <a href="{% url 'crm:activity_list' %}?upcoming=1" class="text-sm text-blue-600 hover:underline mt-4 inline-block">
+                Voir toutes les activités →
+            </a>
+        </div>
+    </div>
+
+    <!-- Top Opportunities -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-lg font-medium text-gray-900">Top Opportunités</h2>
+            <a href="{% url 'crm:opportunity_list' %}" class="text-sm text-blue-600 hover:underline">
+                Voir tout →
+            </a>
+        </div>
+
+        {% if top_opportunities %}
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead>
+                    <tr>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Opportunité</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Entreprise</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Étape</th>
+                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Montant</th>
+                        <th class="px-4 py-3 text-right text-xs font-medium text-gray-500 uppercase">Probabilité</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    {% for opp in top_opportunities %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-3">
+                            <a href="{{ opp.get_absolute_url }}" class="text-blue-600 hover:underline font-medium">
+                                {{ opp.name }}
+                            </a>
+                        </td>
+                        <td class="px-4 py-3 text-sm text-gray-600">
+                            {{ opp.company.name }}
+                        </td>
+                        <td class="px-4 py-3">
+                            <span class="px-2 py-1 text-xs font-medium rounded-full" style="background-color: {{ opp.stage.color }}20; color: {{ opp.stage.color }}">
+                                {{ opp.stage.name }}
+                            </span>
+                        </td>
+                        <td class="px-4 py-3 text-sm text-gray-900 text-right font-medium">
+                            {{ opp.amount|floatformat:0|intcomma }} €
+                        </td>
+                        <td class="px-4 py-3 text-sm text-gray-600 text-right">
+                            {{ opp.probability }}%
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-sm text-gray-500 text-center py-8">Aucune opportunité en cours</p>
+        {% endif %}
+    </div>
+
+    <!-- Recent Activities -->
+    <div class="bg-white rounded-lg shadow p-6">
+        <h2 class="text-lg font-medium text-gray-900 mb-4">Activités récentes</h2>
+
+        {% if recent_activities %}
+        <ul class="space-y-4">
+            {% for activity in recent_activities %}
+            <li class="flex items-start space-x-3">
+                <div class="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center
+                    {% if activity.activity_type == 'CALL' %}bg-blue-100 text-blue-600
+                    {% elif activity.activity_type == 'EMAIL' %}bg-green-100 text-green-600
+                    {% elif activity.activity_type == 'MEETING' %}bg-purple-100 text-purple-600
+                    {% else %}bg-gray-100 text-gray-600{% endif %}">
+                    {% if activity.activity_type == 'CALL' %}📞
+                    {% elif activity.activity_type == 'EMAIL' %}📧
+                    {% elif activity.activity_type == 'MEETING' %}📅
+                    {% elif activity.activity_type == 'NOTE' %}📝
+                    {% else %}📋{% endif %}
+                </div>
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm text-gray-900">
+                        <span class="font-medium">{{ activity.subject }}</span>
+                        {% if activity.contact %} - {{ activity.contact.display_name }}{% endif %}
+                        {% if activity.company %} ({{ activity.company.name }}){% endif %}
+                    </p>
+                    <p class="text-xs text-gray-500">{{ activity.created_at|timesince }} ago</p>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+        {% else %}
+        <p class="text-sm text-gray-500 text-center py-4">Aucune activité récente</p>
+        {% endif %}
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const pipelineData = {{ pipeline_by_stage|safe }};
+
+    if (pipelineData && pipelineData.length > 0) {
+        const ctx = document.getElementById('pipelineChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: pipelineData.map(s => s.name),
+                datasets: [{
+                    label: 'Valeur (€)',
+                    data: pipelineData.map(s => s.value),
+                    backgroundColor: pipelineData.map(s => s.color + '80'),
+                    borderColor: pipelineData.map(s => s.color),
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString() + ' €';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

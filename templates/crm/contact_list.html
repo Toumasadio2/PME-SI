@@ -1,0 +1,65 @@
+{% extends "layouts/app_layout.html" %}
+{% load humanize %}
+
+{% block title %}Contacts - CRM{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Contacts</h1>
+            <p class="text-gray-600">{{ total_count }} contact{{ total_count|pluralize }}</p>
+        </div>
+        <a href="{% url 'crm:contact_create' %}" class="btn-primary">
+            + Nouveau contact
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="bg-white rounded-lg shadow p-4">
+        <form method="get" class="flex flex-wrap gap-4">
+            <div class="flex-1 min-w-[200px]">
+                <input type="text" name="q" value="{{ request.GET.q }}"
+                    class="form-input w-full"
+                    placeholder="Rechercher un contact..."
+                    hx-get="{% url 'crm:contact_list_partial' %}"
+                    hx-trigger="keyup changed delay:300ms"
+                    hx-target="#contact-list"
+                    hx-include="[name='category'], [name='company']">
+            </div>
+            <div>
+                <select name="category" class="form-select"
+                    hx-get="{% url 'crm:contact_list_partial' %}"
+                    hx-trigger="change"
+                    hx-target="#contact-list"
+                    hx-include="[name='q'], [name='company']">
+                    <option value="">Toutes catégories</option>
+                    {% for value, label in search_form.fields.category.choices %}
+                    {% if value %}
+                    <option value="{{ value }}" {% if request.GET.category == value %}selected{% endif %}>{{ label }}</option>
+                    {% endif %}
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <select name="company" class="form-select"
+                    hx-get="{% url 'crm:contact_list_partial' %}"
+                    hx-trigger="change"
+                    hx-target="#contact-list"
+                    hx-include="[name='q'], [name='category']">
+                    <option value="">Toutes entreprises</option>
+                    {% for company in search_form.fields.company.queryset %}
+                    <option value="{{ company.pk }}" {% if request.GET.company == company.pk|stringformat:"s" %}selected{% endif %}>{{ company.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </form>
+    </div>
+
+    <!-- Contact List -->
+    <div id="contact-list" class="bg-white rounded-lg shadow overflow-hidden">
+        {% include "crm/partials/contact_list.html" %}
+    </div>
+</div>
+{% endblock %}

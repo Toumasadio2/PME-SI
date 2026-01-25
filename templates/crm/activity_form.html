@@ -1,0 +1,74 @@
+{% extends "layouts/app_layout.html" %}
+
+{% block title %}Nouvelle activité - CRM{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="mb-6">
+        <h1 class="text-2xl font-bold text-gray-900">Nouvelle activité</h1>
+    </div>
+
+    <form method="post" class="space-y-6">
+        {% csrf_token %}
+
+        <div class="bg-white rounded-lg shadow p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Type</label>
+                    {{ form.activity_type }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Statut</label>
+                    {{ form.status }}
+                </div>
+            </div>
+            <div class="mt-4">
+                <label class="block text-sm font-medium text-gray-700">Sujet *</label>
+                {{ form.subject }}
+            </div>
+            <div class="mt-4">
+                <label class="block text-sm font-medium text-gray-700">Description</label>
+                {{ form.description }}
+            </div>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-lg font-medium text-gray-900 mb-4">Associer à</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Contact</label>
+                    {{ form.contact }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Entreprise</label>
+                    {{ form.company }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Opportunité</label>
+                    {{ form.opportunity }}
+                </div>
+            </div>
+            <p class="mt-2 text-xs text-gray-500">Au moins un élément doit être sélectionné.</p>
+        </div>
+
+        <div class="bg-white rounded-lg shadow p-6">
+            <h2 class="text-lg font-medium text-gray-900 mb-4">Planification</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Date planifiée</label>
+                    {{ form.scheduled_date }}
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Durée (minutes)</label>
+                    {{ form.duration_minutes }}
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-end space-x-3">
+            <a href="{% url 'crm:activity_list' %}" class="btn-secondary">Annuler</a>
+            <button type="submit" class="btn-primary">Créer</button>
+        </div>
+    </form>
+</div>
+{% endblock %}
