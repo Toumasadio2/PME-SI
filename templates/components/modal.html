@@ -1,0 +1,66 @@
+{% comment %}
+Modal component for dialogs.
+
+Usage:
+{% include "components/modal.html" with id="delete-modal" title="Confirmer la suppression" %}
+
+Parameters:
+- id: Unique modal ID (required for Alpine.js)
+- title: Modal title
+- size: sm, md (default), lg, xl
+{% endcomment %}
+
+<div x-data="{ open: false }"
+     x-show="open"
+     x-cloak
+     @open-modal-{{ id }}.window="open = true"
+     @close-modal-{{ id }}.window="open = false"
+     @keydown.escape.window="open = false"
+     class="modal">
+
+    <!-- Backdrop -->
+    <div class="modal-backdrop"
+         x-show="open"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0"
+         x-transition:enter-end="opacity-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100"
+         x-transition:leave-end="opacity-0"
+         @click="open = false">
+    </div>
+
+    <!-- Modal content -->
+    <div class="modal-content {% if size == 'sm' %}max-w-sm{% elif size == 'lg' %}max-w-2xl{% elif size == 'xl' %}max-w-4xl{% else %}max-w-md{% endif %}"
+         x-show="open"
+         x-transition:enter="transition ease-out duration-200"
+         x-transition:enter-start="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+         x-transition:enter-end="opacity-100 translate-y-0 sm:scale-100"
+         x-transition:leave="transition ease-in duration-150"
+         x-transition:leave-start="opacity-100 translate-y-0 sm:scale-100"
+         x-transition:leave-end="opacity-0 translate-y-4 sm:translate-y-0 sm:scale-95"
+         @click.stop>
+
+        {% if title %}
+        <div class="modal-header">
+            <h3 class="modal-title">{{ title }}</h3>
+            <button @click="open = false" class="btn-icon">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+            </button>
+        </div>
+        {% endif %}
+
+        <div class="modal-body">
+            {{ content }}
+        </div>
+
+        {% if show_footer %}
+        <div class="modal-footer">
+            <button @click="open = false" class="btn-secondary">Annuler</button>
+            {{ footer_actions }}
+        </div>
+        {% endif %}
+    </div>
+</div>

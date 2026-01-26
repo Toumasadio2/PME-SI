@@ -1,0 +1,84 @@
+{% comment %}
+Pagination component for list views.
+
+Usage:
+{% include "components/pagination.html" with page_obj=page_obj %}
+
+Parameters:
+- page_obj: Django paginator page object (required)
+{% endcomment %}
+
+{% if page_obj.has_other_pages %}
+<nav class="flex items-center justify-between px-4 py-3 bg-white border-t border-gray-200 sm:px-6">
+    <!-- Mobile view -->
+    <div class="flex flex-1 justify-between sm:hidden">
+        {% if page_obj.has_previous %}
+        <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+           class="btn-secondary">
+            Précédent
+        </a>
+        {% else %}
+        <span class="btn-secondary opacity-50 cursor-not-allowed">Précédent</span>
+        {% endif %}
+
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+           class="btn-secondary">
+            Suivant
+        </a>
+        {% else %}
+        <span class="btn-secondary opacity-50 cursor-not-allowed">Suivant</span>
+        {% endif %}
+    </div>
+
+    <!-- Desktop view -->
+    <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+        <div>
+            <p class="text-sm text-gray-700">
+                Affichage de
+                <span class="font-medium">{{ page_obj.start_index }}</span>
+                à
+                <span class="font-medium">{{ page_obj.end_index }}</span>
+                sur
+                <span class="font-medium">{{ page_obj.paginator.count }}</span>
+                résultats
+            </p>
+        </div>
+        <div>
+            <nav class="pagination" aria-label="Pagination">
+                {% if page_obj.has_previous %}
+                <a href="?page={{ page_obj.previous_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+                   class="pagination-link" aria-label="Précédent">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                </a>
+                {% endif %}
+
+                {% for num in page_obj.paginator.page_range %}
+                    {% if page_obj.number == num %}
+                    <span class="pagination-link active">{{ num }}</span>
+                    {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <a href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+                       class="pagination-link">{{ num }}</a>
+                    {% elif num == 1 or num == page_obj.paginator.num_pages %}
+                    <a href="?page={{ num }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+                       class="pagination-link">{{ num }}</a>
+                    {% elif num == page_obj.number|add:'-3' or num == page_obj.number|add:'3' %}
+                    <span class="pagination-link disabled">...</span>
+                    {% endif %}
+                {% endfor %}
+
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% for key, value in request.GET.items %}{% if key != 'page' %}&{{ key }}={{ value }}{% endif %}{% endfor %}"
+                   class="pagination-link" aria-label="Suivant">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                    </svg>
+                </a>
+                {% endif %}
+            </nav>
+        </div>
+    </div>
+</nav>
+{% endif %}

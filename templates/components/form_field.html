@@ -1,0 +1,33 @@
+{% comment %}
+Form field component with consistent styling and error handling.
+
+Usage:
+{% include "components/form_field.html" with field=form.email label="Email" required=True help_text="Enter your email address" %}
+
+Parameters:
+- field: The form field (required)
+- label: Custom label text (optional, defaults to field.label)
+- required: Boolean to show required indicator (optional)
+- help_text: Help text to display below field (optional, defaults to field.help_text)
+- class: Additional CSS classes for the wrapper (optional)
+{% endcomment %}
+
+<div class="form-group {{ class }}">
+    {% if label or field.label %}
+    <label for="{{ field.id_for_label }}" class="form-label {% if required %}form-label-required{% endif %}">
+        {{ label|default:field.label }}
+    </label>
+    {% endif %}
+
+    {{ field }}
+
+    {% if help_text or field.help_text %}
+    <p class="form-help">{{ help_text|default:field.help_text }}</p>
+    {% endif %}
+
+    {% if field.errors %}
+    {% for error in field.errors %}
+    <p class="form-error">{{ error }}</p>
+    {% endfor %}
+    {% endif %}
+</div>

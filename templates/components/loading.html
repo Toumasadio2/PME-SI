@@ -1,0 +1,18 @@
+{% comment %}
+Loading/spinner component.
+
+Usage:
+{% include "components/loading.html" %}
+{% include "components/loading.html" with size="lg" text="Chargement..." %}
+
+Parameters:
+- size: sm, md (default), lg
+- text: Optional loading text
+{% endcomment %}
+
+<div class="flex items-center justify-center {% if text %}gap-3{% endif %}">
+    <div class="spinner {% if size == 'sm' %}spinner-sm{% elif size == 'lg' %}spinner-lg{% endif %}"></div>
+    {% if text %}
+    <span class="text-sm text-gray-500">{{ text }}</span>
+    {% endif %}
+</div>

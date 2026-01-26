@@ -1,137 +1,109 @@
 {% load humanize %}
 
 {% if contacts %}
-<table class="min-w-full divide-y divide-gray-200">
-    <thead class="bg-gray-50">
+<table class="table">
+    <thead>
         <tr>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Entreprise</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Téléphone</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Catégorie</th>
-            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+            <th>Contact</th>
+            <th>Entreprise</th>
+            <th>Email</th>
+            <th>Téléphone</th>
+            <th>Catégorie</th>
+            <th class="text-right">Actions</th>
         </tr>
     </thead>
-    <tbody class="bg-white divide-y divide-gray-200">
+    <tbody>
         {% for contact in contacts %}
-        <tr class="hover:bg-gray-50">
-            <td class="px-6 py-4 whitespace-nowrap">
+        <tr class="clickable-row" onclick="window.location='{{ contact.get_absolute_url }}'">
+            <td>
                 <div class="flex items-center">
-                    <div class="flex-shrink-0 h-10 w-10 bg-primary-100 rounded-full flex items-center justify-center">
-                        <span class="text-primary-700 font-medium text-sm">
-                            {{ contact.first_name|slice:":1" }}{{ contact.last_name|slice:":1" }}
-                        </span>
+                    <div class="avatar avatar-md flex-shrink-0">
+                        {{ contact.first_name|slice:":1" }}{{ contact.last_name|slice:":1" }}
                     </div>
-                    <div class="ml-4">
-                        <a href="{{ contact.get_absolute_url }}" class="text-sm font-medium text-gray-900 hover:text-primary-600">
+                    <div class="ml-3">
+                        <a href="{{ contact.get_absolute_url }}" class="font-medium text-gray-900 hover:text-primary-600" onclick="event.stopPropagation()">
                             {{ contact.display_name }}
                         </a>
                         {% if contact.job_title %}
-                        <div class="text-sm text-gray-500">{{ contact.job_title }}</div>
+                        <p class="text-sm text-gray-500">{{ contact.job_title }}</p>
                         {% endif %}
                     </div>
                 </div>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            <td>
                 {% if contact.company %}
-                <a href="{{ contact.company.get_absolute_url }}" class="hover:text-primary-600">
+                <a href="{{ contact.company.get_absolute_url }}" class="text-gray-600 hover:text-primary-600" onclick="event.stopPropagation()">
                     {{ contact.company.name }}
                 </a>
                 {% else %}
                 <span class="text-gray-400">-</span>
                 {% endif %}
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            <td>
                 {% if contact.email %}
-                <a href="mailto:{{ contact.email }}" class="hover:text-primary-600">{{ contact.email }}</a>
+                <a href="mailto:{{ contact.email }}" class="text-gray-600 hover:text-primary-600" onclick="event.stopPropagation()">
+                    {{ contact.email }}
+                </a>
                 {% else %}
                 <span class="text-gray-400">-</span>
                 {% endif %}
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+            <td>
                 {% if contact.phone %}
-                <a href="tel:{{ contact.phone }}" class="hover:text-primary-600">{{ contact.phone }}</a>
+                <a href="tel:{{ contact.phone }}" class="text-gray-600 hover:text-primary-600" onclick="event.stopPropagation()">
+                    {{ contact.phone }}
+                </a>
                 {% elif contact.mobile %}
-                <a href="tel:{{ contact.mobile }}" class="hover:text-primary-600">{{ contact.mobile }}</a>
+                <a href="tel:{{ contact.mobile }}" class="text-gray-600 hover:text-primary-600" onclick="event.stopPropagation()">
+                    {{ contact.mobile }}
+                </a>
                 {% else %}
                 <span class="text-gray-400">-</span>
                 {% endif %}
             </td>
-            <td class="px-6 py-4 whitespace-nowrap">
-                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                    {% if contact.category == 'CLIENT' %}bg-green-100 text-green-800
-                    {% elif contact.category == 'PROSPECT' %}bg-blue-100 text-blue-800
-                    {% elif contact.category == 'PARTNER' %}bg-purple-100 text-purple-800
-                    {% else %}bg-gray-100 text-gray-800{% endif %}">
+            <td>
+                <span class="badge
+                    {% if contact.category == 'CLIENT' %}badge-success
+                    {% elif contact.category == 'PROSPECT' %}badge-primary
+                    {% elif contact.category == 'PARTNER' %}badge-info
+                    {% else %}badge-gray{% endif %}">
                     {{ contact.get_category_display }}
                 </span>
             </td>
-            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                <a href="{{ contact.get_absolute_url }}" class="text-primary-600 hover:text-primary-900 mr-3">Voir</a>
-                <a href="{% url 'crm:contact_update' contact.pk %}" class="text-gray-600 hover:text-gray-900">Modifier</a>
+            <td class="text-right" onclick="event.stopPropagation()">
+                <div class="flex items-center justify-end gap-2">
+                    <a href="{{ contact.get_absolute_url }}" class="btn-ghost btn-sm" title="Voir">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
+                    </a>
+                    <a href="{% url 'crm:contact_update' contact.pk %}" class="btn-ghost btn-sm" title="Modifier">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                        </svg>
+                    </a>
+                </div>
             </td>
         </tr>
         {% endfor %}
     </tbody>
 </table>
 
-<!-- Pagination -->
-{% if page_obj.has_other_pages %}
-<div class="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-    <div class="flex-1 flex justify-between sm:hidden">
-        {% if page_obj.has_previous %}
-        <a href="?page={{ page_obj.previous_page_number }}" class="btn-secondary">Précédent</a>
-        {% endif %}
-        {% if page_obj.has_next %}
-        <a href="?page={{ page_obj.next_page_number }}" class="btn-secondary">Suivant</a>
-        {% endif %}
-    </div>
-    <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-        <div>
-            <p class="text-sm text-gray-700">
-                Affichage de <span class="font-medium">{{ page_obj.start_index }}</span> à
-                <span class="font-medium">{{ page_obj.end_index }}</span> sur
-                <span class="font-medium">{{ page_obj.paginator.count }}</span> résultats
-            </p>
-        </div>
-        <div>
-            <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                {% if page_obj.has_previous %}
-                <a href="?page={{ page_obj.previous_page_number }}" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                    &laquo;
-                </a>
-                {% endif %}
-
-                {% for num in page_obj.paginator.page_range %}
-                {% if page_obj.number == num %}
-                <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-primary-50 text-sm font-medium text-primary-600">{{ num }}</span>
-                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
-                <a href="?page={{ num }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">{{ num }}</a>
-                {% endif %}
-                {% endfor %}
-
-                {% if page_obj.has_next %}
-                <a href="?page={{ page_obj.next_page_number }}" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
-                    &raquo;
-                </a>
-                {% endif %}
-            </nav>
-        </div>
-    </div>
-</div>
-{% endif %}
+{% include "components/pagination.html" %}
 
 {% else %}
-<div class="text-center py-12">
-    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+<div class="empty-state">
+    <svg class="w-12 h-12 mx-auto text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
     </svg>
-    <h3 class="mt-2 text-sm font-medium text-gray-900">Aucun contact</h3>
-    <p class="mt-1 text-sm text-gray-500">Commencez par créer un nouveau contact.</p>
-    <div class="mt-6">
-        <a href="{% url 'crm:contact_create' %}" class="btn-primary">
-            + Nouveau contact
-        </a>
-    </div>
+    <h3 class="empty-state-title">Aucun contact</h3>
+    <p class="empty-state-description">Commencez par créer un nouveau contact pour gérer votre relation client.</p>
+    <a href="{% url 'crm:contact_create' %}" class="btn-primary">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+        </svg>
+        Nouveau contact
+    </a>
 </div>
 {% endif %}
