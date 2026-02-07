@@ -1,0 +1,85 @@
+{% extends "layouts/app_layout.html" %}
+{% load core_tags %}
+
+{% block title %}Gestion des entreprises{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Gestion des entreprises</h1>
+            <p class="text-gray-600">Administrez toutes les entreprises du système</p>
+        </div>
+        <a href="{% url 'core:organization_create' %}" class="btn-primary">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+            </svg>
+            Nouvelle entreprise
+        </a>
+    </div>
+
+    <!-- Organizations Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {% for org in organizations %}
+        <div class="card">
+            <div class="card-body">
+                <div class="flex items-start justify-between mb-4">
+                    <div class="flex items-center gap-3">
+                        {% if org.logo %}
+                        <img src="{{ org.logo.url }}" alt="{{ org.name }}" class="w-12 h-12 rounded-lg object-cover">
+                        {% else %}
+                        <div class="w-12 h-12 rounded-lg bg-primary-100 flex items-center justify-center">
+                            <span class="text-lg font-bold text-primary-600">{{ org.name|slice:":2"|upper }}</span>
+                        </div>
+                        {% endif %}
+                        <div>
+                            <h3 class="font-medium text-gray-900">{{ org.name }}</h3>
+                        </div>
+                    </div>
+                </div>
+
+                {% if org.city %}
+                <p class="text-sm text-gray-500 mb-2">
+                    {{ org.city }}{% if org.country %}, {{ org.country }}{% endif %}
+                </p>
+                {% endif %}
+
+                <!-- Admin info -->
+                <div class="mb-4 p-2 bg-gray-50 rounded-lg">
+                    <p class="text-xs text-gray-500 mb-1">Administrateur</p>
+                    {% with admin=org_admins|get_item:org.pk %}
+                    {% if admin %}
+                        <p class="text-sm font-medium text-gray-900">{{ admin.email }}</p>
+                    {% else %}
+                        <p class="text-sm text-yellow-600">Non assigné</p>
+                    {% endif %}
+                    {% endwith %}
+                </div>
+
+                <div class="flex gap-2">
+                    <a href="{% url 'core:organization_detail' pk=org.pk %}" class="btn-secondary flex-1 text-center">
+                        Gérer
+                    </a>
+                    <a href="{% url 'core:organization_enter' pk=org.pk %}" class="btn-primary">
+                        Entrer
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-span-full">
+            <div class="card">
+                <div class="card-body text-center py-12">
+                    <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                    </svg>
+                    <h3 class="text-lg font-medium text-gray-900 mb-2">Aucune entreprise</h3>
+                    <p class="text-gray-500">Vous n'avez pas encore d'entreprise associée.</p>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

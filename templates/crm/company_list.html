@@ -76,10 +76,10 @@
                         {{ company.city|default:"-" }}
                     </td>
                     <td class="px-6 py-4 text-center text-sm text-gray-500">
-                        {{ company.contacts_count }}
+                        {{ company.num_contacts }}
                     </td>
                     <td class="px-6 py-4 text-center text-sm text-gray-500">
-                        {{ company.opportunities_count }}
+                        {{ company.num_opportunities }}
                     </td>
                     <td class="px-6 py-4 text-sm">
                         <a href="{{ company.get_absolute_url }}" class="text-primary-600 hover:text-primary-900 mr-3">Voir</a>

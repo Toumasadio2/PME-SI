@@ -1,0 +1,185 @@
+{% extends "layouts/app_layout.html" %}
+
+{% block title %}Dashboard Super Admin - PME-SI{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="md:flex md:items-center md:justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Dashboard Super Admin</h1>
+            <p class="mt-1 text-sm text-gray-500">
+                Vue globale de toutes les entreprises
+            </p>
+        </div>
+        <div class="mt-4 md:mt-0">
+            <a href="{% url 'core:organization_list' %}" class="btn-primary">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                </svg>
+                Gérer les entreprises
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="card">
+            <div class="card-body">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500">Total Entreprises</p>
+                        <p class="text-3xl font-bold text-gray-900">{{ total_organizations }}</p>
+                    </div>
+                    <div class="w-12 h-12 bg-primary-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500">Avec Admin</p>
+                        {% with count=org_stats|length %}
+                        <p class="text-3xl font-bold text-green-600">
+                            {% for stat in org_stats %}{% if stat.admin %}{% with c=1 %}{% endwith %}{% endif %}{% endfor %}
+                            {{ org_stats|length }}
+                        </p>
+                        {% endwith %}
+                    </div>
+                    <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <p class="text-sm text-gray-500">Sans Admin</p>
+                        <p class="text-3xl font-bold text-yellow-600">
+                            {% with no_admin=0 %}
+                            {% for stat in org_stats %}{% if not stat.admin %}{% with no_admin=no_admin|add:1 %}{% endwith %}{% endif %}{% endfor %}
+                            {% endwith %}
+                            -
+                        </p>
+                    </div>
+                    <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center">
+                        <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Organizations List -->
+    <div class="card">
+        <div class="card-header flex justify-between items-center">
+            <h2 class="text-lg font-semibold text-gray-900">Toutes les entreprises</h2>
+        </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Entreprise
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Administrateur
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Membres
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Statut
+                        </th>
+                        <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Actions
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    {% for stat in org_stats %}
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                {% if stat.organization.logo %}
+                                <img src="{{ stat.organization.logo.url }}" alt="{{ stat.organization.name }}" class="w-10 h-10 rounded-lg object-cover">
+                                {% else %}
+                                <div class="w-10 h-10 rounded-lg bg-primary-100 flex items-center justify-center">
+                                    <span class="text-sm font-bold text-primary-600">{{ stat.organization.name|slice:":2"|upper }}</span>
+                                </div>
+                                {% endif %}
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900">{{ stat.organization.name }}</div>
+                                    {% if stat.organization.city %}
+                                    <div class="text-sm text-gray-500">{{ stat.organization.city }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if stat.admin %}
+                            <div class="flex items-center">
+                                <div class="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
+                                    <span class="text-xs font-medium text-green-700">
+                                        {{ stat.admin.first_name|slice:":1"|upper }}{{ stat.admin.last_name|slice:":1"|upper }}
+                                    </span>
+                                </div>
+                                <div class="ml-3">
+                                    <div class="text-sm font-medium text-gray-900">
+                                        {% if stat.admin.full_name %}{{ stat.admin.full_name }}{% else %}{{ stat.admin.email }}{% endif %}
+                                    </div>
+                                    <div class="text-xs text-gray-500">{{ stat.admin.email }}</div>
+                                </div>
+                            </div>
+                            {% else %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                Non assigné
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ stat.member_count }} membre{{ stat.member_count|pluralize }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {% if stat.organization.is_active %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                Active
+                            </span>
+                            {% else %}
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                Inactive
+                            </span>
+                            {% endif %}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <a href="{% url 'core:organization_detail' pk=stat.organization.pk %}" class="text-primary-600 hover:text-primary-900">
+                                Gérer
+                            </a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center text-gray-500">
+                            Aucune entreprise enregistrée.
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

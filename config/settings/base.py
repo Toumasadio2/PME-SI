@@ -32,6 +32,7 @@ DJANGO_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.postgres",
+    "django.contrib.humanize",
 ]
 
 THIRD_PARTY_APPS = [
@@ -53,6 +54,9 @@ LOCAL_APPS = [
     "apps.search",
     "apps.notifications",
     "apps.crm",
+    "apps.invoicing",
+    "apps.sales",
+    "apps.hr",
 ]
 
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
@@ -138,6 +142,10 @@ STATICFILES_DIRS = [BASE_DIR / "static"]
 MEDIA_URL = "media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
+# Email
+DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL", default="noreply@pme-si.com")
+SITE_URL = env("SITE_URL", default="http://localhost:8000")
+
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
@@ -163,7 +171,7 @@ AUTHENTICATION_BACKENDS = [
 ACCOUNT_AUTHENTICATION_METHOD = "email"
 ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_USERNAME_REQUIRED = False
-ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+ACCOUNT_EMAIL_VERIFICATION = "optional"
 ACCOUNT_USER_MODEL_USERNAME_FIELD = None
 ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
 LOGIN_REDIRECT_URL = "/dashboard/"

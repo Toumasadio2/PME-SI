@@ -16,22 +16,44 @@
                 extend: {
                     colors: {
                         primary: {
-                            50: '#eff6ff',
-                            100: '#dbeafe',
-                            200: '#bfdbfe',
-                            300: '#93c5fd',
-                            400: '#60a5fa',
-                            500: '#3b82f6',
-                            600: '#2563eb',
-                            700: '#1d4ed8',
-                            800: '#1e40af',
-                            900: '#1e3a8a',
+                            50: '{{ theme_primary_shades.50|default:"#eff6ff" }}',
+                            100: '{{ theme_primary_shades.100|default:"#dbeafe" }}',
+                            200: '{{ theme_primary_shades.200|default:"#bfdbfe" }}',
+                            300: '{{ theme_primary_shades.300|default:"#93c5fd" }}',
+                            400: '{{ theme_primary_shades.400|default:"#60a5fa" }}',
+                            500: '{{ theme_primary_shades.500|default:"#3b82f6" }}',
+                            600: '{{ theme_primary_shades.600|default:"#2563eb" }}',
+                            700: '{{ theme_primary_shades.700|default:"#1d4ed8" }}',
+                            800: '{{ theme_primary_shades.800|default:"#1e40af" }}',
+                            900: '{{ theme_primary_shades.900|default:"#1e3a8a" }}',
+                        },
+                        secondary: {
+                            50: '{{ theme_secondary_shades.50|default:"#eff6ff" }}',
+                            100: '{{ theme_secondary_shades.100|default:"#dbeafe" }}',
+                            200: '{{ theme_secondary_shades.200|default:"#bfdbfe" }}',
+                            300: '{{ theme_secondary_shades.300|default:"#93c5fd" }}',
+                            400: '{{ theme_secondary_shades.400|default:"#60a5fa" }}',
+                            500: '{{ theme_secondary_shades.500|default:"#3b82f6" }}',
+                            600: '{{ theme_secondary_shades.600|default:"#2563eb" }}',
+                            700: '{{ theme_secondary_shades.700|default:"#1d4ed8" }}',
+                            800: '{{ theme_secondary_shades.800|default:"#1e40af" }}',
+                            900: '{{ theme_secondary_shades.900|default:"#1e3a8a" }}',
                         }
                     }
                 }
             }
         }
     </script>
+
+    <!-- Dynamic Theme CSS Variables -->
+    <style>
+        :root {
+            --color-primary: {{ theme_primary|default:"#3B82F6" }};
+            --color-primary-rgb: {{ theme_primary_rgb|default:"59, 130, 246" }};
+            --color-secondary: {{ theme_secondary|default:"#1E40AF" }};
+            --color-secondary-rgb: {{ theme_secondary_rgb|default:"30, 64, 175" }};
+        }
+    </style>
 
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -56,11 +78,7 @@
       hx-headers='{"X-CSRFToken": "{{ csrf_token }}"}'
       x-data="{ sidebarOpen: false }">
 
-    {% if user.is_authenticated %}
-        {% include "layouts/app_layout.html" %}
-    {% else %}
-        {% include "layouts/public_layout.html" %}
-    {% endif %}
+    {% block body %}{% endblock %}
 
     <!-- Toast notifications -->
     <div id="toast-container"
@@ -91,7 +109,6 @@
                  x-transition:leave="transition ease-in duration-200"
                  x-transition:leave-start="opacity-100 translate-x-0"
                  x-transition:leave-end="opacity-0 translate-x-8">
-                <!-- Icon -->
                 <div class="toast-icon">
                     <template x-if="toast.type === 'success'">
                         <svg class="w-5 h-5 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -114,12 +131,10 @@
                         </svg>
                     </template>
                 </div>
-                <!-- Content -->
                 <div class="toast-content">
                     <p class="toast-title" x-show="toast.title" x-text="toast.title"></p>
                     <p class="toast-message" x-text="toast.message"></p>
                 </div>
-                <!-- Close button -->
                 <button @click="removeToast(toast.id)" class="flex-shrink-0 text-gray-400 hover:text-gray-600">
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>

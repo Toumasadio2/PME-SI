@@ -1,0 +1,102 @@
+{% extends "layouts/app_layout.html" %}
+
+{% block title %}Envoyer la facture {{ invoice.number }}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto space-y-6">
+    <!-- Header -->
+    <div class="flex items-center gap-3">
+        <a href="{{ invoice.get_absolute_url }}" class="text-gray-400 hover:text-gray-600">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+        </a>
+        <h1 class="text-2xl font-bold text-gray-900">Envoyer la facture {{ invoice.number }}</h1>
+    </div>
+
+    <!-- Summary Card -->
+    <div class="card bg-primary-50 border-primary-100">
+        <div class="card-body">
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-sm text-gray-600">Client</p>
+                    <p class="font-medium">{{ invoice.company.name }}</p>
+                    {% if invoice.contact %}
+                    <p class="text-sm text-gray-500">{{ invoice.contact.full_name }}</p>
+                    {% endif %}
+                </div>
+                <div class="text-right">
+                    <p class="text-sm text-gray-600">Total TTC</p>
+                    <p class="text-2xl font-bold text-primary-600">{{ invoice.total_ttc|floatformat:2 }} €</p>
+                    <p class="text-sm text-gray-500">Échéance: {{ invoice.due_date|date:"d/m/Y" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Email Form -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">
+                <svg class="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                </svg>
+                Envoyer par email
+            </h2>
+        </div>
+        <div class="card-body">
+            <form method="post" class="space-y-4">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label for="id_recipient_email" class="form-label">Adresse email du destinataire *</label>
+                    {{ form.recipient_email }}
+                    {% if form.recipient_email.errors %}
+                    <p class="form-error">{{ form.recipient_email.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="id_message" class="form-label">Message personnalisé (optionnel)</label>
+                    {{ form.message }}
+                    <p class="form-help">Ce message sera inclus dans l'email en plus du contenu standard.</p>
+                </div>
+
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-2">L'email contiendra :</p>
+                    <ul class="text-sm text-gray-600 space-y-1">
+                        <li class="flex items-center">
+                            <svg class="w-4 h-4 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Le récapitulatif de la facture
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-4 h-4 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            La facture en PDF en pièce jointe
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-4 h-4 mr-2 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Les informations de paiement
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button type="submit" class="btn-primary">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                        </svg>
+                        Envoyer la facture
+                    </button>
+                    <a href="{{ invoice.get_absolute_url }}" class="btn-secondary">Annuler</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

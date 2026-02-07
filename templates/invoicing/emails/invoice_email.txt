@@ -1,0 +1,31 @@
+{{ organization.name }}
+==========================================
+
+FACTURE {{ invoice.number }}
+
+Bonjour{% if invoice.contact %} {{ invoice.contact.first_name }}{% endif %},
+
+{% if custom_message %}{{ custom_message }}{% else %}Veuillez trouver ci-joint notre facture correspondant à :
+{{ invoice.subject }}{% endif %}
+
+------------------------------------------
+Récapitulatif
+------------------------------------------
+Numéro de facture : {{ invoice.number }}
+Date d'émission : {{ invoice.issue_date|date:"d/m/Y" }}
+Date d'échéance : {{ invoice.due_date|date:"d/m/Y" }}
+
+Total TTC : {{ invoice.total_ttc|floatformat:2 }} €
+------------------------------------------
+
+INFORMATIONS DE PAIEMENT
+Merci d'effectuer votre règlement avant le {{ invoice.due_date|date:"d/m/Y" }}
+en mentionnant la référence {{ invoice.number }}.
+
+Cordialement,
+{{ organization.name }}
+
+------------------------------------------
+{% if organization.address %}{{ organization.address }}{% endif %}
+{% if organization.phone %}Tél: {{ organization.phone }}{% endif %}
+{% if organization.email %}{{ organization.email }}{% endif %}

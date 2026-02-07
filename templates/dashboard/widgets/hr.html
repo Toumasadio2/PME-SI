@@ -1,9 +1,12 @@
 <div>
-    <h3 class="text-lg font-medium text-gray-900 mb-4">Ressources Humaines</h3>
+    <div class="flex items-center justify-between mb-4">
+        <h3 class="text-lg font-medium text-gray-900">Ressources Humaines</h3>
+        <a href="{% url 'hr:dashboard' %}" class="text-sm text-primary-600 hover:text-primary-700">Voir tout</a>
+    </div>
     <div class="grid grid-cols-2 gap-4">
         <div class="bg-gray-50 rounded-lg p-4">
             <p class="text-2xl font-bold text-gray-900">{{ employees_count }}</p>
-            <p class="text-sm text-gray-500">Employés</p>
+            <p class="text-sm text-gray-500">Employés actifs</p>
         </div>
         <div class="bg-gray-50 rounded-lg p-4">
             <p class="text-2xl font-bold text-yellow-600">{{ pending_leaves }}</p>
@@ -12,10 +15,28 @@
     </div>
     {% if birthdays_this_month %}
     <div class="mt-4">
-        <p class="text-sm font-medium text-gray-700 mb-2">Anniversaires ce mois</p>
-        <ul class="text-sm text-gray-600">
+        <p class="text-sm font-medium text-gray-700 mb-2">Anniversaires à venir</p>
+        <ul class="text-sm text-gray-600 space-y-1">
             {% for birthday in birthdays_this_month %}
-                <li>{{ birthday }}</li>
+                <li class="flex items-center">
+                    <svg class="w-4 h-4 mr-2 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0A2.704 2.704 0 003 15.546V12a9 9 0 0118 0v3.546z"></path>
+                    </svg>
+                    {{ birthday }}
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+    {% endif %}
+    {% if upcoming_leaves %}
+    <div class="mt-4">
+        <p class="text-sm font-medium text-gray-700 mb-2">Congés à venir</p>
+        <ul class="text-sm text-gray-600 space-y-1">
+            {% for leave in upcoming_leaves %}
+                <li class="flex items-center justify-between">
+                    <span>{{ leave.employee.full_name }}</span>
+                    <span class="text-gray-400">{{ leave.start_date|date:"d/m" }} - {{ leave.end_date|date:"d/m" }}</span>
+                </li>
             {% endfor %}
         </ul>
     </div>

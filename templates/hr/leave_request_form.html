@@ -1,0 +1,97 @@
+{% extends "layouts/app_layout.html" %}
+
+{% block title %}Demande de congé - RH{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="mb-6">
+        <a href="{% url 'hr:leave_list' %}" class="text-sm text-gray-600 hover:text-gray-900">
+            &larr; Retour à la liste
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h1 class="text-xl font-bold text-gray-900">Demande de congé</h1>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="card-body space-y-6">
+                <div>
+                    <label class="form-label">Type de congé *</label>
+                    {{ form.leave_type }}
+                    {% if form.leave_type.errors %}
+                        <p class="mt-1 text-sm text-red-600">{{ form.leave_type.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="form-label">Date de début *</label>
+                        {{ form.start_date }}
+                        {% if form.start_date.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.start_date.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div>
+                        <label class="form-label">Date de fin *</label>
+                        {{ form.end_date }}
+                        {% if form.end_date.errors %}
+                            <p class="mt-1 text-sm text-red-600">{{ form.end_date.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="flex items-center">
+                        {{ form.start_half_day }}
+                        <label for="{{ form.start_half_day.id_for_label }}" class="ml-2 text-sm text-gray-700">
+                            Commence l'après-midi
+                        </label>
+                    </div>
+                    <div class="flex items-center">
+                        {{ form.end_half_day }}
+                        <label for="{{ form.end_half_day.id_for_label }}" class="ml-2 text-sm text-gray-700">
+                            Finit le matin
+                        </label>
+                    </div>
+                </div>
+
+                <div class="p-4 bg-gray-50 rounded-lg">
+                    <div class="flex items-center justify-between">
+                        <span class="text-sm font-medium text-gray-700">Nombre de jours</span>
+                        <span id="days-count" class="text-lg font-semibold text-primary-600"
+                            hx-get="{% url 'hr:calculate_leave_days' %}"
+                            hx-trigger="load"
+                            hx-include="[name='start_date'], [name='end_date'], [name='start_half_day'], [name='end_half_day']">
+                            0 jour(s)
+                        </span>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="form-label">Motif</label>
+                    {{ form.reason }}
+                    <p class="mt-1 text-xs text-gray-500">Optionnel, sauf pour certains types de congés</p>
+                </div>
+
+                {% if form.errors %}
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <ul class="text-sm text-red-800">
+                        {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="card-footer flex justify-end space-x-3">
+                <a href="{% url 'hr:leave_list' %}" class="btn-secondary">Annuler</a>
+                <button type="submit" class="btn-primary">Soumettre la demande</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -55,7 +55,15 @@ def global_search(request: HttpRequest) -> HttpResponse:
 
     if "hr_view" in permissions and organization:
         # Search employees
-        pass
+        from apps.hr.models import Employee
+        results["employees"] = list(Employee.objects.filter(
+            organization=organization
+        ).filter(
+            Q(first_name__icontains=query) |
+            Q(last_name__icontains=query) |
+            Q(email__icontains=query) |
+            Q(employee_id__icontains=query)
+        ).select_related("department", "position")[:5])
 
     # Count total results
     total_results = sum(len(v) for v in results.values())

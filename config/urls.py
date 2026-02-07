@@ -14,6 +14,9 @@ urlpatterns = [
     path("search/", include("apps.search.urls", namespace="search")),
     path("notifications/", include("apps.notifications.urls", namespace="notifications")),
     path("crm/", include("apps.crm.urls", namespace="crm")),
+    path("facturation/", include("apps.invoicing.urls", namespace="invoicing")),
+    path("ventes/", include("apps.sales.urls", namespace="sales")),
+    path("rh/", include("apps.hr.urls", namespace="hr")),
     path("", include("apps.core.urls", namespace="core")),
 ]
 

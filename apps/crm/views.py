@@ -306,8 +306,8 @@ class CompanyListView(CRMBaseMixin, ListView):
 
     def get_queryset(self):
         qs = super().get_queryset().annotate(
-            contacts_count=Count("contacts"),
-            opportunities_count=Count("opportunities")
+            num_contacts=Count("contacts"),
+            num_opportunities=Count("opportunities")
         )
 
         # Search
@@ -881,3 +881,78 @@ class ActivityFeedPartialView(CRMBaseMixin, ListView):
             qs = qs.filter(opportunity_id=opportunity_id)
 
         return qs.order_by("-created_at")[:20]
+
+
+# =============================================================================
+# Calendar
+# =============================================================================
+
+class CalendarView(CRMBaseMixin, TemplateView):
+    """Vue calendrier des activités."""
+    template_name = "crm/calendar.html"
+
+
+class CalendarEventsAPIView(CRMBaseMixin, View):
+    """API endpoint pour les événements du calendrier (FullCalendar)."""
+
+    def get(self, request, *args, **kwargs):
+        org = getattr(request, "organization", None)
+        if not org:
+            return JsonResponse({"events": []})
+
+        # Get date range from FullCalendar
+        start = request.GET.get("start")
+        end = request.GET.get("end")
+
+        activities = Activity.objects.filter(
+            organization=org,
+            scheduled_date__isnull=False
+        ).select_related("contact", "company", "opportunity")
+
+        if start:
+            activities = activities.filter(scheduled_date__gte=start)
+        if end:
+            activities = activities.filter(scheduled_date__lte=end)
+
+        # Color mapping by activity type
+        colors = {
+            "CALL": "#3B82F6",      # blue
+            "EMAIL": "#10B981",     # green
+            "MEETING": "#8B5CF6",   # purple
+            "TASK": "#F59E0B",      # amber
+            "NOTE": "#6B7280",      # gray
+            "DEMO": "#EC4899",      # pink
+            "PROPOSAL": "#14B8A6",  # teal
+            "OTHER": "#9CA3AF",     # gray
+        }
+
+        events = []
+        for activity in activities:
+            event = {
+                "id": str(activity.id),
+                "title": activity.subject,
+                "start": activity.scheduled_date.isoformat(),
+                "color": colors.get(activity.activity_type, "#6B7280"),
+                "extendedProps": {
+                    "type": activity.get_activity_type_display(),
+                    "status": activity.get_status_display(),
+                    "description": activity.description[:100] if activity.description else "",
+                    "contact": activity.contact.display_name if activity.contact else None,
+                    "company": activity.company.name if activity.company else None,
+                }
+            }
+            # Add duration for meetings
+            if activity.duration_minutes:
+                from datetime import timedelta
+                end_time = activity.scheduled_date + timedelta(minutes=activity.duration_minutes)
+                event["end"] = end_time.isoformat()
+
+            # Mark completed/cancelled differently
+            if activity.status == "COMPLETED":
+                event["classNames"] = ["fc-event-completed"]
+            elif activity.status == "CANCELLED":
+                event["classNames"] = ["fc-event-cancelled"]
+
+            events.append(event)
+
+        return JsonResponse(events, safe=False)

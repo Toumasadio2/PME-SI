@@ -1,0 +1,68 @@
+{% extends "layouts/app_layout.html" %}
+{% load humanize %}
+
+{% block title %}Supprimer l'objectif - PME-SI{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto space-y-6">
+    <!-- Header -->
+    <div>
+        <h1 class="text-2xl font-bold text-gray-900">Supprimer l'objectif</h1>
+        <p class="mt-1 text-sm text-gray-500">
+            Cette action est irréversible.
+        </p>
+    </div>
+
+    <!-- Confirmation Card -->
+    <div class="card border-red-200">
+        <div class="card-body">
+            <div class="flex items-start gap-4">
+                <div class="flex-shrink-0 w-12 h-12 bg-red-100 rounded-full flex items-center justify-center">
+                    <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                </div>
+                <div>
+                    <h3 class="text-lg font-medium text-gray-900">{{ object.name }}</h3>
+                    <p class="mt-1 text-sm text-gray-500">
+                        {{ object.get_target_type_display }} -
+                        {% if object.period == 'monthly' and object.month %}
+                            {{ object.month|stringformat:"02d" }}/{{ object.year }}
+                        {% elif object.period == 'quarterly' and object.quarter %}
+                            T{{ object.quarter }} {{ object.year }}
+                        {% else %}
+                            {{ object.year }}
+                        {% endif %}
+                    </p>
+                    <p class="mt-2 text-sm text-gray-600">
+                        Cible:
+                        {% if object.target_type == 'revenue' %}
+                            {{ object.target_value|floatformat:0|intcomma }} €
+                        {% elif object.target_type == 'conversion' %}
+                            {{ object.target_value|floatformat:1 }}%
+                        {% else %}
+                            {{ object.target_value|floatformat:0 }}
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <form method="post" class="mt-6">
+                {% csrf_token %}
+                <p class="text-sm text-gray-600 mb-4">
+                    Êtes-vous sûr de vouloir supprimer cet objectif ? Cette action ne peut pas être annulée.
+                </p>
+                <div class="flex justify-end gap-3">
+                    <a href="{% url 'sales:target_list' %}" class="btn-secondary">Annuler</a>
+                    <button type="submit" class="btn-danger">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                        Supprimer définitivement
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

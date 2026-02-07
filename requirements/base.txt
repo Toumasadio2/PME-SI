@@ -1,32 +1,34 @@
-# Django
-Django>=5.0,<6.0
-django-environ>=0.11.2
-django-extensions>=3.2.3
-django-cors-headers>=4.3.1
+# Core Django
+Django>=4.2,<5.0
 
 # Database
-psycopg[binary]>=3.1.18
+psycopg2-binary>=2.9
 
-# Cache & Queue
-redis>=5.0.1
-celery>=5.3.6
-django-celery-beat>=2.5.0
-django-celery-results>=2.5.1
+# Environment variables
+python-dotenv>=1.0
+dj-database-url>=2.1
 
-# Authentication
-django-allauth>=0.61.1
-pyotp>=2.9.0
-qrcode[pil]>=7.4.2
+# Date/time utilities
+python-dateutil>=2.8
 
-# API & Forms
-django-crispy-forms>=2.1
-crispy-tailwind>=1.0.1
+# Image handling
+Pillow>=10.0
+
+# PDF generation
+weasyprint>=60.0
+
+# Celery for async tasks
+celery>=5.3
+redis>=5.0
+
+# Form utilities
+django-widget-tweaks>=1.5
+
+# API utilities (optional)
+djangorestframework>=3.14
 
 # Security
-argon2-cffi>=23.1.0
-django-csp>=3.8
+django-cors-headers>=4.3
 
-# Utils
-pillow>=10.2.0
-python-dateutil>=2.8.2
-uuid6>=2024.1.12
+# HTML parsing (for emails)
+bleach>=6.0

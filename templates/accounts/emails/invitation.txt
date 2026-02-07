@@ -1,0 +1,15 @@
+Invitation a rejoindre {{ organization.name }}
+============================================
+
+Bonjour,
+
+{{ invited_by.full_name }} vous invite a rejoindre l'organisation {{ organization.name }} sur notre plateforme de gestion.
+
+Pour accepter l'invitation et creer votre compte, cliquez sur le lien suivant :
+
+{{ invitation_url }}
+
+Cette invitation expire le {{ expires_at|date:"d/m/Y a H:i" }}.
+
+---
+Si vous n'attendiez pas cette invitation, vous pouvez ignorer cet email.

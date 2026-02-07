@@ -1,3 +1,6 @@
+{% extends "base.html" %}
+
+{% block body %}
 <div class="min-h-full flex flex-col">
     <!-- Header -->
     <header class="bg-white border-b border-gray-200">
@@ -7,11 +10,11 @@
                     PME-SI
                 </a>
                 <nav class="flex items-center space-x-4">
-                    <a href="{% url 'accounts:login' %}"
+                    <a href="{% url 'account_login' %}"
                        class="text-sm font-medium text-gray-700 hover:text-primary-600">
                         Connexion
                     </a>
-                    <a href="{% url 'accounts:register' %}"
+                    <a href="{% url 'account_signup' %}"
                        class="inline-flex items-center px-4 py-2 text-sm font-medium text-white bg-primary-600 rounded-lg hover:bg-primary-700">
                         Commencer
                     </a>
@@ -34,3 +37,4 @@
         </div>
     </footer>
 </div>
+{% endblock %}

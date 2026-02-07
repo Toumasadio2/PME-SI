@@ -1,0 +1,84 @@
+{% extends "layouts/app_layout.html" %}
+
+{% block title %}{% if form.instance.pk %}Modifier {{ form.instance.name }}{% else %}Nouveau type de congé{% endif %} - RH{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto">
+    <div class="mb-6">
+        <a href="{% url 'hr:leave_type_list' %}" class="text-sm text-gray-600 hover:text-gray-900">
+            &larr; Retour aux types de congés
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h1 class="text-xl font-bold text-gray-900">
+                {% if form.instance.pk %}Modifier {{ form.instance.name }}{% else %}Nouveau type de congé{% endif %}
+            </h1>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="card-body space-y-4">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="form-label">Nom *</label>
+                        {{ form.name }}
+                    </div>
+                    <div>
+                        <label class="form-label">Code *</label>
+                        {{ form.code }}
+                    </div>
+                </div>
+
+                <div>
+                    <label class="form-label">Description</label>
+                    {{ form.description }}
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="form-label">Taux d'acquisition (j/mois)</label>
+                        {{ form.accrual_rate }}
+                    </div>
+                    <div>
+                        <label class="form-label">Maximum jours/an</label>
+                        {{ form.max_days_per_year }}
+                    </div>
+                </div>
+
+                <div>
+                    <label class="form-label">Couleur</label>
+                    {{ form.color }}
+                </div>
+
+                <div class="space-y-2">
+                    <div class="flex items-center">
+                        {{ form.is_paid }}
+                        <label for="{{ form.is_paid.id_for_label }}" class="ml-2 text-sm text-gray-700">
+                            Congé payé
+                        </label>
+                    </div>
+                    <div class="flex items-center">
+                        {{ form.requires_approval }}
+                        <label for="{{ form.requires_approval.id_for_label }}" class="ml-2 text-sm text-gray-700">
+                            Nécessite approbation
+                        </label>
+                    </div>
+                    <div class="flex items-center">
+                        {{ form.is_active }}
+                        <label for="{{ form.is_active.id_for_label }}" class="ml-2 text-sm text-gray-700">
+                            Actif
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card-footer flex justify-end space-x-3">
+                <a href="{% url 'hr:leave_type_list' %}" class="btn-secondary">Annuler</a>
+                <button type="submit" class="btn-primary">Enregistrer</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,261 @@
+{% extends "layouts/app_layout.html" %}
+{% load humanize %}
+
+{% block title %}Tableau de bord RH{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Ressources Humaines</h1>
+            <p class="text-gray-600">Vue d'ensemble de votre effectif</p>
+        </div>
+        <a href="{% url 'hr:employee_create' %}" class="btn-primary">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Nouvel employé
+        </a>
+    </div>
+
+    <!-- KPIs -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div class="card">
+            <div class="card-body">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 p-3 bg-blue-100 rounded-lg">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">Employés actifs</p>
+                        <p class="text-2xl font-semibold text-gray-900">{{ employees_count }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 p-3 bg-yellow-100 rounded-lg">
+                        <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">Congés en attente</p>
+                        <p class="text-2xl font-semibold text-gray-900">{{ pending_leaves }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 p-3 bg-red-100 rounded-lg">
+                        <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">Taux d'absentéisme</p>
+                        <p class="text-2xl font-semibold text-gray-900">{{ absence_rate }}%</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0 p-3 bg-green-100 rounded-lg">
+                        <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-sm font-medium text-gray-500">Ancienneté moyenne</p>
+                        <p class="text-2xl font-semibold text-gray-900">{{ seniority_stats.average_years }} ans</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main content grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Left column -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Upcoming birthdays -->
+            {% if upcoming_birthdays %}
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-lg font-medium text-gray-900">Anniversaires à venir</h3>
+                </div>
+                <div class="card-body">
+                    <ul class="divide-y divide-gray-200">
+                        {% for item in upcoming_birthdays %}
+                        <li class="py-3 flex items-center justify-between">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
+                                    <span class="text-sm font-medium text-primary-700">{{ item.employee.get_initials }}</span>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium text-gray-900">{{ item.employee.full_name }}</p>
+                                    <p class="text-sm text-gray-500">{{ item.age }} ans</p>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm text-gray-900">{{ item.birthday|date:"d M" }}</p>
+                                <p class="text-xs text-gray-500">
+                                    {% if item.days_until == 0 %}
+                                        Aujourd'hui!
+                                    {% elif item.days_until == 1 %}
+                                        Demain
+                                    {% else %}
+                                        Dans {{ item.days_until }} jours
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Recent leaves -->
+            <div class="card">
+                <div class="card-header flex justify-between items-center">
+                    <h3 class="text-lg font-medium text-gray-900">Congés récents</h3>
+                    <a href="{% url 'hr:leave_list' %}" class="text-sm text-primary-600 hover:text-primary-700">Voir tout</a>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employé</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Période</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% for leave in recent_leaves %}
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+                                            <span class="text-xs font-medium text-gray-600">{{ leave.employee.get_initials }}</span>
+                                        </div>
+                                        <div class="ml-3">
+                                            <p class="text-sm font-medium text-gray-900">{{ leave.employee.full_name }}</p>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" style="background-color: {{ leave.leave_type.color }}20; color: {{ leave.leave_type.color }}">
+                                        {{ leave.leave_type.name }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    {{ leave.start_date|date:"d/m" }} - {{ leave.end_date|date:"d/m/Y" }}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    {% if leave.status == 'PENDING' %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">En attente</span>
+                                    {% elif leave.status == 'APPROVED' %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Approuvé</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="px-6 py-8 text-center text-gray-500">
+                                    Aucun congé récent
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right column -->
+        <div class="space-y-6">
+            <!-- Contract endings -->
+            {% if upcoming_contract_ends %}
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-lg font-medium text-gray-900">Fins de contrat proches</h3>
+                </div>
+                <div class="card-body">
+                    <ul class="space-y-3">
+                        {% for item in upcoming_contract_ends %}
+                        <li class="flex items-center justify-between p-3 bg-red-50 rounded-lg">
+                            <div>
+                                <p class="text-sm font-medium text-gray-900">{{ item.employee.full_name }}</p>
+                                <p class="text-xs text-gray-500">{{ item.contract_type }}</p>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm font-medium text-red-600">{{ item.end_date|date:"d/m/Y" }}</p>
+                                <p class="text-xs text-gray-500">Dans {{ item.days_until }} jours</p>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Quick actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-lg font-medium text-gray-900">Actions rapides</h3>
+                </div>
+                <div class="card-body space-y-2">
+                    <a href="{% url 'hr:employee_create' %}" class="block w-full px-4 py-2 text-sm text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100">
+                        Ajouter un employé
+                    </a>
+                    <a href="{% url 'hr:leave_request' %}" class="block w-full px-4 py-2 text-sm text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100">
+                        Demander un congé
+                    </a>
+                    <a href="{% url 'hr:leave_calendar' %}" class="block w-full px-4 py-2 text-sm text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100">
+                        Calendrier des absences
+                    </a>
+                    <a href="{% url 'hr:timesheet' %}" class="block w-full px-4 py-2 text-sm text-gray-700 bg-gray-50 rounded-lg hover:bg-gray-100">
+                        Saisir mon temps
+                    </a>
+                </div>
+            </div>
+
+            <!-- Seniority distribution -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-lg font-medium text-gray-900">Répartition par ancienneté</h3>
+                </div>
+                <div class="card-body">
+                    <ul class="space-y-2">
+                        {% for bucket in seniority_stats.distribution %}
+                        <li class="flex items-center justify-between">
+                            <span class="text-sm text-gray-600">{{ bucket.range }}</span>
+                            <div class="flex items-center">
+                                <div class="w-24 h-2 bg-gray-200 rounded-full mr-2">
+                                    <div class="h-2 bg-primary-500 rounded-full" style="width: {% widthratio bucket.count seniority_stats.total_employees 100 %}%"></div>
+                                </div>
+                                <span class="text-sm font-medium text-gray-900">{{ bucket.count }}</span>
+                            </div>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

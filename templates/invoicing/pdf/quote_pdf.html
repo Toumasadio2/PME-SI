@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Devis {{ quote.number }}</title>
+</head>
+<body>
+    <!-- En-tête du document -->
+    <div class="document-header">
+        <div class="company-info">
+            <div class="company-name">{{ organization.name }}</div>
+            <div class="company-details">
+                {% if organization.address %}{{ organization.address }}<br>{% endif %}
+                {% if organization.postal_code or organization.city %}
+                    {{ organization.postal_code }} {{ organization.city }}<br>
+                {% endif %}
+                {% if organization.phone %}Tél: {{ organization.phone }}<br>{% endif %}
+                {% if organization.email %}Email: {{ organization.email }}<br>{% endif %}
+                {% if organization.siret %}SIRET: {{ organization.siret }}<br>{% endif %}
+                {% if organization.vat_number %}N° TVA: {{ organization.vat_number }}{% endif %}
+            </div>
+        </div>
+        <div class="document-info">
+            <div class="document-type">DEVIS</div>
+            <div class="document-number">{{ quote.number }}</div>
+            <div class="document-date">Date: {{ quote.issue_date|date:"d/m/Y" }}</div>
+            <span class="status-badge status-{{ quote.status }}">
+                {{ quote.get_status_display }}
+            </span>
+        </div>
+    </div>
+
+    <!-- Informations client -->
+    <div class="client-section">
+        <div class="section-title">Client</div>
+        {% if quote.company %}
+        <div class="client-name">{{ quote.company.name }}</div>
+        <div class="client-details">
+            {% if quote.contact %}
+                À l'attention de: {{ quote.contact.full_name }}<br>
+            {% endif %}
+            {% if quote.company.address %}{{ quote.company.address }}<br>{% endif %}
+            {% if quote.company.postal_code or quote.company.city %}
+                {{ quote.company.postal_code }} {{ quote.company.city }}<br>
+            {% endif %}
+            {% if quote.company.country %}{{ quote.company.country }}<br>{% endif %}
+            {% if quote.company.email %}Email: {{ quote.company.email }}<br>{% endif %}
+            {% if quote.company.phone %}Tél: {{ quote.company.phone }}{% endif %}
+        </div>
+        {% elif quote.client_name %}
+        <div class="client-name">{{ quote.client_name }}</div>
+        <div class="client-details">
+            {% if quote.client_address %}{{ quote.client_address }}<br>{% endif %}
+            {% if quote.client_email %}Email: {{ quote.client_email }}<br>{% endif %}
+            {% if quote.client_phone %}Tél: {{ quote.client_phone }}{% endif %}
+        </div>
+        {% else %}
+        <div class="client-name">Client non renseigné</div>
+        {% endif %}
+    </div>
+
+    <!-- Objet -->
+    <div class="subject-section">
+        <div class="subject-label">Objet</div>
+        <div class="subject-text">{{ quote.subject }}</div>
+    </div>
+
+    <!-- Introduction -->
+    {% if quote.introduction %}
+    <div class="introduction">
+        {{ quote.introduction|linebreaks }}
+    </div>
+    {% endif %}
+
+    <!-- Tableau des lignes -->
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th style="width: 40%">Description</th>
+                <th class="text-center" style="width: 10%">Qté</th>
+                <th class="text-center" style="width: 10%">Unité</th>
+                <th class="text-right" style="width: 15%">Prix unit. HT</th>
+                <th class="text-center" style="width: 10%">TVA</th>
+                <th class="text-right" style="width: 15%">Total HT</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in quote.items.all %}
+            <tr>
+                <td class="item-description">{{ item.description }}</td>
+                <td class="text-center">{{ item.quantity|floatformat:2 }}</td>
+                <td class="text-center">{{ item.unit }}</td>
+                <td class="text-right">{{ item.unit_price|floatformat:2 }} €</td>
+                <td class="text-center">{{ item.vat_rate|floatformat:0 }}%</td>
+                <td class="text-right">{{ item.total_ht|floatformat:2 }} €</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Totaux -->
+    <div class="totals-section">
+        <table class="totals-table">
+            <tr>
+                <td>Total HT</td>
+                <td>{{ quote.total_ht|floatformat:2 }} €</td>
+            </tr>
+            <tr>
+                <td>TVA</td>
+                <td>{{ quote.total_vat|floatformat:2 }} €</td>
+            </tr>
+            <tr class="total-ttc">
+                <td>Total TTC</td>
+                <td>{{ quote.total_ttc|floatformat:2 }} €</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Validité -->
+    <div class="validity-section">
+        Ce devis est valable jusqu'au <strong>{{ quote.expiry_date|date:"d/m/Y" }}</strong>
+        ({{ quote.validity_days }} jours à compter de la date d'émission).
+    </div>
+
+    <!-- Conditions -->
+    {% if quote.conditions %}
+    <div class="conditions-section">
+        <div class="conditions-title">Conditions</div>
+        <div class="conditions-text">
+            {{ quote.conditions|linebreaks }}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Signature -->
+    <div style="margin-top: 40px;">
+        <table style="width: 100%;">
+            <tr>
+                <td style="width: 50%; vertical-align: top;">
+                    <div class="conditions-title">Bon pour accord</div>
+                    <div style="border: 1px dashed #ccc; height: 80px; margin-top: 10px; border-radius: 4px;"></div>
+                    <div style="font-size: 8pt; color: #666; margin-top: 5px;">
+                        Date et signature du client<br>
+                        (précédées de la mention "Bon pour accord")
+                    </div>
+                </td>
+                <td style="width: 50%; vertical-align: top; text-align: right;">
+                    <div style="font-size: 9pt; color: #666;">
+                        {{ organization.name }}<br>
+                        {{ quote.issue_date|date:"d/m/Y" }}
+                    </div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Mentions légales -->
+    <div class="legal-mentions">
+        En signant ce devis, le client accepte les conditions générales de vente de {{ organization.name }}.
+        {% if organization.siret %}SIRET: {{ organization.siret }}{% endif %}
+        {% if organization.vat_number %} - N° TVA: {{ organization.vat_number }}{% endif %}
+    </div>
+</body>
+</html>

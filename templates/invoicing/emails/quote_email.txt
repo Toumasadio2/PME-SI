@@ -1,0 +1,29 @@
+{{ organization.name }}
+==========================================
+
+DEVIS {{ quote.number }}
+
+Bonjour{% if quote.contact %} {{ quote.contact.first_name }}{% endif %},
+
+{% if custom_message %}{{ custom_message }}{% else %}Veuillez trouver ci-joint notre devis concernant :
+{{ quote.subject }}{% endif %}
+
+------------------------------------------
+Récapitulatif
+------------------------------------------
+Numéro de devis : {{ quote.number }}
+Date d'émission : {{ quote.issue_date|date:"d/m/Y" }}
+Valable jusqu'au : {{ quote.expiry_date|date:"d/m/Y" }}
+
+Total TTC : {{ quote.total_ttc|floatformat:2 }} €
+------------------------------------------
+
+Pour accepter ce devis, vous pouvez nous retourner ce document signé avec la mention "Bon pour accord".
+
+Cordialement,
+{{ organization.name }}
+
+------------------------------------------
+{% if organization.address %}{{ organization.address }}{% endif %}
+{% if organization.phone %}Tél: {{ organization.phone }}{% endif %}
+{% if organization.email %}{{ organization.email }}{% endif %}

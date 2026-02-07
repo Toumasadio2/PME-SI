@@ -1,0 +1,143 @@
+{% extends "layouts/app_layout.html" %}
+
+{% block title %}Modifier le rôle - {{ member.full_name }} - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+        <a href="{% url 'accounts:team_list' %}" class="text-primary-600 hover:text-primary-700 text-sm flex items-center mb-4">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            Retour à l'équipe
+        </a>
+        <h1 class="text-2xl font-bold text-gray-900">Modifier les droits d'accès</h1>
+        <p class="text-gray-500 mt-1">Configurez les permissions de {{ member.full_name }}</p>
+    </div>
+
+    {% if messages %}
+    <div class="mb-6">
+        {% for message in messages %}
+        <div class="p-4 rounded-lg {% if message.tags == 'success' %}bg-green-50 text-green-800 border border-green-200{% elif message.tags == 'error' %}bg-red-50 text-red-800 border border-red-200{% else %}bg-blue-50 text-blue-800 border border-blue-200{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- Member info -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <div class="flex items-center">
+            <div class="flex-shrink-0 w-12 h-12 bg-primary-100 rounded-full flex items-center justify-center">
+                {% if member.avatar %}
+                <img src="{{ member.avatar.url }}" alt="{{ member.full_name }}" class="w-12 h-12 rounded-full object-cover">
+                {% else %}
+                <span class="text-lg font-medium text-primary-700">{{ member.get_initials }}</span>
+                {% endif %}
+            </div>
+            <div class="ml-4">
+                <p class="font-semibold text-gray-900">{{ member.full_name }}</p>
+                <p class="text-sm text-gray-500">{{ member.email }}</p>
+                {% if member.job_title %}
+                <p class="text-sm text-gray-500">{{ member.job_title }}</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <form method="post" class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        {% csrf_token %}
+
+        <div class="space-y-6">
+            <!-- Admin checkbox -->
+            <div class="pb-6 border-b border-gray-200">
+                <div class="flex items-start">
+                    <div class="flex items-center h-5">
+                        {{ form.is_organization_admin }}
+                    </div>
+                    <div class="ml-3">
+                        <label for="id_is_organization_admin" class="text-sm font-medium text-gray-900">
+                            {{ form.is_organization_admin.label }}
+                        </label>
+                        <p class="text-sm text-gray-500">{{ form.is_organization_admin.help_text }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Roles -->
+            <div>
+                <h3 class="text-sm font-medium text-gray-900 mb-4">Rôles attribués</h3>
+                <p class="text-sm text-gray-500 mb-4">
+                    Sélectionnez les rôles à attribuer à cet utilisateur. Les rôles déterminent les permissions d'accès aux différents modules.
+                </p>
+
+                <div class="space-y-3">
+                    {% for role in form.roles.field.queryset %}
+                    <label class="flex items-start p-4 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
+                        <input type="checkbox"
+                               name="roles"
+                               value="{{ role.pk }}"
+                               {% if role.pk in form.roles.initial %}checked{% endif %}
+                               class="h-4 w-4 text-primary-600 border-gray-300 rounded focus:ring-primary-500 mt-0.5">
+                        <div class="ml-3">
+                            <p class="font-medium text-gray-900">
+                                {{ role.name }}
+                                {% if role.is_system %}
+                                <span class="ml-2 px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded">Système</span>
+                                {% endif %}
+                            </p>
+                            {% if role.description %}
+                            <p class="text-sm text-gray-500">{{ role.description }}</p>
+                            {% endif %}
+                            {% if role.permissions.exists %}
+                            <div class="mt-2 flex flex-wrap gap-1">
+                                {% for perm in role.permissions.all|slice:":5" %}
+                                <span class="px-2 py-0.5 text-xs bg-primary-50 text-primary-700 rounded">
+                                    {{ perm.get_module_display }}: {{ perm.get_action_display }}
+                                </span>
+                                {% endfor %}
+                                {% if role.permissions.count > 5 %}
+                                <span class="px-2 py-0.5 text-xs bg-gray-100 text-gray-600 rounded">
+                                    +{{ role.permissions.count|add:"-5" }} autres
+                                </span>
+                                {% endif %}
+                            </div>
+                            {% endif %}
+                        </div>
+                    </label>
+                    {% empty %}
+                    <p class="text-sm text-gray-500 italic">Aucun rôle disponible. Créez des rôles dans la section "Gérer les rôles".</p>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Current roles info -->
+            {% if current_roles %}
+            <div class="pt-6 border-t border-gray-200">
+                <h4 class="text-sm font-medium text-gray-700 mb-2">Rôles actuels</h4>
+                <div class="flex flex-wrap gap-2">
+                    {% for user_role in current_roles %}
+                    <span class="px-3 py-1 text-sm bg-primary-100 text-primary-800 rounded-full">
+                        {{ user_role.role.name }}
+                    </span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Actions -->
+        <div class="mt-8 flex justify-end gap-4">
+            <a href="{% url 'accounts:team_list' %}"
+               class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                Annuler
+            </a>
+            <button type="submit"
+                    class="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
+                Enregistrer les modifications
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

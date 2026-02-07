@@ -1,0 +1,133 @@
+{% extends "layouts/app_layout.html" %}
+
+{% block title %}Relancer la facture {{ invoice.number }}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto space-y-6">
+    <!-- Header -->
+    <div class="flex items-center gap-3">
+        <a href="{{ invoice.get_absolute_url }}" class="text-gray-400 hover:text-gray-600">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+        </a>
+        <h1 class="text-2xl font-bold text-gray-900">Relancer la facture {{ invoice.number }}</h1>
+    </div>
+
+    <!-- Warning Card -->
+    <div class="card bg-red-50 border-red-200">
+        <div class="card-body">
+            <div class="flex items-start gap-4">
+                <div class="flex-shrink-0">
+                    <svg class="w-8 h-8 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-medium text-red-800">Facture en retard de {{ invoice.days_overdue }} jours</h3>
+                    <p class="text-sm text-red-700 mt-1">
+                        Cette facture était due le {{ invoice.due_date|date:"d/m/Y" }}.
+                        {% if invoice.reminder_count > 0 %}
+                        {{ invoice.reminder_count }} relance(s) déjà envoyée(s).
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm text-red-700">Reste à payer</p>
+                    <p class="text-2xl font-bold text-red-600">{{ invoice.balance_due|floatformat:2 }} €</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Card -->
+    <div class="card">
+        <div class="card-body">
+            <div class="flex justify-between items-start">
+                <div>
+                    <p class="text-sm text-gray-600">Client</p>
+                    <p class="font-medium">{{ invoice.company.name }}</p>
+                    {% if invoice.contact %}
+                    <p class="text-sm text-gray-500">{{ invoice.contact.full_name }}</p>
+                    {% endif %}
+                </div>
+                <div class="text-right">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium
+                        {% if reminder_number == 1 %}bg-yellow-100 text-yellow-800
+                        {% elif reminder_number == 2 %}bg-orange-100 text-orange-800
+                        {% else %}bg-red-100 text-red-800{% endif %}">
+                        {% if reminder_number == 1 %}Première relance
+                        {% elif reminder_number == 2 %}Deuxième relance
+                        {% else %}Relance n°{{ reminder_number }}{% endif %}
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Email Form -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">
+                <svg class="w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                </svg>
+                Envoyer une relance
+            </h2>
+        </div>
+        <div class="card-body">
+            <form method="post" class="space-y-4">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label for="id_recipient_email" class="form-label">Adresse email du destinataire *</label>
+                    {{ form.recipient_email }}
+                    {% if form.recipient_email.errors %}
+                    <p class="form-error">{{ form.recipient_email.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="id_message" class="form-label">Message personnalisé (optionnel)</label>
+                    {{ form.message }}
+                    <p class="form-help">Ce message remplacera le contenu standard de la relance.</p>
+                </div>
+
+                <div class="bg-amber-50 p-4 rounded-lg border border-amber-200">
+                    <p class="text-sm text-amber-800 mb-2">L'email de relance contiendra :</p>
+                    <ul class="text-sm text-amber-700 space-y-1">
+                        <li class="flex items-center">
+                            <svg class="w-4 h-4 mr-2 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Un rappel du montant dû et du retard
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-4 h-4 mr-2 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            La facture en PDF en pièce jointe
+                        </li>
+                        <li class="flex items-center">
+                            <svg class="w-4 h-4 mr-2 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Une demande de règlement rapide
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button type="submit" class="btn-warning">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+                        </svg>
+                        Envoyer la relance
+                    </button>
+                    <a href="{{ invoice.get_absolute_url }}" class="btn-secondary">Annuler</a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

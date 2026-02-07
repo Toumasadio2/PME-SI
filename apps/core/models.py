@@ -28,23 +28,47 @@ class Organization(TimeStampedModel):
     All business data is isolated by organization.
     """
 
+    class DocumentTemplate(models.TextChoices):
+        CLASSIC = "classic", "Classique"
+        MODERN = "modern", "Moderne"
+        MINIMAL = "minimal", "Minimaliste"
+        ELEGANT = "elegant", "Élégant"
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
     slug = models.SlugField(max_length=100, unique=True)
 
     # Business info
-    siret = models.CharField(max_length=14, blank=True)
-    address = models.TextField(blank=True)
-    city = models.CharField(max_length=100, blank=True)
-    postal_code = models.CharField(max_length=10, blank=True)
-    country = models.CharField(max_length=100, default="France")
-    phone = models.CharField(max_length=20, blank=True)
-    email = models.EmailField(blank=True)
-    website = models.URLField(blank=True)
+    siret = models.CharField("SIRET", max_length=14, blank=True)
+    vat_number = models.CharField("N° TVA", max_length=20, blank=True, help_text="N° TVA intracommunautaire")
+    rcs = models.CharField("RCS", max_length=100, blank=True, help_text="Registre du Commerce et des Sociétés")
+    capital = models.CharField("Capital", max_length=50, blank=True, help_text="Capital social (ex: 10 000)")
+    address = models.TextField("Adresse", blank=True)
+    city = models.CharField("Ville", max_length=100, blank=True)
+    postal_code = models.CharField("Code postal", max_length=10, blank=True)
+    country = models.CharField("Pays", max_length=100, default="France")
+    phone = models.CharField("Téléphone", max_length=20, blank=True)
+    email = models.EmailField("Email", blank=True)
+    website = models.URLField("Site web", blank=True)
+
+    # Banking info (for invoices)
+    bank_name = models.CharField("Banque", max_length=100, blank=True)
+    iban = models.CharField("IBAN", max_length=34, blank=True)
+    bic = models.CharField("BIC/SWIFT", max_length=11, blank=True)
 
     # Branding
     logo = models.ImageField(upload_to="organizations/logos/", blank=True)
     primary_color = models.CharField(max_length=7, default="#3B82F6")
+    secondary_color = models.CharField(max_length=7, default="#1E40AF")
+
+    # Document templates
+    document_template = models.CharField(
+        "Template documents",
+        max_length=20,
+        choices=DocumentTemplate.choices,
+        default=DocumentTemplate.CLASSIC,
+        help_text="Style des devis et factures PDF"
+    )
 
     # Settings
     timezone = models.CharField(max_length=50, default="Europe/Paris")
@@ -57,8 +81,8 @@ class Organization(TimeStampedModel):
 
     class Meta:
         ordering = ["name"]
-        verbose_name = "Organisation"
-        verbose_name_plural = "Organisations"
+        verbose_name = "Entreprise"
+        verbose_name_plural = "Entreprises"
 
     def __str__(self) -> str:
         return self.name
@@ -107,6 +131,70 @@ class TenantModel(TenantMixin, TimeStampedModel):
 
     class Meta:
         abstract = True
+
+
+class OrganizationMembership(TimeStampedModel):
+    """
+    Represents a user's membership in an organization.
+    Allows users to belong to multiple organizations with different roles.
+    """
+
+    class Role(models.TextChoices):
+        OWNER = "owner", "Propriétaire"
+        ADMIN = "admin", "Administrateur"
+        MANAGER = "manager", "Manager"
+        MEMBER = "member", "Membre"
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name="memberships",
+    )
+    organization = models.ForeignKey(
+        Organization,
+        on_delete=models.CASCADE,
+        related_name="memberships",
+    )
+    role = models.CharField(
+        "Rôle",
+        max_length=20,
+        choices=Role.choices,
+        default=Role.MEMBER,
+    )
+    is_active = models.BooleanField("Actif", default=True)
+    invited_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="invited_memberships",
+    )
+    joined_at = models.DateTimeField("Date d'adhésion", auto_now_add=True)
+
+    class Meta:
+        verbose_name = "Adhésion entreprise"
+        verbose_name_plural = "Adhésions entreprises"
+        unique_together = [["user", "organization"]]
+        ordering = ["-joined_at"]
+
+    def __str__(self) -> str:
+        return f"{self.user.email} - {self.organization.name} ({self.get_role_display()})"
+
+    @property
+    def is_owner(self) -> bool:
+        return self.role == self.Role.OWNER
+
+    @property
+    def is_admin(self) -> bool:
+        return self.role in [self.Role.OWNER, self.Role.ADMIN]
+
+    @property
+    def can_manage_members(self) -> bool:
+        return self.role in [self.Role.OWNER, self.Role.ADMIN]
+
+    @property
+    def can_manage_organization(self) -> bool:
+        return self.role in [self.Role.OWNER, self.Role.ADMIN]
 
 
 class AuditLogEntry(TimeStampedModel):

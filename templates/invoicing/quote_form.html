@@ -1,0 +1,205 @@
+{% extends "layouts/app_layout.html" %}
+
+{% block title %}{% if object %}Modifier{% else %}Nouveau{% endif %} devis - Facturation{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center gap-3">
+        <a href="{% url 'invoicing:quote_list' %}" class="text-gray-400 hover:text-gray-600">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+        </a>
+        <h1 class="text-2xl font-bold text-gray-900">
+            {% if object %}Modifier le devis {{ object.number }}{% else %}Nouveau devis{% endif %}
+        </h1>
+    </div>
+
+    <form method="post" class="space-y-6">
+        {% csrf_token %}
+
+        <!-- Client Info -->
+        <div class="card" x-data="{ clientType: '{{ form.client_type.value|default:'company' }}' }">
+            <div class="card-header">
+                <h2 class="card-title">Client</h2>
+            </div>
+            <div class="card-body space-y-4">
+                <!-- Type de client -->
+                <div class="form-group">
+                    <label class="form-label mb-3">Type de client</label>
+                    <div class="flex gap-6">
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="radio" name="client_type" value="company"
+                                   class="form-radio text-primary-600"
+                                   x-model="clientType"
+                                   {% if form.client_type.value == 'company' or not form.client_type.value %}checked{% endif %}>
+                            <span class="ml-2">Entreprise</span>
+                        </label>
+                        <label class="inline-flex items-center cursor-pointer">
+                            <input type="radio" name="client_type" value="individual"
+                                   class="form-radio text-primary-600"
+                                   x-model="clientType"
+                                   {% if form.client_type.value == 'individual' %}checked{% endif %}>
+                            <span class="ml-2">Particulier</span>
+                        </label>
+                    </div>
+                </div>
+
+                <!-- Champs Entreprise -->
+                <div x-show="clientType === 'company'" x-transition class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="form-group">
+                        <label class="form-label">Entreprise</label>
+                        {{ form.company }}
+                        {% if form.company.errors %}
+                        <p class="form-error">{{ form.company.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Contact</label>
+                        {{ form.contact }}
+                    </div>
+                </div>
+
+                <!-- Champs Particulier -->
+                <div x-show="clientType === 'individual'" x-transition class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label class="form-label">Nom du client</label>
+                            {{ form.client_name }}
+                            {% if form.client_name.errors %}
+                            <p class="form-error">{{ form.client_name.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            {{ form.client_email }}
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label class="form-label">Telephone</label>
+                            {{ form.client_phone }}
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Adresse</label>
+                            {{ form.client_address }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quote Info -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Informations du devis</h2>
+            </div>
+            <div class="card-body">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div class="form-group">
+                        <label class="form-label">Date d'émission *</label>
+                        {{ form.issue_date }}
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Validité (jours) *</label>
+                        {{ form.validity_days }}
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Objet *</label>
+                    {{ form.subject }}
+                    {% if form.subject.errors %}
+                    <p class="form-error">{{ form.subject.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Introduction</label>
+                    {{ form.introduction }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Quote Items -->
+        <div class="card" x-data="quoteItems()">
+            <div class="card-header flex justify-between items-center">
+                <h2 class="card-title">Lignes du devis</h2>
+            </div>
+            <div class="card-body p-0">
+                {{ items_formset.management_form }}
+
+                <table class="w-full">
+                    <thead class="bg-gray-50 text-xs text-gray-500 uppercase">
+                        <tr>
+                            <th class="px-4 py-3 text-left w-16">Produit</th>
+                            <th class="px-4 py-3 text-left">Description</th>
+                            <th class="px-4 py-3 text-right w-24">Qté</th>
+                            <th class="px-4 py-3 text-left w-20">Unité</th>
+                            <th class="px-4 py-3 text-right w-28">Prix HT</th>
+                            <th class="px-4 py-3 text-right w-20">TVA %</th>
+                            <th class="px-4 py-3 text-right w-20">Remise %</th>
+                            <th class="px-4 py-3 w-12"></th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y">
+                        {% for item_form in items_formset %}
+                        <tr class="item-row">
+                            <td class="px-4 py-3">
+                                {{ item_form.id }}
+                                {{ item_form.product }}
+                            </td>
+                            <td class="px-4 py-3">{{ item_form.description }}</td>
+                            <td class="px-4 py-3">{{ item_form.quantity }}</td>
+                            <td class="px-4 py-3">{{ item_form.unit }}</td>
+                            <td class="px-4 py-3">{{ item_form.unit_price }}</td>
+                            <td class="px-4 py-3">{{ item_form.vat_rate }}</td>
+                            <td class="px-4 py-3">{{ item_form.discount_percent }}</td>
+                            <td class="px-4 py-3 text-center">
+                                {{ item_form.DELETE }}
+                            </td>
+                        </tr>
+                        {% if item_form.errors %}
+                        <tr>
+                            <td colspan="8" class="px-4 py-2 bg-red-50 text-red-600 text-sm">
+                                {% for error in item_form.errors.values %}{{ error.0 }}{% endfor %}
+                            </td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Conditions -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Conditions</h2>
+            </div>
+            <div class="card-body">
+                <div class="form-group">
+                    <label class="form-label">Conditions particulières</label>
+                    {{ form.conditions }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex justify-end gap-3">
+            <a href="{% url 'invoicing:quote_list' %}" class="btn-secondary">Annuler</a>
+            <button type="submit" class="btn-primary">
+                {% if object %}Enregistrer{% else %}Créer le devis{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+function quoteItems() {
+    return {
+        // Product selection handler would go here for HTMX integration
+    }
+}
+</script>
+{% endblock %}

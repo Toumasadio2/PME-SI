@@ -5,6 +5,7 @@ from django.urls import path
 from django.contrib.auth import views as auth_views
 
 from . import views
+from . import team_views
 
 app_name = "accounts"
 
@@ -47,4 +48,15 @@ urlpatterns = [
         ),
         name="password_reset_complete"
     ),
+
+    # Team management
+    path("equipe/", team_views.TeamListView.as_view(), name="team_list"),
+    path("equipe/inviter/", team_views.InviteMemberView.as_view(), name="team_invite"),
+    path("equipe/invitation/<uuid:pk>/annuler/", team_views.CancelInvitationView.as_view(), name="team_cancel_invitation"),
+    path("equipe/membre/<uuid:pk>/role/", team_views.UpdateMemberRoleView.as_view(), name="team_update_role"),
+    path("equipe/membre/<uuid:pk>/supprimer/", team_views.RemoveMemberView.as_view(), name="team_remove_member"),
+    path("equipe/roles/", team_views.RoleListView.as_view(), name="team_roles"),
+
+    # Invitation acceptance
+    path("invitation/<str:token>/", team_views.AcceptInvitationView.as_view(), name="accept_invitation"),
 ]

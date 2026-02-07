@@ -19,7 +19,7 @@ class UserAdmin(BaseUserAdmin):
         ("Informations personnelles", {
             "fields": ("first_name", "last_name", "phone", "avatar", "job_title")
         }),
-        ("Organisation", {
+        ("Entreprise", {
             "fields": ("organization", "is_organization_admin")
         }),
         ("Sécurité", {

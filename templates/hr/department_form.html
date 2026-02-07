@@ -1,0 +1,52 @@
+{% extends "layouts/app_layout.html" %}
+
+{% block title %}{% if form.instance.pk %}Modifier {{ form.instance.name }}{% else %}Nouveau département{% endif %} - RH{% endblock %}
+
+{% block content %}
+<div class="max-w-xl mx-auto">
+    <div class="mb-6">
+        <a href="{% url 'hr:department_list' %}" class="text-sm text-gray-600 hover:text-gray-900">
+            &larr; Retour aux départements
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h1 class="text-xl font-bold text-gray-900">
+                {% if form.instance.pk %}Modifier {{ form.instance.name }}{% else %}Nouveau département{% endif %}
+            </h1>
+        </div>
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="card-body space-y-4">
+                <div>
+                    <label class="form-label">Nom *</label>
+                    {{ form.name }}
+                </div>
+                <div>
+                    <label class="form-label">Code</label>
+                    {{ form.code }}
+                </div>
+                <div>
+                    <label class="form-label">Département parent</label>
+                    {{ form.parent }}
+                </div>
+                <div>
+                    <label class="form-label">Responsable</label>
+                    {{ form.manager }}
+                </div>
+                <div>
+                    <label class="form-label">Description</label>
+                    {{ form.description }}
+                </div>
+            </div>
+
+            <div class="card-footer flex justify-end space-x-3">
+                <a href="{% url 'hr:department_list' %}" class="btn-secondary">Annuler</a>
+                <button type="submit" class="btn-primary">Enregistrer</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Facture {{ invoice.number }}</title>
+</head>
+<body>
+    <!-- En-tête du document -->
+    <div class="document-header">
+        <div class="company-info">
+            <div class="company-name">{{ organization.name }}</div>
+            <div class="company-details">
+                {% if organization.address %}{{ organization.address }}<br>{% endif %}
+                {% if organization.postal_code or organization.city %}
+                    {{ organization.postal_code }} {{ organization.city }}<br>
+                {% endif %}
+                {% if organization.phone %}Tél: {{ organization.phone }}<br>{% endif %}
+                {% if organization.email %}Email: {{ organization.email }}<br>{% endif %}
+                {% if organization.siret %}SIRET: {{ organization.siret }}<br>{% endif %}
+                {% if organization.vat_number %}N° TVA: {{ organization.vat_number }}{% endif %}
+            </div>
+        </div>
+        <div class="document-info">
+            <div class="document-type">FACTURE</div>
+            <div class="document-number">{{ invoice.number }}</div>
+            <div class="document-date">
+                Date: {{ invoice.issue_date|date:"d/m/Y" }}<br>
+                Échéance: {{ invoice.due_date|date:"d/m/Y" }}
+            </div>
+            <span class="status-badge status-{{ invoice.status }}">
+                {{ invoice.get_status_display }}
+            </span>
+        </div>
+    </div>
+
+    <!-- Informations client -->
+    <div class="client-section">
+        <div class="section-title">Facturer à</div>
+        {% if invoice.company %}
+        <div class="client-name">{{ invoice.company.name }}</div>
+        <div class="client-details">
+            {% if invoice.contact %}
+                À l'attention de: {{ invoice.contact.full_name }}<br>
+            {% endif %}
+            {% if invoice.company.address %}{{ invoice.company.address }}<br>{% endif %}
+            {% if invoice.company.postal_code or invoice.company.city %}
+                {{ invoice.company.postal_code }} {{ invoice.company.city }}<br>
+            {% endif %}
+            {% if invoice.company.country %}{{ invoice.company.country }}<br>{% endif %}
+            {% if invoice.company.siret %}SIRET: {{ invoice.company.siret }}<br>{% endif %}
+            {% if invoice.company.vat_number %}N° TVA: {{ invoice.company.vat_number }}{% endif %}
+        </div>
+        {% elif invoice.client_name %}
+        <div class="client-name">{{ invoice.client_name }}</div>
+        <div class="client-details">
+            {% if invoice.client_address %}{{ invoice.client_address }}<br>{% endif %}
+            {% if invoice.client_email %}Email: {{ invoice.client_email }}<br>{% endif %}
+            {% if invoice.client_phone %}Tél: {{ invoice.client_phone }}{% endif %}
+        </div>
+        {% else %}
+        <div class="client-name">Client non renseigné</div>
+        {% endif %}
+    </div>
+
+    <!-- Référence devis -->
+    {% if invoice.quote %}
+    <div style="font-size: 9pt; color: #666; margin-bottom: 15px;">
+        Référence devis: {{ invoice.quote.number }}
+    </div>
+    {% endif %}
+
+    <!-- Objet -->
+    <div class="subject-section">
+        <div class="subject-label">Objet</div>
+        <div class="subject-text">{{ invoice.subject }}</div>
+    </div>
+
+    <!-- Introduction -->
+    {% if invoice.introduction %}
+    <div class="introduction">
+        {{ invoice.introduction|linebreaks }}
+    </div>
+    {% endif %}
+
+    <!-- Tableau des lignes -->
+    <table class="items-table">
+        <thead>
+            <tr>
+                <th style="width: 40%">Description</th>
+                <th class="text-center" style="width: 10%">Qté</th>
+                <th class="text-center" style="width: 10%">Unité</th>
+                <th class="text-right" style="width: 15%">Prix unit. HT</th>
+                <th class="text-center" style="width: 10%">TVA</th>
+                <th class="text-right" style="width: 15%">Total HT</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in invoice.items.all %}
+            <tr>
+                <td class="item-description">{{ item.description }}</td>
+                <td class="text-center">{{ item.quantity|floatformat:2 }}</td>
+                <td class="text-center">{{ item.unit }}</td>
+                <td class="text-right">{{ item.unit_price|floatformat:2 }} €</td>
+                <td class="text-center">{{ item.vat_rate|floatformat:0 }}%</td>
+                <td class="text-right">{{ item.total_ht|floatformat:2 }} €</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <!-- Totaux -->
+    <div class="totals-section">
+        <table class="totals-table">
+            <tr>
+                <td>Total HT</td>
+                <td>{{ invoice.total_ht|floatformat:2 }} €</td>
+            </tr>
+            <tr>
+                <td>TVA (20%)</td>
+                <td>{{ invoice.total_vat|floatformat:2 }} €</td>
+            </tr>
+            <tr class="total-ttc">
+                <td>Total TTC</td>
+                <td>{{ invoice.total_ttc|floatformat:2 }} €</td>
+            </tr>
+            {% if invoice.amount_paid > 0 %}
+            <tr>
+                <td>Déjà payé</td>
+                <td>- {{ invoice.amount_paid|floatformat:2 }} €</td>
+            </tr>
+            <tr style="background: #fef3c7;">
+                <td style="font-weight: bold; color: #92400e;">Reste à payer</td>
+                <td style="font-weight: bold; color: #92400e;">{{ invoice.balance_due|floatformat:2 }} €</td>
+            </tr>
+            {% endif %}
+        </table>
+    </div>
+
+    <!-- Informations de paiement -->
+    <div class="payment-info">
+        <div class="payment-info-title">Informations de paiement</div>
+        <div class="payment-info-details">
+            <strong>Date d'échéance:</strong> {{ invoice.due_date|date:"d/m/Y" }}<br>
+            {% if organization.bank_name %}
+                <strong>Banque:</strong> {{ organization.bank_name }}<br>
+            {% endif %}
+            {% if organization.iban %}
+                <strong>IBAN:</strong> {{ organization.iban }}<br>
+            {% endif %}
+            {% if organization.bic %}
+                <strong>BIC:</strong> {{ organization.bic }}<br>
+            {% endif %}
+            <br>
+            Merci d'indiquer le numéro de facture <strong>{{ invoice.number }}</strong> lors de votre règlement.
+        </div>
+    </div>
+
+    <!-- Conditions de paiement -->
+    {% if invoice.conditions %}
+    <div class="conditions-section">
+        <div class="conditions-title">Conditions de paiement</div>
+        <div class="conditions-text">
+            {{ invoice.conditions|linebreaks }}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Mentions légales obligatoires -->
+    <div class="legal-mentions">
+        {{ invoice.legal_mentions }}
+        <br><br>
+        {% if organization.siret %}SIRET: {{ organization.siret }}{% endif %}
+        {% if organization.vat_number %} - N° TVA Intracommunautaire: {{ organization.vat_number }}{% endif %}
+        {% if organization.rcs %} - RCS: {{ organization.rcs }}{% endif %}
+        {% if organization.capital %} - Capital: {{ organization.capital }} €{% endif %}
+    </div>
+</body>
+</html>

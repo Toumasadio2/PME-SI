@@ -34,6 +34,10 @@ urlpatterns = [
     # Pipeline Kanban
     path("pipeline/", views.PipelineKanbanView.as_view(), name="pipeline_kanban"),
 
+    # Calendar
+    path("calendar/", views.CalendarView.as_view(), name="calendar"),
+    path("api/calendar/events/", views.CalendarEventsAPIView.as_view(), name="calendar_events_api"),
+
     # Activities
     path("activities/", views.ActivityListView.as_view(), name="activity_list"),
     path("activities/new/", views.ActivityCreateView.as_view(), name="activity_create"),

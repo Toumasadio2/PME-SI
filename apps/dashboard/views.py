@@ -9,11 +9,65 @@ from django.utils import timezone
 from datetime import timedelta
 
 from apps.permissions.services import PermissionService
+from apps.core.models import Organization, OrganizationMembership
 
 
 @login_required
 def index(request: HttpRequest) -> HttpResponse:
     """Main dashboard view."""
+    user = request.user
+
+    # Super admin logic
+    if getattr(request, 'is_super_admin', False):
+        # If super admin is viewing a specific organization, show that org's dashboard
+        if getattr(request, 'organization', None):
+            return organization_dashboard(request)
+        # Otherwise show global dashboard
+        return super_admin_dashboard(request)
+
+    # Regular user sees organization dashboard
+    return organization_dashboard(request)
+
+
+def super_admin_dashboard(request: HttpRequest) -> HttpResponse:
+    """Global dashboard for super admin."""
+    organizations = Organization.objects.filter(is_active=True).order_by('name')
+
+    # Get stats for each organization
+    org_stats = []
+    for org in organizations:
+        # Get admin for this org
+        admin_membership = OrganizationMembership.objects.filter(
+            organization=org,
+            role__in=[OrganizationMembership.Role.OWNER, OrganizationMembership.Role.ADMIN],
+            is_active=True
+        ).select_related('user').first()
+
+        # Get member count
+        member_count = OrganizationMembership.objects.filter(
+            organization=org,
+            is_active=True
+        ).count()
+
+        org_stats.append({
+            'organization': org,
+            'admin': admin_membership.user if admin_membership else None,
+            'member_count': member_count,
+        })
+
+    context = {
+        'user': request.user,
+        'is_super_admin': True,
+        'organizations': organizations,
+        'org_stats': org_stats,
+        'total_organizations': organizations.count(),
+    }
+
+    return render(request, "dashboard/super_admin.html", context)
+
+
+def organization_dashboard(request: HttpRequest) -> HttpResponse:
+    """Dashboard for regular users (organization-scoped)."""
     user = request.user
     organization = getattr(request, "organization", None)
 
@@ -127,6 +181,36 @@ def widget_hr(request: HttpRequest) -> HttpResponse:
         "birthdays_this_month": [],
         "upcoming_leaves": [],
     }
+
+    if organization:
+        from apps.hr.models import Employee, LeaveRequest
+        from apps.hr.services import HRAnalyticsService
+
+        # Active employees count
+        context["employees_count"] = Employee.objects.filter(
+            organization=organization,
+            status=Employee.Status.ACTIVE
+        ).count()
+
+        # Pending leave requests
+        context["pending_leaves"] = LeaveRequest.objects.filter(
+            organization=organization,
+            status=LeaveRequest.Status.PENDING
+        ).count()
+
+        # Upcoming birthdays (next 30 days)
+        birthdays = HRAnalyticsService.get_upcoming_birthdays(organization, days=30)
+        context["birthdays_this_month"] = [
+            f"{b['employee'].first_name} {b['employee'].last_name} - {b['date'].strftime('%d/%m')}"
+            for b in birthdays[:5]
+        ]
+
+        # Upcoming approved leaves
+        context["upcoming_leaves"] = LeaveRequest.objects.filter(
+            organization=organization,
+            status=LeaveRequest.Status.APPROVED,
+            start_date__gte=timezone.now().date()
+        ).select_related("employee", "leave_type").order_by("start_date")[:5]
 
     return render(request, "dashboard/widgets/hr.html", context)
 

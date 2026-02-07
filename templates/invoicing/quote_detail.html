@@ -1,0 +1,241 @@
+{% extends "layouts/app_layout.html" %}
+{% load humanize %}
+
+{% block title %}{{ quote.number }} - Devis{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+        <div>
+            <div class="flex items-center gap-3 mb-2">
+                <a href="{% url 'invoicing:quote_list' %}" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                </a>
+                <h1 class="text-2xl font-bold text-gray-900">{{ quote.number }}</h1>
+                <span class="badge {% if quote.status == 'accepted' %}badge-success{% elif quote.status == 'rejected' or quote.status == 'expired' %}badge-danger{% elif quote.status == 'sent' %}badge-info{% elif quote.status == 'invoiced' %}badge-secondary{% else %}badge-warning{% endif %}">
+                    {{ quote.get_status_display }}
+                </span>
+            </div>
+            <p class="text-gray-600">{{ quote.subject }}</p>
+        </div>
+        <div class="flex gap-2">
+            {% if quote.status == 'accepted' %}
+            <a href="{% url 'invoicing:quote_convert' quote.pk %}" class="btn-success">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                </svg>
+                Convertir en facture
+            </a>
+            {% endif %}
+            <a href="{% url 'invoicing:quote_update' quote.pk %}" class="btn-secondary">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+                Modifier
+            </a>
+            <a href="{% url 'invoicing:quote_delete' quote.pk %}" class="btn-danger">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Main Content -->
+        <div class="lg:col-span-2 space-y-6">
+            <!-- Quote Info -->
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Informations</h2>
+                </div>
+                <div class="card-body">
+                    <dl class="grid grid-cols-2 gap-4">
+                        <div>
+                            <dt class="text-sm text-gray-500">Date d'émission</dt>
+                            <dd class="font-medium">{{ quote.issue_date|date:"d/m/Y" }}</dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm text-gray-500">Date d'expiration</dt>
+                            <dd class="font-medium {% if quote.is_expired %}text-red-600{% endif %}">
+                                {{ quote.expiry_date|date:"d/m/Y" }}
+                                {% if quote.is_expired %}(expiré){% endif %}
+                            </dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm text-gray-500">Validité</dt>
+                            <dd class="font-medium">{{ quote.validity_days }} jours</dd>
+                        </div>
+                        <div>
+                            <dt class="text-sm text-gray-500">Créé par</dt>
+                            <dd class="font-medium">{{ quote.created_by.email|default:"-" }}</dd>
+                        </div>
+                    </dl>
+
+                    {% if quote.introduction %}
+                    <div class="mt-4 pt-4 border-t">
+                        <p class="text-sm text-gray-500 mb-1">Introduction</p>
+                        <p class="text-gray-700">{{ quote.introduction }}</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quote Items -->
+            <div class="card overflow-hidden">
+                <div class="card-header">
+                    <h2 class="card-title">Lignes du devis</h2>
+                </div>
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Description</th>
+                            <th class="text-right">Qté</th>
+                            <th class="text-right">Prix unit. HT</th>
+                            <th class="text-right">TVA</th>
+                            <th class="text-right">Total HT</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in quote.items.all %}
+                        <tr>
+                            <td>
+                                <p class="font-medium">{{ item.description }}</p>
+                                {% if item.product %}
+                                <p class="text-sm text-gray-500">{{ item.product.reference }}</p>
+                                {% endif %}
+                            </td>
+                            <td class="text-right">{{ item.quantity|floatformat:2 }} {{ item.unit }}</td>
+                            <td class="text-right">{{ item.unit_price|floatformat:2|intcomma }} €</td>
+                            <td class="text-right">{{ item.vat_rate|floatformat:1 }}%</td>
+                            <td class="text-right font-medium">{{ item.total_ht|floatformat:2|intcomma }} €</td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="5" class="text-center text-gray-500">Aucune ligne</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="bg-gray-50">
+                        <tr>
+                            <td colspan="4" class="text-right font-medium">Total HT</td>
+                            <td class="text-right font-medium">{{ quote.total_ht|floatformat:2|intcomma }} €</td>
+                        </tr>
+                        <tr>
+                            <td colspan="4" class="text-right">TVA</td>
+                            <td class="text-right">{{ quote.total_vat|floatformat:2|intcomma }} €</td>
+                        </tr>
+                        <tr class="text-lg">
+                            <td colspan="4" class="text-right font-bold">Total TTC</td>
+                            <td class="text-right font-bold text-primary-600">{{ quote.total_ttc|floatformat:2|intcomma }} €</td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+
+            {% if quote.conditions %}
+            <div class="card">
+                <div class="card-header">
+                    <h2 class="card-title">Conditions</h2>
+                </div>
+                <div class="card-body">
+                    <p class="text-gray-700 whitespace-pre-line">{{ quote.conditions }}</p>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="space-y-6">
+            <!-- Client -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Client</h3>
+                </div>
+                <div class="card-body">
+                    {% if quote.company %}
+                    <p class="font-medium text-gray-900">{{ quote.company.name }}</p>
+                    {% if quote.company.address %}
+                    <p class="text-sm text-gray-600 mt-1">{{ quote.company.address }}</p>
+                    {% endif %}
+                    {% if quote.contact %}
+                    <div class="mt-3 pt-3 border-t">
+                        <p class="text-sm text-gray-500">Contact</p>
+                        <p class="font-medium">{{ quote.contact.full_name }}</p>
+                        {% if quote.contact.email %}
+                        <p class="text-sm text-gray-600">{{ quote.contact.email }}</p>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                    {% elif quote.client_name %}
+                    <span class="inline-block px-2 py-0.5 text-xs bg-blue-100 text-blue-800 rounded mb-2">Particulier</span>
+                    <p class="font-medium text-gray-900">{{ quote.client_name }}</p>
+                    {% if quote.client_email %}
+                    <p class="text-sm text-gray-600 mt-1">{{ quote.client_email }}</p>
+                    {% endif %}
+                    {% if quote.client_phone %}
+                    <p class="text-sm text-gray-600">{{ quote.client_phone }}</p>
+                    {% endif %}
+                    {% if quote.client_address %}
+                    <p class="text-sm text-gray-600 mt-2">{{ quote.client_address }}</p>
+                    {% endif %}
+                    {% else %}
+                    <p class="text-gray-500 text-sm">Aucun client renseigne</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Status Change -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Changer le statut</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post" action="{% url 'invoicing:quote_change_status' quote.pk %}">
+                        {% csrf_token %}
+                        <select name="status" class="form-select mb-3">
+                            <option value="draft" {% if quote.status == 'draft' %}selected{% endif %}>Brouillon</option>
+                            <option value="sent" {% if quote.status == 'sent' %}selected{% endif %}>Envoyé</option>
+                            <option value="accepted" {% if quote.status == 'accepted' %}selected{% endif %}>Accepté</option>
+                            <option value="rejected" {% if quote.status == 'rejected' %}selected{% endif %}>Refusé</option>
+                            <option value="expired" {% if quote.status == 'expired' %}selected{% endif %}>Expiré</option>
+                        </select>
+                        <button type="submit" class="btn-secondary w-full">Mettre à jour</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Actions</h3>
+                </div>
+                <div class="card-body space-y-2">
+                    <a href="{% url 'invoicing:quote_pdf' quote.pk %}" class="btn-secondary w-full">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        Télécharger PDF
+                    </a>
+                    <a href="{% url 'invoicing:quote_pdf_view' quote.pk %}" target="_blank" class="btn-secondary w-full">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
+                        Aperçu PDF
+                    </a>
+                    <a href="{% url 'invoicing:quote_send_email' quote.pk %}" class="btn-secondary w-full">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                        </svg>
+                        Envoyer par email
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

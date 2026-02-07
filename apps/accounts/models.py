@@ -64,14 +64,31 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     avatar = models.ImageField(upload_to="avatars/", blank=True, verbose_name="Avatar")
     job_title = models.CharField(max_length=100, blank=True, verbose_name="Fonction")
 
-    # Organization
+    # Organization (legacy - kept for backward compatibility)
     organization = models.ForeignKey(
         Organization,
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
         related_name="members",
-        verbose_name="Organisation",
+        verbose_name="Entreprise",
+    )
+
+    # Active organization for multi-tenant support
+    active_organization = models.ForeignKey(
+        Organization,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="active_users",
+        verbose_name="Entreprise active",
+    )
+
+    # Super admin can access all organizations
+    is_super_admin = models.BooleanField(
+        default=False,
+        verbose_name="Super administrateur",
+        help_text="Peut accéder et gérer toutes les entreprises",
     )
 
     # Status
@@ -79,8 +96,8 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     is_active = models.BooleanField(default=True, verbose_name="Actif")
     is_organization_admin = models.BooleanField(
         default=False,
-        verbose_name="Admin organisation",
-        help_text="Peut gérer l'organisation et ses membres",
+        verbose_name="Admin entreprise",
+        help_text="Peut gérer l'entreprise et ses membres",
     )
 
     # 2FA
@@ -119,6 +136,56 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
         if self.first_name and self.last_name:
             return f"{self.first_name[0]}{self.last_name[0]}".upper()
         return self.email[0:2].upper()
+
+    def get_organizations(self):
+        """Get all organizations the user has access to."""
+        if self.is_super_admin:
+            return Organization.objects.filter(is_active=True)
+        return Organization.objects.filter(
+            memberships__user=self,
+            memberships__is_active=True,
+            is_active=True,
+        )
+
+    def can_access_organization(self, organization: Organization) -> bool:
+        """Check if the user can access a specific organization."""
+        if self.is_super_admin:
+            return True
+        return self.memberships.filter(
+            organization=organization,
+            is_active=True,
+        ).exists()
+
+    def get_role_in_organization(self, organization: Organization) -> Optional[str]:
+        """Get the user's role in a specific organization."""
+        if self.is_super_admin:
+            return "super_admin"
+        membership = self.memberships.filter(
+            organization=organization,
+            is_active=True,
+        ).first()
+        return membership.role if membership else None
+
+    def get_current_organization(self) -> Optional[Organization]:
+        """
+        Get the current active organization.
+        Falls back to legacy organization or first available organization.
+        """
+        if self.active_organization and self.can_access_organization(self.active_organization):
+            return self.active_organization
+        if self.organization and self.can_access_organization(self.organization):
+            return self.organization
+        # Fall back to first available organization
+        organizations = self.get_organizations()
+        return organizations.first() if organizations.exists() else None
+
+    def switch_organization(self, organization: Organization) -> bool:
+        """Switch the user's active organization."""
+        if self.can_access_organization(organization):
+            self.active_organization = organization
+            self.save(update_fields=["active_organization"])
+            return True
+        return False
 
 
 class UserInvitation(TimeStampedModel):

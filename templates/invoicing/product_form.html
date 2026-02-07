@@ -1,0 +1,226 @@
+{% extends "layouts/app_layout.html" %}
+
+{% block title %}{% if object %}Modifier{% else %}Nouveau{% endif %} produit - Facturation{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <div class="mb-6">
+        <a href="{% url 'invoicing:product_list' %}" class="text-gray-500 hover:text-gray-700 inline-flex items-center">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+            </svg>
+            Retour aux produits
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h1 class="card-title">{% if object %}Modifier le produit{% else %}Nouveau produit{% endif %}</h1>
+        </div>
+        <div class="card-body">
+            <form method="post" enctype="multipart/form-data" class="space-y-6">
+                {% csrf_token %}
+
+                <!-- Informations de base -->
+                <div class="border-b pb-6">
+                    <h2 class="text-lg font-medium text-gray-900 mb-4">Informations de base</h2>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label for="id_reference" class="form-label">Référence *</label>
+                            {{ form.reference }}
+                            {% if form.reference.errors %}
+                            <p class="form-error">{{ form.reference.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="id_product_type" class="form-label">Type *</label>
+                            {{ form.product_type }}
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_name" class="form-label">Nom *</label>
+                        {{ form.name }}
+                        {% if form.name.errors %}
+                        <p class="form-error">{{ form.name.errors.0 }}</p>
+                        {% endif %}
+                    </div>
+
+                    <div class="form-group">
+                        <label for="id_description" class="form-label">Description</label>
+                        {{ form.description }}
+                    </div>
+                </div>
+
+                <!-- Image du produit -->
+                <div class="border-b pb-6">
+                    <h2 class="text-lg font-medium text-gray-900 mb-4">Photo du produit</h2>
+
+                    <div class="flex items-start gap-6">
+                        <div class="flex-shrink-0">
+                            {% if object and object.image %}
+                            <img src="{{ object.image.url }}" alt="{{ object.name }}"
+                                 class="w-32 h-32 object-cover rounded-lg border" id="image-preview">
+                            {% else %}
+                            <div class="w-32 h-32 bg-gray-100 rounded-lg border flex items-center justify-center" id="image-placeholder">
+                                <svg class="w-12 h-12 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                            </div>
+                            <img src="" alt="Aperçu" class="w-32 h-32 object-cover rounded-lg border hidden" id="image-preview">
+                            {% endif %}
+                        </div>
+                        <div class="flex-1">
+                            <div class="form-group">
+                                <label for="id_image" class="form-label">Image</label>
+                                {{ form.image }}
+                                <p class="text-xs text-gray-500 mt-1">JPG, PNG, GIF ou WebP. Max 5 Mo.</p>
+                                {% if form.image.errors %}
+                                <p class="form-error">{{ form.image.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Classification -->
+                <div class="border-b pb-6">
+                    <h2 class="text-lg font-medium text-gray-900 mb-4">Classification</h2>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="form-group">
+                            <label for="id_category" class="form-label">Catégorie</label>
+                            {{ form.category }}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="id_tags" class="form-label">Tags</label>
+                            {{ form.tags }}
+                            <p class="text-xs text-gray-500 mt-1">Maintenez Ctrl/Cmd pour sélectionner plusieurs tags</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Prix -->
+                <div class="border-b pb-6">
+                    <h2 class="text-lg font-medium text-gray-900 mb-4">Prix</h2>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="form-group">
+                            <label for="id_unit_price" class="form-label">Prix unitaire HT *</label>
+                            <div class="relative">
+                                {{ form.unit_price }}
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">€</span>
+                            </div>
+                            {% if form.unit_price.errors %}
+                            <p class="form-error">{{ form.unit_price.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="id_vat_rate" class="form-label">Taux TVA *</label>
+                            <div class="relative">
+                                {{ form.vat_rate }}
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">%</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="id_unit" class="form-label">Unité</label>
+                            {{ form.unit }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gestion de stock -->
+                <div class="border-b pb-6">
+                    <h2 class="text-lg font-medium text-gray-900 mb-4">Gestion de stock</h2>
+
+                    <div class="flex items-center mb-4">
+                        {{ form.track_stock }}
+                        <label for="id_track_stock" class="ml-2 text-sm text-gray-700">Activer le suivi de stock</label>
+                    </div>
+
+                    <div id="stock-fields" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="form-group">
+                            <label for="id_stock_status" class="form-label">Statut de disponibilité</label>
+                            {{ form.stock_status }}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="id_stock_quantity" class="form-label">Quantité en stock</label>
+                            {{ form.stock_quantity }}
+                        </div>
+
+                        <div class="form-group">
+                            <label for="id_stock_alert_threshold" class="form-label">Seuil d'alerte</label>
+                            {{ form.stock_alert_threshold }}
+                            <p class="text-xs text-gray-500 mt-1">Alerte quand le stock descend sous ce seuil</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Statut -->
+                <div class="flex items-center">
+                    {{ form.is_active }}
+                    <label for="id_is_active" class="ml-2 text-sm text-gray-700">Produit actif (visible et vendable)</label>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4 border-t">
+                    <a href="{% url 'invoicing:product_list' %}" class="btn-secondary">Annuler</a>
+                    <button type="submit" class="btn-primary">
+                        {% if object %}Enregistrer{% else %}Créer{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+// Preview de l'image
+document.getElementById('id_image').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const preview = document.getElementById('image-preview');
+            const placeholder = document.getElementById('image-placeholder');
+
+            preview.src = e.target.result;
+            preview.classList.remove('hidden');
+
+            if (placeholder) {
+                placeholder.classList.add('hidden');
+            }
+        };
+        reader.readAsDataURL(file);
+    }
+});
+
+// Toggle des champs de stock
+const trackStockCheckbox = document.getElementById('id_track_stock');
+const stockFields = document.getElementById('stock-fields');
+
+function toggleStockFields() {
+    const quantityField = document.getElementById('id_stock_quantity');
+    const thresholdField = document.getElementById('id_stock_alert_threshold');
+
+    if (trackStockCheckbox.checked) {
+        quantityField.removeAttribute('disabled');
+        thresholdField.removeAttribute('disabled');
+    } else {
+        quantityField.setAttribute('disabled', 'disabled');
+        thresholdField.setAttribute('disabled', 'disabled');
+    }
+}
+
+if (trackStockCheckbox) {
+    trackStockCheckbox.addEventListener('change', toggleStockFields);
+    // Initial state
+    toggleStockFields();
+}
+</script>
+{% endblock %}

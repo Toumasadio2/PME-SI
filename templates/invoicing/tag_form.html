@@ -1,0 +1,79 @@
+{% extends "layouts/app_layout.html" %}
+
+{% block title %}{% if object %}Modifier{% else %}Nouveau{% endif %} tag - Facturation{% endblock %}
+
+{% block content %}
+<div class="max-w-lg mx-auto space-y-6">
+    <!-- Header -->
+    <div>
+        <nav class="flex mb-2" aria-label="Breadcrumb">
+            <ol class="inline-flex items-center space-x-1 text-sm text-gray-500">
+                <li><a href="{% url 'invoicing:product_list' %}" class="hover:text-primary-600">Produits</a></li>
+                <li><span class="mx-2">/</span></li>
+                <li><a href="{% url 'invoicing:tag_list' %}" class="hover:text-primary-600">Tags</a></li>
+                <li><span class="mx-2">/</span></li>
+                <li class="text-gray-900">{% if object %}Modifier{% else %}Nouveau{% endif %}</li>
+            </ol>
+        </nav>
+        <h1 class="text-2xl font-bold text-gray-900">
+            {% if object %}Modifier le tag{% else %}Nouveau tag{% endif %}
+        </h1>
+    </div>
+
+    <!-- Form -->
+    <div class="card">
+        <div class="card-body">
+            <form method="post" class="space-y-6">
+                {% csrf_token %}
+
+                <div>
+                    <label for="id_name" class="form-label">Nom</label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                    <p class="mt-1 text-sm text-red-500">{{ form.name.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label for="id_slug" class="form-label">Slug</label>
+                    {{ form.slug }}
+                    <p class="mt-1 text-xs text-gray-500">Identifiant unique</p>
+                    {% if form.slug.errors %}
+                    <p class="mt-1 text-sm text-red-500">{{ form.slug.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label for="id_color" class="form-label">Couleur</label>
+                    {{ form.color }}
+                    <div class="mt-2">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium preview-tag" style="background-color: #10b98120; color: #10b981;">
+                            Aperçu
+                        </span>
+                    </div>
+                    {% if form.color.errors %}
+                    <p class="mt-1 text-sm text-red-500">{{ form.color.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Actions -->
+                <div class="flex justify-end gap-3 pt-4 border-t">
+                    <a href="{% url 'invoicing:tag_list' %}" class="btn-secondary">Annuler</a>
+                    <button type="submit" class="btn-primary">
+                        {% if object %}Enregistrer{% else %}Créer{% endif %}
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('id_color').addEventListener('input', function(e) {
+    const color = e.target.value;
+    const preview = document.querySelector('.preview-tag');
+    preview.style.backgroundColor = color + '20';
+    preview.style.color = color;
+});
+</script>
+{% endblock %}

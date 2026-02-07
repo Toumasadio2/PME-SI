@@ -1,0 +1,135 @@
+{% extends "layouts/app_layout.html" %}
+
+{% block title %}{{ title }} - PME-SI{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <!-- Header -->
+    <div class="mb-8">
+        <a href="{% url 'core:organization_list' %}" class="text-primary-600 hover:text-primary-700 text-sm flex items-center mb-4">
+            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+            Retour aux entreprises
+        </a>
+        <h1 class="text-2xl font-bold text-gray-900">{{ title }}</h1>
+    </div>
+
+    <!-- Form -->
+    <form method="post" enctype="multipart/form-data" class="card">
+        {% csrf_token %}
+        <div class="card-body space-y-6">
+            <!-- Nom -->
+            <div>
+                <label for="id_name" class="block text-sm font-medium text-gray-700 mb-2">
+                    {{ form.name.label }}
+                </label>
+                {{ form.name }}
+                {% if form.name.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.name.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- SIRET -->
+            <div>
+                <label for="id_siret" class="block text-sm font-medium text-gray-700 mb-2">
+                    {{ form.siret.label }}
+                </label>
+                {{ form.siret }}
+                {% if form.siret.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.siret.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Email -->
+                <div>
+                    <label for="id_email" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.email.label }}
+                    </label>
+                    {{ form.email }}
+                    {% if form.email.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.email.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Téléphone -->
+                <div>
+                    <label for="id_phone" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.phone.label }}
+                    </label>
+                    {{ form.phone }}
+                    {% if form.phone.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.phone.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Adresse -->
+            <div>
+                <label for="id_address" class="block text-sm font-medium text-gray-700 mb-2">
+                    {{ form.address.label }}
+                </label>
+                {{ form.address }}
+                {% if form.address.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.address.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Code postal -->
+                <div>
+                    <label for="id_postal_code" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.postal_code.label }}
+                    </label>
+                    {{ form.postal_code }}
+                    {% if form.postal_code.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.postal_code.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Ville -->
+                <div>
+                    <label for="id_city" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.city.label }}
+                    </label>
+                    {{ form.city }}
+                    {% if form.city.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.city.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <!-- Pays -->
+                <div>
+                    <label for="id_country" class="block text-sm font-medium text-gray-700 mb-2">
+                        {{ form.country.label }}
+                    </label>
+                    {{ form.country }}
+                    {% if form.country.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.country.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            {% if form.logo %}
+            <!-- Logo -->
+            <div>
+                <label for="id_logo" class="block text-sm font-medium text-gray-700 mb-2">
+                    Logo
+                </label>
+                {{ form.logo }}
+            </div>
+            {% endif %}
+        </div>
+
+        <div class="card-footer flex justify-end gap-4">
+            <a href="{% url 'core:organization_list' %}" class="btn-secondary">
+                Annuler
+            </a>
+            <button type="submit" class="btn-primary">
+                {% if organization %}Enregistrer{% else %}Créer l'entreprise{% endif %}
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

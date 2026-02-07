@@ -1,0 +1,134 @@
+{% extends "layouts/app_layout.html" %}
+{% load humanize %}
+
+{% block title %}Demande de congé - RH{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="mb-6">
+        <a href="{% url 'hr:leave_list' %}" class="text-sm text-gray-600 hover:text-gray-900">
+            &larr; Retour à la liste
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-header flex justify-between items-center">
+            <h1 class="text-xl font-bold text-gray-900">Demande de congé</h1>
+            {% if leave.status == 'PENDING' %}
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">En attente</span>
+            {% elif leave.status == 'APPROVED' %}
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">Approuvé</span>
+            {% elif leave.status == 'REJECTED' %}
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">Refusé</span>
+            {% elif leave.status == 'CANCELLED' %}
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">Annulé</span>
+            {% else %}
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">Brouillon</span>
+            {% endif %}
+        </div>
+
+        <div class="card-body">
+            <dl class="grid grid-cols-2 gap-4">
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Employé</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ leave.employee.full_name }}</dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Type de congé</dt>
+                    <dd class="mt-1">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium" style="background-color: {{ leave.leave_type.color }}20; color: {{ leave.leave_type.color }}">
+                            {{ leave.leave_type.name }}
+                        </span>
+                    </dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Date de début</dt>
+                    <dd class="mt-1 text-sm text-gray-900">
+                        {{ leave.start_date|date:"d/m/Y" }}
+                        {% if leave.start_half_day %}(après-midi){% endif %}
+                    </dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Date de fin</dt>
+                    <dd class="mt-1 text-sm text-gray-900">
+                        {{ leave.end_date|date:"d/m/Y" }}
+                        {% if leave.end_half_day %}(matin){% endif %}
+                    </dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Nombre de jours</dt>
+                    <dd class="mt-1 text-sm text-gray-900 font-semibold">{{ leave.days_count }} jour{{ leave.days_count|pluralize }}</dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Date de demande</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ leave.created_at|date:"d/m/Y H:i" }}</dd>
+                </div>
+                {% if leave.reason %}
+                <div class="col-span-2">
+                    <dt class="text-sm font-medium text-gray-500">Motif</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ leave.reason }}</dd>
+                </div>
+                {% endif %}
+            </dl>
+
+            {% if leave.status == 'APPROVED' and leave.approved_by %}
+            <div class="mt-6 pt-6 border-t border-gray-200">
+                <h4 class="text-sm font-medium text-gray-900 mb-2">Approbation</h4>
+                <p class="text-sm text-gray-600">
+                    Approuvé par {{ leave.approved_by.get_full_name|default:leave.approved_by.email }} le {{ leave.approved_at|date:"d/m/Y à H:i" }}
+                </p>
+            </div>
+            {% endif %}
+
+            {% if leave.status == 'REJECTED' %}
+            <div class="mt-6 pt-6 border-t border-gray-200">
+                <h4 class="text-sm font-medium text-gray-900 mb-2">Refus</h4>
+                <p class="text-sm text-gray-600">
+                    Refusé par {{ leave.approved_by.get_full_name|default:leave.approved_by.email }} le {{ leave.approved_at|date:"d/m/Y à H:i" }}
+                </p>
+                {% if leave.rejection_reason %}
+                <p class="mt-2 text-sm text-gray-900">Motif: {{ leave.rejection_reason }}</p>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+
+        {% if can_approve %}
+        <div class="card-footer">
+            <h4 class="text-sm font-medium text-gray-900 mb-4">Valider la demande</h4>
+            <div class="flex space-x-3">
+                <form method="post" action="{% url 'hr:leave_approve' leave.pk %}" class="inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-primary bg-green-600 hover:bg-green-700">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                        Approuver
+                    </button>
+                </form>
+                <div x-data="{ showReject: false }">
+                    <button @click="showReject = !showReject" class="btn-secondary text-red-600 hover:text-red-700">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                        Refuser
+                    </button>
+                    <div x-show="showReject" x-cloak class="mt-4">
+                        <form method="post" action="{% url 'hr:leave_reject' leave.pk %}">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label class="form-label">Motif du refus</label>
+                                <textarea name="rejection_reason" class="form-textarea" rows="2" required></textarea>
+                            </div>
+                            <button type="submit" class="btn-primary bg-red-600 hover:bg-red-700">
+                                Confirmer le refus
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

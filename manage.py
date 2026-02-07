@@ -3,6 +3,14 @@
 import os
 import sys
 
+# WeasyPrint: Configure library path for PDF generation on macOS
+if sys.platform == 'darwin':
+    homebrew_lib = '/opt/homebrew/lib'
+    if os.path.exists(homebrew_lib):
+        current = os.environ.get('DYLD_FALLBACK_LIBRARY_PATH', '')
+        if homebrew_lib not in current:
+            os.environ['DYLD_FALLBACK_LIBRARY_PATH'] = f"{homebrew_lib}:{current}" if current else homebrew_lib
+
 
 def main():
     """Run administrative tasks."""

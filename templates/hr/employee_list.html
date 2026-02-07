@@ -1,0 +1,95 @@
+{% extends "layouts/app_layout.html" %}
+{% load humanize %}
+
+{% block title %}Employés - RH{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Employés</h1>
+            <p class="text-gray-600">{{ total_count }} employé{{ total_count|pluralize }}</p>
+        </div>
+        <a href="{% url 'hr:employee_create' %}" class="btn-primary">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Nouvel employé
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="card">
+        <div class="card-body py-4">
+            <form method="get" class="flex flex-wrap gap-4 items-end">
+                <div class="flex-1 min-w-[200px]">
+                    <label class="form-label">Rechercher</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </div>
+                        <input type="text" name="q" value="{{ request.GET.q }}"
+                            class="form-input pl-10"
+                            placeholder="Nom, matricule, email..."
+                            hx-get="{% url 'hr:employee_list_partial' %}"
+                            hx-trigger="keyup changed delay:300ms"
+                            hx-target="#employee-list"
+                            hx-include="[name='department'], [name='status'], [name='contract_type']">
+                    </div>
+                </div>
+                <div class="w-48">
+                    <label class="form-label">Département</label>
+                    <select name="department" class="form-select"
+                        hx-get="{% url 'hr:employee_list_partial' %}"
+                        hx-trigger="change"
+                        hx-target="#employee-list"
+                        hx-include="[name='q'], [name='status'], [name='contract_type']">
+                        <option value="">Tous</option>
+                        {% for dept in search_form.fields.department.queryset %}
+                        <option value="{{ dept.pk }}" {% if request.GET.department == dept.pk|stringformat:"s" %}selected{% endif %}>{{ dept.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="w-40">
+                    <label class="form-label">Statut</label>
+                    <select name="status" class="form-select"
+                        hx-get="{% url 'hr:employee_list_partial' %}"
+                        hx-trigger="change"
+                        hx-target="#employee-list"
+                        hx-include="[name='q'], [name='department'], [name='contract_type']">
+                        <option value="">Actifs</option>
+                        {% for value, label in search_form.fields.status.choices %}
+                        {% if value %}
+                        <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="w-40">
+                    <label class="form-label">Contrat</label>
+                    <select name="contract_type" class="form-select"
+                        hx-get="{% url 'hr:employee_list_partial' %}"
+                        hx-trigger="change"
+                        hx-target="#employee-list"
+                        hx-include="[name='q'], [name='department'], [name='status']">
+                        <option value="">Tous</option>
+                        {% for value, label in search_form.fields.contract_type.choices %}
+                        {% if value %}
+                        <option value="{{ value }}" {% if request.GET.contract_type == value %}selected{% endif %}>{{ label }}</option>
+                        {% endif %}
+                        {% endfor %}
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Employee List -->
+    <div id="employee-list" class="card overflow-hidden">
+        {% include "hr/partials/employee_list.html" %}
+    </div>
+</div>
+{% endblock %}

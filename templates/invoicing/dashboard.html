@@ -1,0 +1,344 @@
+{% extends "layouts/app_layout.html" %}
+{% load humanize %}
+
+{% block title %}Facturation - PME-SI{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Facturation</h1>
+            <p class="text-gray-600">Tableau de bord</p>
+        </div>
+        <div class="flex gap-2">
+            <a href="{% url 'invoicing:quote_create' %}" class="btn-secondary">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                Nouveau devis
+            </a>
+            <a href="{% url 'invoicing:invoice_create' %}" class="btn-primary">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                Nouvelle facture
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <!-- CA Annuel -->
+        <div class="stat-card">
+            <div class="stat-icon bg-green-100">
+                <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <p class="stat-label">CA Annuel</p>
+                <p class="stat-value">{{ stats.revenue_year|floatformat:0|intcomma }} €</p>
+            </div>
+        </div>
+
+        <!-- CA Mensuel -->
+        <div class="stat-card">
+            <div class="stat-icon bg-blue-100">
+                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <p class="stat-label">CA Mensuel</p>
+                <p class="stat-value">{{ stats.revenue_month|floatformat:0|intcomma }} €</p>
+            </div>
+        </div>
+
+        <!-- Impayés -->
+        <div class="stat-card">
+            <div class="stat-icon bg-yellow-100">
+                <svg class="w-6 h-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <p class="stat-label">Impayés</p>
+                <p class="stat-value">{{ stats.unpaid_total|floatformat:0|intcomma }} €</p>
+            </div>
+        </div>
+
+        <!-- En retard -->
+        <div class="stat-card">
+            <div class="stat-icon bg-red-100">
+                <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+            </div>
+            <div class="stat-content">
+                <p class="stat-label">En retard</p>
+                <p class="stat-value">{{ stats.overdue_count }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Monthly Revenue Chart -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Évolution du CA mensuel</h2>
+            </div>
+            <div class="card-body">
+                <div style="height: 250px;">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Invoice Status Chart -->
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">Répartition des factures</h2>
+            </div>
+            <div class="card-body">
+                <div style="height: 250px;">
+                    <canvas id="statusChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Content Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Recent Invoices -->
+        <div class="card">
+            <div class="card-header flex justify-between items-center">
+                <h2 class="card-title">Dernières factures</h2>
+                <a href="{% url 'invoicing:invoice_list' %}" class="text-sm text-primary-600 hover:text-primary-700">Voir tout</a>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_invoices %}
+                <div class="divide-y divide-gray-100">
+                    {% for invoice in recent_invoices %}
+                    <a href="{{ invoice.get_absolute_url }}" class="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+                        <div class="flex-1 min-w-0">
+                            <p class="font-medium text-gray-900 truncate">{{ invoice.number }}</p>
+                            <p class="text-sm text-gray-500 truncate">{{ invoice.company.name }}</p>
+                        </div>
+                        <div class="text-right ml-4">
+                            <p class="font-medium text-gray-900">{{ invoice.total_ttc|floatformat:2|intcomma }} €</p>
+                            <span class="badge {% if invoice.status == 'paid' %}badge-success{% elif invoice.status == 'overdue' %}badge-danger{% elif invoice.status == 'sent' %}badge-info{% else %}badge-secondary{% endif %}">
+                                {{ invoice.get_status_display }}
+                            </span>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="p-8 text-center text-gray-500">
+                    <svg class="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    <p>Aucune facture</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Recent Quotes -->
+        <div class="card">
+            <div class="card-header flex justify-between items-center">
+                <h2 class="card-title">Derniers devis</h2>
+                <a href="{% url 'invoicing:quote_list' %}" class="text-sm text-primary-600 hover:text-primary-700">Voir tout</a>
+            </div>
+            <div class="card-body p-0">
+                {% if recent_quotes %}
+                <div class="divide-y divide-gray-100">
+                    {% for quote in recent_quotes %}
+                    <a href="{{ quote.get_absolute_url }}" class="flex items-center justify-between p-4 hover:bg-gray-50 transition-colors">
+                        <div class="flex-1 min-w-0">
+                            <p class="font-medium text-gray-900 truncate">{{ quote.number }}</p>
+                            <p class="text-sm text-gray-500 truncate">{{ quote.company.name }}</p>
+                        </div>
+                        <div class="text-right ml-4">
+                            <p class="font-medium text-gray-900">{{ quote.total_ttc|floatformat:2|intcomma }} €</p>
+                            <span class="badge {% if quote.status == 'accepted' %}badge-success{% elif quote.status == 'rejected' %}badge-danger{% elif quote.status == 'sent' %}badge-info{% else %}badge-secondary{% endif %}">
+                                {{ quote.get_status_display }}
+                            </span>
+                        </div>
+                    </a>
+                    {% endfor %}
+                </div>
+                {% else %}
+                <div class="p-8 text-center text-gray-500">
+                    <svg class="w-12 h-12 mx-auto mb-3 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    <p>Aucun devis</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Overdue Invoices Alert -->
+    {% if overdue_invoices %}
+    <div class="card border-red-200 bg-red-50">
+        <div class="card-header border-red-200">
+            <h2 class="card-title text-red-800">
+                <svg class="w-5 h-5 inline-block mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+                Factures en retard
+            </h2>
+        </div>
+        <div class="card-body p-0">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Numéro</th>
+                        <th>Client</th>
+                        <th>Échéance</th>
+                        <th class="text-right">Reste dû</th>
+                        <th class="text-right">Retard</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for invoice in overdue_invoices %}
+                    <tr>
+                        <td>
+                            <a href="{{ invoice.get_absolute_url }}" class="text-primary-600 hover:underline">{{ invoice.number }}</a>
+                        </td>
+                        <td>{{ invoice.company.name }}</td>
+                        <td>{{ invoice.due_date|date:"d/m/Y" }}</td>
+                        <td class="text-right font-medium">{{ invoice.balance_due|floatformat:2|intcomma }} €</td>
+                        <td class="text-right text-red-600">{{ invoice.days_overdue }} jours</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Quick Links -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <a href="{% url 'invoicing:product_list' %}" class="card hover:shadow-md transition-shadow p-4 text-center">
+            <svg class="w-8 h-8 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+            </svg>
+            <p class="font-medium text-gray-700">Produits</p>
+        </a>
+        <a href="{% url 'invoicing:quote_list' %}" class="card hover:shadow-md transition-shadow p-4 text-center">
+            <svg class="w-8 h-8 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            <p class="font-medium text-gray-700">Devis</p>
+        </a>
+        <a href="{% url 'invoicing:invoice_list' %}" class="card hover:shadow-md transition-shadow p-4 text-center">
+            <svg class="w-8 h-8 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+            </svg>
+            <p class="font-medium text-gray-700">Factures</p>
+        </a>
+        <a href="{% url 'invoicing:invoice_list' %}?status=overdue" class="card hover:shadow-md transition-shadow p-4 text-center">
+            <svg class="w-8 h-8 mx-auto mb-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <p class="font-medium text-gray-700">Impayés</p>
+        </a>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Monthly Revenue Chart
+    const revenueData = {{ monthly_revenue_json|safe }};
+    if (revenueData && revenueData.length > 0) {
+        const ctx = document.getElementById('revenueChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: revenueData.map(d => d.month),
+                datasets: [{
+                    label: 'CA (€)',
+                    data: revenueData.map(d => d.revenue),
+                    backgroundColor: 'rgba(34, 197, 94, 0.7)',
+                    borderColor: 'rgb(34, 197, 94)',
+                    borderWidth: 1,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return context.parsed.y.toLocaleString('fr-FR') + ' €';
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: {
+                            callback: function(value) {
+                                return value.toLocaleString('fr-FR') + ' €';
+                            }
+                        },
+                        grid: { color: 'rgba(0,0,0,0.05)' }
+                    },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+    }
+
+    // Invoice Status Chart
+    const statusData = {{ invoice_status_json|safe }};
+    if (statusData && Object.keys(statusData).length > 0) {
+        const statusColors = {
+            'Brouillon': '#9CA3AF',
+            'Envoyée': '#3B82F6',
+            'Payée': '#22C55E',
+            'Partiellement payée': '#F59E0B',
+            'En retard': '#EF4444',
+            'Annulée': '#6B7280'
+        };
+        const labels = Object.keys(statusData);
+        const values = Object.values(statusData);
+        const colors = labels.map(l => statusColors[l] || '#9CA3AF');
+
+        const ctx = document.getElementById('statusChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: values,
+                    backgroundColor: colors,
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right',
+                        labels: { usePointStyle: true }
+                    }
+                }
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

@@ -1,0 +1,193 @@
+{% extends "layouts/app_layout.html" %}
+{% load humanize %}
+
+{% block title %}Produits - Facturation{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Produits & Services</h1>
+            <p class="text-gray-600">{{ total_count }} élément{{ total_count|pluralize }}</p>
+        </div>
+        <a href="{% url 'invoicing:product_create' %}" class="btn-primary">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+            </svg>
+            Nouveau produit
+        </a>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="flex gap-4 flex-wrap">
+        <a href="{% url 'invoicing:category_list' %}" class="btn-secondary">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-6l-2-2H5a2 2 0 00-2 2z"/>
+            </svg>
+            Catégories
+        </a>
+        <a href="{% url 'invoicing:tag_list' %}" class="btn-secondary">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+            </svg>
+            Tags
+        </a>
+    </div>
+
+    <!-- Filters -->
+    <div class="card">
+        <div class="card-body py-4">
+            <form method="get" class="flex flex-wrap gap-4 items-end">
+                <div class="flex-1 min-w-[200px]">
+                    <label class="form-label">Rechercher</label>
+                    <input type="text" name="q" value="{{ request.GET.q }}" class="form-input" placeholder="Référence, nom...">
+                </div>
+                <div class="w-40">
+                    <label class="form-label">Type</label>
+                    <select name="product_type" class="form-select">
+                        <option value="">Tous</option>
+                        <option value="product" {% if request.GET.product_type == 'product' %}selected{% endif %}>Produit physique</option>
+                        <option value="service" {% if request.GET.product_type == 'service' %}selected{% endif %}>Service</option>
+                        <option value="subscription" {% if request.GET.product_type == 'subscription' %}selected{% endif %}>Abonnement</option>
+                        <option value="digital" {% if request.GET.product_type == 'digital' %}selected{% endif %}>Produit numérique</option>
+                    </select>
+                </div>
+                <div class="w-48">
+                    <label class="form-label">Catégorie</label>
+                    <select name="category" class="form-select">
+                        <option value="">Toutes</option>
+                        {% for cat in categories %}
+                        <option value="{{ cat.pk }}" {% if request.GET.category == cat.pk|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="w-40">
+                    <label class="form-label">Statut</label>
+                    <select name="is_active" class="form-select">
+                        <option value="">Tous</option>
+                        <option value="true" {% if request.GET.is_active == 'true' %}selected{% endif %}>Actifs</option>
+                        <option value="false" {% if request.GET.is_active == 'false' %}selected{% endif %}>Inactifs</option>
+                    </select>
+                </div>
+                <div class="w-44">
+                    <label class="form-label">Stock</label>
+                    <select name="stock_status" class="form-select">
+                        <option value="">Tous</option>
+                        <option value="available" {% if request.GET.stock_status == 'available' %}selected{% endif %}>Disponible</option>
+                        <option value="low_stock" {% if request.GET.stock_status == 'low_stock' %}selected{% endif %}>Stock faible</option>
+                        <option value="out_of_stock" {% if request.GET.stock_status == 'out_of_stock' %}selected{% endif %}>Rupture</option>
+                        <option value="discontinued" {% if request.GET.stock_status == 'discontinued' %}selected{% endif %}>Arrêté</option>
+                        <option value="preorder" {% if request.GET.stock_status == 'preorder' %}selected{% endif %}>Précommande</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-secondary">Filtrer</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Products Table -->
+    <div class="card overflow-hidden">
+        {% if products %}
+        <table class="table">
+            <thead>
+                <tr>
+                    <th class="w-16"></th>
+                    <th>Référence</th>
+                    <th>Nom</th>
+                    <th>Type / Catégorie</th>
+                    <th class="text-right">Prix HT</th>
+                    <th>Stock</th>
+                    <th>Statut</th>
+                    <th class="text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}
+                <tr>
+                    <td class="w-16">
+                        {% if product.image %}
+                        <img src="{{ product.image.url }}" alt="{{ product.name }}" class="w-12 h-12 object-cover rounded-lg">
+                        {% else %}
+                        <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-6 h-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                        </div>
+                        {% endif %}
+                    </td>
+                    <td class="font-mono text-sm">{{ product.reference }}</td>
+                    <td>
+                        <p class="font-medium text-gray-900">{{ product.name }}</p>
+                        {% if product.description %}
+                        <p class="text-sm text-gray-500 truncate max-w-xs">{{ product.description|truncatechars:50 }}</p>
+                        {% endif %}
+                        {% if product.tags.exists %}
+                        <div class="flex flex-wrap gap-1 mt-1">
+                            {% for tag in product.tags.all %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium" style="background-color: {{ tag.color }}20; color: {{ tag.color }};">
+                                {{ tag.name }}
+                            </span>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge {% if product.product_type == 'service' %}badge-info{% elif product.product_type == 'subscription' %}badge-warning{% elif product.product_type == 'digital' %}badge-purple{% else %}badge-secondary{% endif %}">
+                            {{ product.get_product_type_display }}
+                        </span>
+                        {% if product.category %}
+                        <p class="text-xs text-gray-500 mt-1" style="color: {{ product.category.color }};">
+                            {{ product.category.name }}
+                        </p>
+                        {% endif %}
+                    </td>
+                    <td class="text-right font-medium">{{ product.unit_price|floatformat:2|intcomma }} €</td>
+                    <td>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ product.get_stock_status_display_class }}">
+                            {{ product.get_stock_status_display }}
+                        </span>
+                        {% if product.track_stock %}
+                        <p class="text-xs mt-1 {% if product.stock_is_low %}text-red-600 font-medium{% else %}text-gray-500{% endif %}">
+                            Qté: {{ product.stock_quantity }}
+                        </p>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if product.is_active %}
+                        <span class="badge badge-success">Actif</span>
+                        {% else %}
+                        <span class="badge badge-secondary">Inactif</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-right">
+                        <div class="flex justify-end gap-2">
+                            <a href="{% url 'invoicing:product_update' product.pk %}" class="text-gray-400 hover:text-primary-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                </svg>
+                            </a>
+                            <a href="{% url 'invoicing:product_delete' product.pk %}" class="text-gray-400 hover:text-red-600">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="p-12 text-center">
+            <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+            </svg>
+            <h3 class="text-lg font-medium text-gray-900 mb-2">Aucun produit</h3>
+            <p class="text-gray-500 mb-4">Commencez par créer votre premier produit ou service.</p>
+            <a href="{% url 'invoicing:product_create' %}" class="btn-primary">Nouveau produit</a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

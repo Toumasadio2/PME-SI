@@ -1,0 +1,154 @@
+{% extends "layouts/app_layout.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}{% if object %}Modifier{% else %}Nouvel{% endif %} objectif - PME-SI{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">
+                {% if object %}Modifier l'objectif{% else %}Nouvel objectif{% endif %}
+            </h1>
+            <p class="mt-1 text-sm text-gray-500">
+                {% if object %}{{ object.name }}{% else %}Définissez un nouvel objectif de vente{% endif %}
+            </p>
+        </div>
+        <a href="{% url 'sales:target_list' %}" class="btn-secondary">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+            Annuler
+        </a>
+    </div>
+
+    <!-- Form -->
+    <div class="card" x-data="{ period: '{{ form.instance.period|default:'monthly' }}' }">
+        <form method="post" class="card-body space-y-6">
+            {% csrf_token %}
+
+            <!-- Name -->
+            <div>
+                <label for="id_name" class="form-label">Nom de l'objectif *</label>
+                <input type="text" name="name" id="id_name"
+                       value="{{ form.name.value|default:'' }}"
+                       class="form-input {% if form.name.errors %}border-red-500{% endif %}"
+                       placeholder="Ex: Objectif CA Q1 2025" required>
+                {% if form.name.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.name.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Type & Period -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="id_target_type" class="form-label">Type d'objectif *</label>
+                    <select name="target_type" id="id_target_type" class="form-select" required>
+                        {% for value, label in form.fields.target_type.choices %}
+                        <option value="{{ value }}" {% if form.target_type.value == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="id_period" class="form-label">Période *</label>
+                    <select name="period" id="id_period" class="form-select"
+                            x-model="period" required>
+                        {% for value, label in form.fields.period.choices %}
+                        <option value="{{ value }}" {% if form.period.value == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <!-- Year, Month, Quarter -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <label for="id_year" class="form-label">Année *</label>
+                    <input type="number" name="year" id="id_year"
+                           value="{{ form.year.value|default:'' }}"
+                           class="form-input" min="2020" max="2030" required>
+                </div>
+                <div x-show="period === 'monthly'" x-cloak>
+                    <label for="id_month" class="form-label">Mois</label>
+                    <select name="month" id="id_month" class="form-select">
+                        <option value="">---</option>
+                        {% for i in "123456789ABC" %}
+                        {% with month_num=forloop.counter %}
+                        <option value="{{ month_num }}" {% if form.month.value|stringformat:"s" == month_num|stringformat:"s" %}selected{% endif %}>
+                            {{ month_num|stringformat:"02d" }}
+                        </option>
+                        {% endwith %}
+                        {% endfor %}
+                    </select>
+                </div>
+                <div x-show="period === 'quarterly'" x-cloak>
+                    <label for="id_quarter" class="form-label">Trimestre</label>
+                    <select name="quarter" id="id_quarter" class="form-select">
+                        <option value="">---</option>
+                        <option value="1" {% if form.quarter.value == 1 %}selected{% endif %}>T1</option>
+                        <option value="2" {% if form.quarter.value == 2 %}selected{% endif %}>T2</option>
+                        <option value="3" {% if form.quarter.value == 3 %}selected{% endif %}>T3</option>
+                        <option value="4" {% if form.quarter.value == 4 %}selected{% endif %}>T4</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Target Value -->
+            <div>
+                <label for="id_target_value" class="form-label">Valeur cible *</label>
+                <div class="relative">
+                    <input type="number" name="target_value" id="id_target_value"
+                           value="{{ form.target_value.value|default:'' }}"
+                           class="form-input {% if form.target_value.errors %}border-red-500{% endif %}"
+                           step="0.01" min="0.01" placeholder="0.00" required>
+                    <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                        <span class="text-gray-500 sm:text-sm" x-text="
+                            document.getElementById('id_target_type').value === 'conversion' ? '%' :
+                            document.getElementById('id_target_type').value === 'revenue' ? '\u20AC' : ''
+                        "></span>
+                    </div>
+                </div>
+                {% if form.target_value.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.target_value.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Assigned To -->
+            <div>
+                <label for="id_assigned_to" class="form-label">Assigné à</label>
+                <select name="assigned_to" id="id_assigned_to" class="form-select">
+                    <option value="">Équipe (non assigné)</option>
+                    {% for user in form.fields.assigned_to.queryset %}
+                    <option value="{{ user.pk }}" {% if form.assigned_to.value|stringformat:"s" == user.pk|stringformat:"s" %}selected{% endif %}>
+                        {{ user.get_full_name|default:user.email }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Active -->
+            <div class="flex items-center gap-2">
+                <input type="checkbox" name="is_active" id="id_is_active"
+                       class="form-checkbox" {% if form.is_active.value %}checked{% endif %}>
+                <label for="id_is_active" class="text-sm text-gray-700">Objectif actif</label>
+            </div>
+
+            <!-- Non-field errors -->
+            {% if form.non_field_errors %}
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                <p class="text-sm text-red-600">{{ form.non_field_errors.0 }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Submit -->
+            <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
+                <a href="{% url 'sales:target_list' %}" class="btn-secondary">Annuler</a>
+                <button type="submit" class="btn-primary">
+                    {% if object %}Enregistrer{% else %}Créer l'objectif{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

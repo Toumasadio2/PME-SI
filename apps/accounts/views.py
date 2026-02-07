@@ -49,7 +49,14 @@ class CustomLoginView(LoginView):
             self.request.session["2fa_user_id"] = str(user.id)
             return redirect("accounts:2fa_verify")
 
-        return super().form_valid(form)
+        response = super().form_valid(form)
+
+        # Check for pending invitation
+        pending_token = self.request.session.pop("pending_invitation", None)
+        if pending_token:
+            return redirect("accounts:accept_invitation", token=pending_token)
+
+        return response
 
 
 class CustomLogoutView(LogoutView):

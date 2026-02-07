@@ -1,0 +1,166 @@
+{% extends "layouts/app_layout.html" %}
+{% load humanize %}
+
+{% block title %}{{ target.name }} - Objectif - PME-SI{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div>
+            <div class="flex items-center gap-2">
+                <a href="{% url 'sales:target_list' %}" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                </a>
+                <h1 class="text-2xl font-bold text-gray-900">{{ target.name }}</h1>
+            </div>
+            <p class="mt-1 text-sm text-gray-500">
+                {{ target.get_target_type_display }} -
+                {% if target.period == 'monthly' and target.month %}
+                    {{ target.month|stringformat:"02d" }}/{{ target.year }}
+                {% elif target.period == 'quarterly' and target.quarter %}
+                    T{{ target.quarter }} {{ target.year }}
+                {% else %}
+                    {{ target.year }}
+                {% endif %}
+            </p>
+        </div>
+        <div class="flex gap-2">
+            <a href="{% url 'sales:target_update' target.pk %}" class="btn-secondary">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                </svg>
+                Modifier
+            </a>
+            <a href="{% url 'sales:target_delete' target.pk %}" class="btn-danger">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                </svg>
+                Supprimer
+            </a>
+        </div>
+    </div>
+
+    <!-- Progress Card -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Progression</h2>
+        </div>
+        <div class="card-body">
+            <div class="flex items-end justify-between mb-4">
+                <div>
+                    <p class="text-sm text-gray-500">Valeur actuelle</p>
+                    <p class="text-3xl font-bold text-gray-900">
+                        {% if target.target_type == 'revenue' %}
+                            {{ current_value|floatformat:0|intcomma }} €
+                        {% elif target.target_type == 'conversion' %}
+                            {{ current_value|floatformat:1 }}%
+                        {% else %}
+                            {{ current_value|floatformat:0 }}
+                        {% endif %}
+                    </p>
+                </div>
+                <div class="text-right">
+                    <p class="text-sm text-gray-500">Objectif</p>
+                    <p class="text-xl font-medium text-gray-700">
+                        {% if target.target_type == 'revenue' %}
+                            {{ target.target_value|floatformat:0|intcomma }} €
+                        {% elif target.target_type == 'conversion' %}
+                            {{ target.target_value|floatformat:1 }}%
+                        {% else %}
+                            {{ target.target_value|floatformat:0 }}
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            <!-- Progress Bar -->
+            <div class="relative pt-1">
+                <div class="flex mb-2 items-center justify-between">
+                    <div>
+                        <span class="text-xs font-semibold inline-block py-1 px-2 uppercase rounded-full
+                            {% if progress >= 100 %}text-green-600 bg-green-200
+                            {% elif progress >= 75 %}text-blue-600 bg-blue-200
+                            {% elif progress >= 50 %}text-yellow-600 bg-yellow-200
+                            {% else %}text-red-600 bg-red-200{% endif %}">
+                            {{ progress }}%
+                        </span>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs font-semibold inline-block
+                            {% if progress >= 100 %}text-green-600{% else %}text-gray-600{% endif %}">
+                            {% if progress >= 100 %}Objectif atteint !{% else %}En cours{% endif %}
+                        </span>
+                    </div>
+                </div>
+                <div class="overflow-hidden h-4 text-xs flex rounded-full bg-gray-200">
+                    <div style="width: {{ progress }}%"
+                         class="shadow-none flex flex-col text-center whitespace-nowrap text-white justify-center transition-all duration-500
+                            {% if progress >= 100 %}bg-green-500
+                            {% elif progress >= 75 %}bg-blue-500
+                            {% elif progress >= 50 %}bg-yellow-500
+                            {% else %}bg-red-500{% endif %}">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Details Card -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Détails</h2>
+        </div>
+        <div class="card-body">
+            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Type d'objectif</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ target.get_target_type_display }}</dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Période</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ target.get_period_display }}</dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Date de début</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ target.start_date|date:"d/m/Y" }}</dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Date de fin</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ target.end_date|date:"d/m/Y" }}</dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Assigné à</dt>
+                    <dd class="mt-1 text-sm text-gray-900">
+                        {% if target.assigned_to %}
+                            {{ target.assigned_to.get_full_name|default:target.assigned_to.email }}
+                        {% else %}
+                            <span class="text-gray-400">Équipe</span>
+                        {% endif %}
+                    </dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Statut</dt>
+                    <dd class="mt-1">
+                        {% if target.is_active %}
+                            <span class="badge badge-success">Actif</span>
+                        {% else %}
+                            <span class="badge badge-secondary">Inactif</span>
+                        {% endif %}
+                    </dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Créé le</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ target.created_at|date:"d/m/Y H:i" }}</dd>
+                </div>
+                <div>
+                    <dt class="text-sm font-medium text-gray-500">Modifié le</dt>
+                    <dd class="mt-1 text-sm text-gray-900">{{ target.updated_at|date:"d/m/Y H:i" }}</dd>
+                </div>
+            </dl>
+        </div>
+    </div>
+</div>
+{% endblock %}

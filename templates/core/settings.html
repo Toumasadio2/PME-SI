@@ -1,0 +1,237 @@
+{% extends "layouts/app_layout.html" %}
+
+{% block title %}Paramètres - {{ block.super }}{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="mb-8">
+        <h1 class="text-2xl font-bold text-gray-900">Paramètres</h1>
+        <p class="text-gray-500 mt-1">Configurez les informations et préférences de votre entreprise</p>
+    </div>
+
+    {% if messages %}
+    <div class="mb-6">
+        {% for message in messages %}
+        <div class="p-4 rounded-lg {% if message.tags == 'success' %}bg-green-50 text-green-800 border border-green-200{% else %}bg-blue-50 text-blue-800 border border-blue-200{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <form method="post" enctype="multipart/form-data" class="space-y-8">
+        {% csrf_token %}
+
+        <!-- Informations de l'entreprise -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+                <svg class="w-5 h-5 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
+                </svg>
+                Informations de l'entreprise
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.name.label }}</label>
+                    {{ form.name }}
+                    {% if form.name.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.name.errors.0 }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.siret.label }}</label>
+                    {{ form.siret }}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.phone.label }}</label>
+                    {{ form.phone }}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.email.label }}</label>
+                    {{ form.email }}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.website.label }}</label>
+                    {{ form.website }}
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.address.label }}</label>
+                    {{ form.address }}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.postal_code.label }}</label>
+                    {{ form.postal_code }}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.city.label }}</label>
+                    {{ form.city }}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.country.label }}</label>
+                    {{ form.country }}
+                </div>
+            </div>
+        </div>
+
+        <!-- Branding -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+                <svg class="w-5 h-5 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"></path>
+                </svg>
+                Identité visuelle
+            </h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.logo.label }}</label>
+                    {% if object.logo %}
+                    <div class="mb-3">
+                        <img src="{{ object.logo.url }}" alt="Logo actuel" class="h-16 w-auto rounded border">
+                    </div>
+                    {% endif %}
+                    {{ form.logo }}
+                    <p class="mt-1 text-xs text-gray-500">Format recommandé : PNG ou SVG, max 2MB</p>
+                </div>
+
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.primary_color.label }}</label>
+                        <div class="flex items-center gap-3">
+                            {{ form.primary_color }}
+                            <span class="text-sm text-gray-500" id="primary-color-value">{{ object.primary_color }}</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">{{ form.secondary_color.label }}</label>
+                        <div class="flex items-center gap-3">
+                            {{ form.secondary_color }}
+                            <span class="text-sm text-gray-500" id="secondary-color-value">{{ object.secondary_color }}</span>
+                        </div>
+                    </div>
+
+                    <!-- Live Preview -->
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <p class="text-sm font-medium text-gray-700 mb-3">Apercu du theme</p>
+                        <div class="p-4 bg-gray-50 rounded-lg space-y-3" id="theme-preview">
+                            <div class="flex gap-2">
+                                <button type="button" id="preview-btn-primary" class="px-4 py-2 text-white rounded-lg text-sm" style="background-color: {{ object.primary_color }}">
+                                    Bouton principal
+                                </button>
+                                <button type="button" id="preview-btn-secondary" class="px-4 py-2 text-white rounded-lg text-sm" style="background-color: {{ object.secondary_color }}">
+                                    Bouton secondaire
+                                </button>
+                            </div>
+                            <div class="flex gap-2">
+                                <span id="preview-badge-primary" class="px-3 py-1 text-sm rounded-full" style="background-color: {{ object.primary_color }}20; color: {{ object.primary_color }}">Badge primaire</span>
+                                <span id="preview-badge-secondary" class="px-3 py-1 text-sm rounded-full" style="background-color: {{ object.secondary_color }}20; color: {{ object.secondary_color }}">Badge secondaire</span>
+                            </div>
+                            <div id="preview-border" class="p-3 border-2 rounded-lg bg-white" style="border-color: {{ object.primary_color }}">
+                                <p class="text-sm text-gray-600">Exemple de bordure avec la couleur principale</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            // Live preview of theme colors
+            document.addEventListener('DOMContentLoaded', function() {
+                const primaryInput = document.getElementById('id_primary_color');
+                const secondaryInput = document.getElementById('id_secondary_color');
+
+                if (primaryInput) {
+                    primaryInput.addEventListener('input', function() {
+                        const color = this.value;
+                        document.getElementById('primary-color-value').textContent = color;
+                        document.getElementById('preview-btn-primary').style.backgroundColor = color;
+                        document.getElementById('preview-badge-primary').style.backgroundColor = color + '20';
+                        document.getElementById('preview-badge-primary').style.color = color;
+                        document.getElementById('preview-border').style.borderColor = color;
+                    });
+                }
+
+                if (secondaryInput) {
+                    secondaryInput.addEventListener('input', function() {
+                        const color = this.value;
+                        document.getElementById('secondary-color-value').textContent = color;
+                        document.getElementById('preview-btn-secondary').style.backgroundColor = color;
+                        document.getElementById('preview-badge-secondary').style.backgroundColor = color + '20';
+                        document.getElementById('preview-badge-secondary').style.color = color;
+                    });
+                }
+            });
+        </script>
+
+        <!-- Template des documents -->
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <h2 class="text-lg font-semibold text-gray-900 mb-6 flex items-center">
+                <svg class="w-5 h-5 mr-2 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
+                Template des devis et factures
+            </h2>
+
+            <p class="text-sm text-gray-500 mb-6">
+                Choisissez le style visuel pour vos devis et factures PDF. Les couleurs de votre identité visuelle seront automatiquement appliquées.
+            </p>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {% for template in document_templates %}
+                <label class="relative cursor-pointer group">
+                    <input type="radio"
+                           name="document_template"
+                           value="{{ template.id }}"
+                           {% if object.document_template == template.id %}checked{% endif %}
+                           class="sr-only peer">
+                    <div class="border-2 rounded-lg p-4 transition-all peer-checked:border-primary-500 peer-checked:ring-2 peer-checked:ring-primary-200 hover:border-gray-300">
+                        <!-- Preview -->
+                        <div class="aspect-[3/4] {{ template.preview_class }} rounded-md mb-3 relative overflow-hidden">
+                            <div class="absolute inset-0 p-2">
+                                <div class="bg-white/90 rounded h-full p-2 space-y-1">
+                                    <div class="h-2 w-12 bg-gray-300 rounded"></div>
+                                    <div class="h-1 w-8 bg-gray-200 rounded"></div>
+                                    <div class="h-1 w-16 bg-gray-200 rounded mt-2"></div>
+                                    <div class="h-1 w-14 bg-gray-200 rounded"></div>
+                                    <div class="h-1 w-12 bg-gray-200 rounded"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Label -->
+                        <h3 class="font-medium text-gray-900">{{ template.name }}</h3>
+                        <p class="text-xs text-gray-500">{{ template.description }}</p>
+                        <!-- Checkmark -->
+                        <div class="absolute top-2 right-2 w-6 h-6 rounded-full bg-primary-500 text-white items-center justify-center hidden peer-checked:flex">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                    </div>
+                </label>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex justify-end gap-4">
+            <a href="{% url 'dashboard:index' %}" class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                Annuler
+            </a>
+            <button type="submit" class="px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors">
+                Enregistrer les modifications
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

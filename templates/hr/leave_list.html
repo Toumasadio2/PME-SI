@@ -1,0 +1,63 @@
+{% extends "layouts/app_layout.html" %}
+{% load humanize %}
+
+{% block title %}Congés - RH{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Congés</h1>
+            <p class="text-gray-600">Gestion des demandes de congés</p>
+        </div>
+        <div class="flex space-x-3">
+            <a href="{% url 'hr:leave_calendar' %}" class="btn-secondary">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                </svg>
+                Calendrier
+            </a>
+            <a href="{% url 'hr:leave_request' %}" class="btn-primary">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                Nouvelle demande
+            </a>
+        </div>
+    </div>
+
+    <!-- View type tabs -->
+    <div class="border-b border-gray-200">
+        <nav class="-mb-px flex space-x-8">
+            <a href="?view=my_requests" class="{% if view_type == 'my_requests' %}border-primary-500 text-primary-600{% else %}border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                Mes demandes
+            </a>
+            {% if can_approve %}
+            <a href="?view=team_requests" class="{% if view_type == 'team_requests' %}border-primary-500 text-primary-600{% else %}border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                Demandes équipe
+            </a>
+            {% endif %}
+            <a href="?view=all" class="{% if view_type == 'all' %}border-primary-500 text-primary-600{% else %}border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300{% endif %} whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                Toutes
+            </a>
+        </nav>
+    </div>
+
+    <!-- Filters -->
+    <div class="flex gap-4">
+        <select name="status" class="form-select w-auto"
+            onchange="window.location.href='?view={{ view_type }}&status='+this.value">
+            <option value="">Tous statuts</option>
+            {% for value, label in statuses %}
+            <option value="{{ value }}" {% if request.GET.status == value %}selected{% endif %}>{{ label }}</option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <!-- Leave List -->
+    <div id="leave-list" class="card overflow-hidden">
+        {% include "hr/partials/leave_list.html" %}
+    </div>
+</div>
+{% endblock %}

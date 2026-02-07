@@ -1,0 +1,179 @@
+{% extends "layouts/app_layout.html" %}
+
+{% block title %}{% if form.instance.pk %}Modifier {{ form.instance.full_name }}{% else %}Nouvel employé{% endif %} - RH{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="mb-6">
+        <a href="{% url 'hr:employee_list' %}" class="text-sm text-gray-600 hover:text-gray-900">
+            &larr; Retour à la liste
+        </a>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h1 class="text-xl font-bold text-gray-900">
+                {% if form.instance.pk %}Modifier {{ form.instance.full_name }}{% else %}Nouvel employé{% endif %}
+            </h1>
+        </div>
+
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <div class="card-body space-y-6">
+                <!-- Identification -->
+                <div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Identification</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="form-label">Matricule *</label>
+                            {{ form.employee_id }}
+                            {% if form.employee_id.errors %}
+                                <p class="mt-1 text-sm text-red-600">{{ form.employee_id.errors.0 }}</p>
+                            {% endif %}
+                        </div>
+                        <div>
+                            <label class="form-label">Compte utilisateur</label>
+                            {{ form.user }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Personal Info -->
+                <div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Informations personnelles</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="form-label">Prénom *</label>
+                            {{ form.first_name }}
+                        </div>
+                        <div>
+                            <label class="form-label">Nom *</label>
+                            {{ form.last_name }}
+                        </div>
+                        <div>
+                            <label class="form-label">Email *</label>
+                            {{ form.email }}
+                        </div>
+                        <div>
+                            <label class="form-label">Genre</label>
+                            {{ form.gender }}
+                        </div>
+                        <div>
+                            <label class="form-label">Téléphone fixe</label>
+                            {{ form.phone }}
+                        </div>
+                        <div>
+                            <label class="form-label">Téléphone mobile</label>
+                            {{ form.mobile }}
+                        </div>
+                        <div>
+                            <label class="form-label">Date de naissance</label>
+                            {{ form.date_of_birth }}
+                        </div>
+                        <div>
+                            <label class="form-label">N° Sécurité sociale</label>
+                            {{ form.social_security_number }}
+                        </div>
+                        <div>
+                            <label class="form-label">Photo</label>
+                            {{ form.photo }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Address -->
+                <div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Adresse</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="md:col-span-2">
+                            <label class="form-label">Adresse</label>
+                            {{ form.address }}
+                        </div>
+                        <div>
+                            <label class="form-label">Code postal</label>
+                            {{ form.postal_code }}
+                        </div>
+                        <div>
+                            <label class="form-label">Ville</label>
+                            {{ form.city }}
+                        </div>
+                        <div>
+                            <label class="form-label">Pays</label>
+                            {{ form.country }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Professional Info -->
+                <div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Informations professionnelles</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="form-label">Département</label>
+                            {{ form.department }}
+                        </div>
+                        <div>
+                            <label class="form-label">Poste</label>
+                            {{ form.position }}
+                        </div>
+                        <div>
+                            <label class="form-label">Manager</label>
+                            {{ form.manager }}
+                        </div>
+                        <div>
+                            <label class="form-label">Statut</label>
+                            {{ form.status }}
+                        </div>
+                        <div>
+                            <label class="form-label">Date d'embauche *</label>
+                            {{ form.hire_date }}
+                        </div>
+                        <div>
+                            <label class="form-label">Date de fin</label>
+                            {{ form.end_date }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contract -->
+                <div>
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Contrat</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="form-label">Type de contrat</label>
+                            {{ form.contract_type }}
+                        </div>
+                        <div>
+                            <label class="form-label">Heures hebdomadaires</label>
+                            {{ form.work_hours }}
+                        </div>
+                        <div>
+                            <label class="form-label">Salaire brut annuel</label>
+                            {{ form.salary }}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notes -->
+                <div>
+                    <label class="form-label">Notes</label>
+                    {{ form.notes }}
+                </div>
+
+                {% if form.errors %}
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                    <p class="text-sm text-red-800">Veuillez corriger les erreurs ci-dessus.</p>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="card-footer flex justify-end space-x-3">
+                <a href="{% url 'hr:employee_list' %}" class="btn-secondary">Annuler</a>
+                <button type="submit" class="btn-primary">
+                    {% if form.instance.pk %}Enregistrer{% else %}Créer l'employé{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

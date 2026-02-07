@@ -1,0 +1,349 @@
+{% extends "layouts/app_layout.html" %}
+{% load humanize %}
+
+{% block title %}{{ employee.full_name }} - RH{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
+        <div class="flex items-start">
+            <div class="flex-shrink-0">
+                {% if employee.photo %}
+                    <img class="h-20 w-20 rounded-full object-cover" src="{{ employee.photo.url }}" alt="{{ employee.full_name }}">
+                {% else %}
+                    <div class="h-20 w-20 rounded-full bg-primary-100 flex items-center justify-center">
+                        <span class="text-2xl font-medium text-primary-700">{{ employee.get_initials }}</span>
+                    </div>
+                {% endif %}
+            </div>
+            <div class="ml-4">
+                <h1 class="text-2xl font-bold text-gray-900">{{ employee.full_name }}</h1>
+                <p class="text-gray-600">{{ employee.position.title|default:"-" }} - {{ employee.department.name|default:"-" }}</p>
+                <div class="mt-2 flex items-center space-x-4">
+                    <span class="text-sm text-gray-500">{{ employee.employee_id }}</span>
+                    {% if employee.status == 'ACTIVE' %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Actif</span>
+                    {% elif employee.status == 'ON_NOTICE' %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">En préavis</span>
+                    {% elif employee.status == 'SUSPENDED' %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Suspendu</span>
+                    {% else %}
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Parti</span>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        <div class="flex space-x-3">
+            <a href="{% url 'hr:employee_update' employee.pk %}" class="btn-secondary">
+                Modifier
+            </a>
+            <a href="{% url 'hr:document_upload' %}?employee={{ employee.pk }}" class="btn-primary">
+                Ajouter un document
+            </a>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div x-data="{ tab: 'info' }">
+        <div class="border-b border-gray-200">
+            <nav class="-mb-px flex space-x-8">
+                <button @click="tab = 'info'" :class="tab === 'info' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                    Informations
+                </button>
+                <button @click="tab = 'leaves'" :class="tab === 'leaves' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                    Congés
+                </button>
+                <button @click="tab = 'documents'" :class="tab === 'documents' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                    Documents
+                </button>
+                <button @click="tab = 'history'" :class="tab === 'history' ? 'border-primary-500 text-primary-600' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'" class="whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm">
+                    Historique
+                </button>
+            </nav>
+        </div>
+
+        <!-- Tab: Info -->
+        <div x-show="tab === 'info'" class="mt-6">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Personal Info -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="text-lg font-medium text-gray-900">Informations personnelles</h3>
+                    </div>
+                    <div class="card-body">
+                        <dl class="grid grid-cols-2 gap-4">
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500">Email</dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ employee.email }}</dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500">Téléphone</dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ employee.phone|default:"-" }}</dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500">Mobile</dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ employee.mobile|default:"-" }}</dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500">Date de naissance</dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ employee.date_of_birth|date:"d/m/Y"|default:"-" }}</dd>
+                            </div>
+                            <div class="col-span-2">
+                                <dt class="text-sm font-medium text-gray-500">Adresse</dt>
+                                <dd class="mt-1 text-sm text-gray-900">
+                                    {% if employee.address %}
+                                        {{ employee.address }}<br>
+                                        {{ employee.postal_code }} {{ employee.city }}, {{ employee.country }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </dd>
+                            </div>
+                        </dl>
+                    </div>
+                </div>
+
+                <!-- Professional Info -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="text-lg font-medium text-gray-900">Informations professionnelles</h3>
+                    </div>
+                    <div class="card-body">
+                        <dl class="grid grid-cols-2 gap-4">
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500">Département</dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ employee.department.name|default:"-" }}</dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500">Poste</dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ employee.position.title|default:"-" }}</dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500">Manager</dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ employee.manager.full_name|default:"-" }}</dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500">Date d'embauche</dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ employee.hire_date|date:"d/m/Y" }}</dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500">Type de contrat</dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ employee.get_contract_type_display }}</dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500">Heures hebdomadaires</dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ employee.work_hours }}h</dd>
+                            </div>
+                            <div>
+                                <dt class="text-sm font-medium text-gray-500">Ancienneté</dt>
+                                <dd class="mt-1 text-sm text-gray-900">{{ employee.years_of_service }} an{{ employee.years_of_service|pluralize }}</dd>
+                            </div>
+                        </dl>
+                    </div>
+                </div>
+
+                <!-- Direct Reports -->
+                {% if direct_reports %}
+                <div class="card lg:col-span-2">
+                    <div class="card-header">
+                        <h3 class="text-lg font-medium text-gray-900">Équipe ({{ direct_reports.count }})</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            {% for report in direct_reports %}
+                            <a href="{% url 'hr:employee_detail' report.pk %}" class="flex items-center p-3 rounded-lg hover:bg-gray-50">
+                                <div class="flex-shrink-0 w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center">
+                                    <span class="text-sm font-medium text-gray-600">{{ report.get_initials }}</span>
+                                </div>
+                                <div class="ml-3">
+                                    <p class="text-sm font-medium text-gray-900">{{ report.full_name }}</p>
+                                    <p class="text-xs text-gray-500">{{ report.position.title|default:"-" }}</p>
+                                </div>
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Tab: Leaves -->
+        <div x-show="tab === 'leaves'" class="mt-6" x-cloak>
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                <!-- Leave balances -->
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="text-lg font-medium text-gray-900">Soldes {{ year }}</h3>
+                    </div>
+                    <div class="card-body">
+                        <ul class="space-y-4">
+                            {% for item in leave_balances %}
+                            <li>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-sm font-medium text-gray-900">{{ item.leave_type.name }}</span>
+                                    <span class="text-sm text-gray-600">{{ item.balance.available }} / {{ item.balance.total }} jours</span>
+                                </div>
+                                <div class="mt-1 w-full h-2 bg-gray-200 rounded-full">
+                                    <div class="h-2 rounded-full" style="width: {% widthratio item.balance.taken item.balance.total 100 %}%; background-color: {{ item.leave_type.color }}"></div>
+                                </div>
+                            </li>
+                            {% empty %}
+                            <li class="text-sm text-gray-500">Aucun solde configuré</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Recent leave requests -->
+                <div class="card lg:col-span-2">
+                    <div class="card-header">
+                        <h3 class="text-lg font-medium text-gray-900">Demandes récentes</h3>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Période</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Jours</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase">Statut</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-200">
+                                {% for leave in recent_leaves %}
+                                <tr>
+                                    <td class="px-4 py-3 text-sm text-gray-900">{{ leave.leave_type.name }}</td>
+                                    <td class="px-4 py-3 text-sm text-gray-500">{{ leave.start_date|date:"d/m" }} - {{ leave.end_date|date:"d/m/Y" }}</td>
+                                    <td class="px-4 py-3 text-sm text-gray-900">{{ leave.days_count }}</td>
+                                    <td class="px-4 py-3">
+                                        {% if leave.status == 'PENDING' %}
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">En attente</span>
+                                        {% elif leave.status == 'APPROVED' %}
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">Approuvé</span>
+                                        {% elif leave.status == 'REJECTED' %}
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">Refusé</span>
+                                        {% else %}
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">{{ leave.get_status_display }}</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% empty %}
+                                <tr>
+                                    <td colspan="4" class="px-4 py-6 text-center text-sm text-gray-500">Aucune demande</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: Documents -->
+        <div x-show="tab === 'documents'" class="mt-6" x-cloak>
+            <div class="card">
+                <div class="card-header flex justify-between items-center">
+                    <h3 class="text-lg font-medium text-gray-900">Documents</h3>
+                    <a href="{% url 'hr:document_upload' %}?employee={{ employee.pk }}" class="btn-sm btn-secondary">
+                        Ajouter
+                    </a>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Document</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Type</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            {% for doc in recent_documents %}
+                            <tr>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center">
+                                        <svg class="w-5 h-5 text-gray-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                        </svg>
+                                        <span class="text-sm font-medium text-gray-900">{{ doc.title }}</span>
+                                        {% if doc.is_confidential %}
+                                            <span class="ml-2 inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">Confidentiel</span>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-sm text-gray-500">{{ doc.get_document_type_display }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-500">{{ doc.created_at|date:"d/m/Y" }}</td>
+                                <td class="px-6 py-4 text-right">
+                                    <a href="{{ doc.file.url }}" class="text-primary-600 hover:text-primary-900 text-sm" target="_blank">
+                                        Télécharger
+                                    </a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="px-6 py-8 text-center text-sm text-gray-500">Aucun document</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab: History -->
+        <div x-show="tab === 'history'" class="mt-6" x-cloak>
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="text-lg font-medium text-gray-900">Historique</h3>
+                </div>
+                <div class="card-body">
+                    <div class="flow-root">
+                        <ul class="-mb-8">
+                            {% for event in history %}
+                            <li>
+                                <div class="relative pb-8">
+                                    {% if not forloop.last %}
+                                    <span class="absolute top-4 left-4 -ml-px h-full w-0.5 bg-gray-200" aria-hidden="true"></span>
+                                    {% endif %}
+                                    <div class="relative flex space-x-3">
+                                        <div>
+                                            <span class="h-8 w-8 rounded-full flex items-center justify-center ring-8 ring-white
+                                                {% if event.event_type == 'HIRE' %}bg-green-500
+                                                {% elif event.event_type == 'PROMOTION' %}bg-blue-500
+                                                {% elif event.event_type == 'SALARY_CHANGE' %}bg-yellow-500
+                                                {% elif event.event_type == 'DEPARTURE' %}bg-red-500
+                                                {% else %}bg-gray-500{% endif %}">
+                                                <svg class="h-4 w-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    {% if event.event_type == 'HIRE' %}
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                                                    {% else %}
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                    {% endif %}
+                                                </svg>
+                                            </span>
+                                        </div>
+                                        <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
+                                            <div>
+                                                <p class="text-sm text-gray-900">{{ event.description }}</p>
+                                            </div>
+                                            <div class="text-right text-sm whitespace-nowrap text-gray-500">
+                                                {{ event.event_date|date:"d/m/Y" }}
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </li>
+                            {% empty %}
+                            <li class="text-sm text-gray-500 text-center py-4">Aucun historique</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
