@@ -5,6 +5,7 @@ Django>=4.2,<5.0
 psycopg2-binary>=2.9
 
 # Environment variables
+django-environ>=0.11
 python-dotenv>=1.0
 dj-database-url>=2.1
 
@@ -20,11 +21,21 @@ weasyprint>=60.0
 # Celery for async tasks
 celery>=5.3
 redis>=5.0
+django-celery-beat>=2.5
+django-celery-results>=2.5
 
 # Form utilities
 django-widget-tweaks>=1.5
+django-crispy-forms>=2.1
+crispy-tailwind>=0.5
 
-# API utilities (optional)
+# Authentication
+django-allauth>=0.57
+
+# Django extensions
+django-extensions>=3.2
+
+# API utilities
 djangorestframework>=3.14
 
 # Security
