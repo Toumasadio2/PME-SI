@@ -50,3 +50,6 @@ qrcode>=7.4
 
 # Debug toolbar
 django-debug-toolbar>=4.2
+
+# Password hashing
+argon2-cffi>=23.1
