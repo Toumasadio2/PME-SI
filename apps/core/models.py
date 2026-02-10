@@ -7,6 +7,7 @@ from typing import TYPE_CHECKING
 from django.conf import settings
 from django.db import models
 from django.utils import timezone
+from django.utils.text import slugify
 
 if TYPE_CHECKING:
     from django.db.models import Manager
@@ -86,6 +87,20 @@ class Organization(TimeStampedModel):
 
     def __str__(self) -> str:
         return self.name
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            # Generate slug from name
+            base_slug = slugify(self.name)
+            if not base_slug:
+                base_slug = "org"
+            slug = base_slug
+            counter = 1
+            while Organization.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
+        super().save(*args, **kwargs)
 
     @property
     def is_trial_expired(self) -> bool:
