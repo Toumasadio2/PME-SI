@@ -82,21 +82,9 @@ class CustomPasswordResetConfirmView(PasswordResetConfirmView):
 
 @require_http_methods(["GET", "POST"])
 def register(request: HttpRequest) -> HttpResponse:
-    """User registration view."""
-    if request.user.is_authenticated:
-        return redirect("dashboard:index")
-
-    if request.method == "POST":
-        form = CustomUserCreationForm(request.POST)
-        if form.is_valid():
-            user = form.save()
-            login(request, user, backend="django.contrib.auth.backends.ModelBackend")
-            messages.success(request, "Bienvenue ! Votre compte a été créé avec succès.")
-            return redirect("dashboard:index")
-    else:
-        form = CustomUserCreationForm()
-
-    return render(request, "accounts/register.html", {"form": form})
+    """User registration view - disabled, only invitation-based registration allowed."""
+    messages.info(request, "L'inscription publique est désactivée. Contactez un administrateur pour obtenir une invitation.")
+    return redirect("accounts:login")
 
 
 @login_required
