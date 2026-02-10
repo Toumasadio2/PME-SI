@@ -1,0 +1,25 @@
+Bienvenue sur PME-SI !
+
+Bonjour {{ first_name|default:"" }},
+
+Vous avez été désigné(e) comme administrateur de l'entreprise "{{ organization_name }}" sur PME-SI.
+
+VOS IDENTIFIANTS DE CONNEXION
+-----------------------------
+Email : {{ email }}
+Mot de passe temporaire : {{ password }}
+
+IMPORTANT : Nous vous recommandons de changer votre mot de passe dès votre première connexion.
+
+Connectez-vous ici : {{ site_url }}/accounts/login/
+
+EN TANT QU'ADMINISTRATEUR, VOUS POUVEZ :
+- Gérer les paramètres de votre entreprise
+- Inviter et gérer les membres de votre équipe
+- Accéder à tous les modules (CRM, Facturation, RH, etc.)
+- Configurer les permissions des utilisateurs
+
+Si vous n'êtes pas à l'origine de cette demande, veuillez ignorer cet email.
+
+---
+PME-SI - Système d'Information pour PME

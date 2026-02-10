@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Bienvenue sur PME-SI</title>
+</head>
+<body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+    <div style="background-color: #3B82F6; padding: 20px; text-align: center; border-radius: 8px 8px 0 0;">
+        <h1 style="color: white; margin: 0;">PME-SI</h1>
+    </div>
+
+    <div style="background-color: #f9fafb; padding: 30px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 8px 8px;">
+        <h2 style="color: #1f2937; margin-top: 0;">Bienvenue {{ first_name|default:"" }} !</h2>
+
+        <p>Vous avez été désigné(e) comme administrateur de l'entreprise <strong>{{ organization_name }}</strong> sur PME-SI.</p>
+
+        <div style="background-color: #fff; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin: 20px 0;">
+            <h3 style="margin-top: 0; color: #374151;">Vos identifiants de connexion</h3>
+            <p style="margin-bottom: 5px;"><strong>Email :</strong> {{ email }}</p>
+            <p style="margin-bottom: 0;"><strong>Mot de passe temporaire :</strong> <code style="background-color: #f3f4f6; padding: 2px 8px; border-radius: 4px;">{{ password }}</code></p>
+        </div>
+
+        <p style="color: #dc2626; font-weight: 500;">Important : Nous vous recommandons de changer votre mot de passe dès votre première connexion.</p>
+
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="{{ site_url }}/accounts/login/"
+               style="background-color: #3B82F6; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+                Se connecter
+            </a>
+        </div>
+
+        <h3 style="color: #374151;">En tant qu'administrateur, vous pouvez :</h3>
+        <ul style="color: #4b5563;">
+            <li>Gérer les paramètres de votre entreprise</li>
+            <li>Inviter et gérer les membres de votre équipe</li>
+            <li>Accéder à tous les modules (CRM, Facturation, RH, etc.)</li>
+            <li>Configurer les permissions des utilisateurs</li>
+        </ul>
+
+        <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+
+        <p style="color: #6b7280; font-size: 14px; margin-bottom: 0;">
+            Si vous n'êtes pas à l'origine de cette demande, veuillez ignorer cet email.
+        </p>
+    </div>
+
+    <div style="text-align: center; padding: 20px; color: #9ca3af; font-size: 12px;">
+        <p>&copy; 2024 PME-SI. Tous droits réservés.</p>
+    </div>
+</body>
+</html>

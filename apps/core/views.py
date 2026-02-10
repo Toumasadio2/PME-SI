@@ -270,6 +270,9 @@ def create_organization(request: HttpRequest) -> HttpResponse:
         return redirect("dashboard:index")
 
     from apps.accounts.models import User
+    from django.conf import settings
+    from django.core.mail import send_mail
+    from django.template.loader import render_to_string
     import secrets
     import string
 
@@ -289,6 +292,7 @@ def create_organization(request: HttpRequest) -> HttpResponse:
 
             # Generate temporary password
             temp_password = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(12))
+            is_new_user = False
 
             if not admin_user:
                 # Create new admin user
@@ -298,15 +302,7 @@ def create_organization(request: HttpRequest) -> HttpResponse:
                     first_name=admin_first_name,
                     last_name=admin_last_name,
                 )
-                messages.info(
-                    request,
-                    f"Compte créé pour {admin_email}. Mot de passe temporaire: {temp_password}"
-                )
-            else:
-                messages.info(
-                    request,
-                    f"L'utilisateur {admin_email} existe déjà et a été assigné comme admin."
-                )
+                is_new_user = True
 
             # Set user as organization admin
             admin_user.organization = organization
@@ -321,6 +317,46 @@ def create_organization(request: HttpRequest) -> HttpResponse:
                 role=OrganizationMembership.Role.ADMIN,
                 invited_by=request.user,
             )
+
+            # Send welcome email
+            email_sent = False
+            if is_new_user:
+                try:
+                    context = {
+                        'first_name': admin_first_name,
+                        'email': admin_email,
+                        'password': temp_password,
+                        'organization_name': organization.name,
+                        'site_url': getattr(settings, 'SITE_URL', 'http://localhost:8000'),
+                    }
+
+                    html_message = render_to_string('core/emails/admin_welcome.html', context)
+                    text_message = render_to_string('core/emails/admin_welcome.txt', context)
+
+                    send_mail(
+                        subject=f"Bienvenue sur PME-SI - Vous êtes administrateur de {organization.name}",
+                        message=text_message,
+                        from_email=settings.DEFAULT_FROM_EMAIL,
+                        recipient_list=[admin_email],
+                        html_message=html_message,
+                        fail_silently=False,
+                    )
+                    email_sent = True
+                    messages.success(
+                        request,
+                        f"Un email avec les identifiants a été envoyé à {admin_email}."
+                    )
+                except Exception as e:
+                    messages.warning(
+                        request,
+                        f"L'email n'a pas pu être envoyé. Mot de passe temporaire: {temp_password}"
+                    )
+
+            if not is_new_user:
+                messages.info(
+                    request,
+                    f"L'utilisateur {admin_email} existe déjà et a été assigné comme admin."
+                )
 
             messages.success(
                 request,
