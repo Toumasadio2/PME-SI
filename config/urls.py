@@ -5,9 +5,12 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
+from django.views.generic import RedirectView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    # Disable allauth signup - redirect to login
+    path("accounts/signup/", RedirectView.as_view(url="/accounts/login/", permanent=False), name="account_signup"),
     path("accounts/", include("allauth.urls")),
     path("auth/", include("apps.accounts.urls", namespace="accounts")),
     path("dashboard/", include("apps.dashboard.urls", namespace="dashboard")),
