@@ -264,16 +264,68 @@ def remove_member(request: HttpRequest, pk, user_id) -> HttpResponse:
 
 @login_required
 def create_organization(request: HttpRequest) -> HttpResponse:
-    """Create a new organization (super admin only)."""
+    """Create a new organization with admin (super admin only)."""
     if not getattr(request.user, 'is_super_admin', False):
         messages.error(request, "Accès réservé aux super administrateurs.")
         return redirect("dashboard:index")
 
+    from apps.accounts.models import User
+    import secrets
+    import string
+
     if request.method == "POST":
         form = OrganizationCreateForm(request.POST)
         if form.is_valid():
+            # Create organization
             organization = form.save()
-            messages.success(request, f"Entreprise '{organization.name}' créée avec succès.")
+
+            # Get admin details
+            admin_email = form.cleaned_data['admin_email']
+            admin_first_name = form.cleaned_data.get('admin_first_name', '')
+            admin_last_name = form.cleaned_data.get('admin_last_name', '')
+
+            # Check if user already exists
+            admin_user = User.objects.filter(email=admin_email).first()
+
+            # Generate temporary password
+            temp_password = ''.join(secrets.choice(string.ascii_letters + string.digits) for _ in range(12))
+
+            if not admin_user:
+                # Create new admin user
+                admin_user = User.objects.create_user(
+                    email=admin_email,
+                    password=temp_password,
+                    first_name=admin_first_name,
+                    last_name=admin_last_name,
+                )
+                messages.info(
+                    request,
+                    f"Compte créé pour {admin_email}. Mot de passe temporaire: {temp_password}"
+                )
+            else:
+                messages.info(
+                    request,
+                    f"L'utilisateur {admin_email} existe déjà et a été assigné comme admin."
+                )
+
+            # Set user as organization admin
+            admin_user.organization = organization
+            admin_user.active_organization = organization
+            admin_user.is_organization_admin = True
+            admin_user.save(update_fields=['organization', 'active_organization', 'is_organization_admin'])
+
+            # Create membership
+            OrganizationMembership.objects.create(
+                user=admin_user,
+                organization=organization,
+                role=OrganizationMembership.Role.ADMIN,
+                invited_by=request.user,
+            )
+
+            messages.success(
+                request,
+                f"Entreprise '{organization.name}' créée avec {admin_email} comme administrateur."
+            )
             return redirect("core:organization_detail", pk=organization.pk)
     else:
         form = OrganizationCreateForm()

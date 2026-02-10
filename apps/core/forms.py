@@ -95,6 +95,34 @@ class OrganizationSettingsForm(forms.ModelForm):
 class OrganizationCreateForm(forms.ModelForm):
     """Form for creating a new organization."""
 
+    admin_email = forms.EmailField(
+        label="Email de l'administrateur *",
+        required=True,
+        widget=forms.EmailInput(attrs={
+            "class": "w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500",
+            "placeholder": "admin@entreprise.com",
+        }),
+        help_text="Un compte sera créé et l'utilisateur recevra ses identifiants."
+    )
+
+    admin_first_name = forms.CharField(
+        label="Prénom de l'administrateur",
+        required=False,
+        widget=forms.TextInput(attrs={
+            "class": "w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500",
+            "placeholder": "Jean",
+        }),
+    )
+
+    admin_last_name = forms.CharField(
+        label="Nom de l'administrateur",
+        required=False,
+        widget=forms.TextInput(attrs={
+            "class": "w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500",
+            "placeholder": "Dupont",
+        }),
+    )
+
     class Meta:
         model = Organization
         fields = [
@@ -142,13 +170,22 @@ class OrganizationCreateForm(forms.ModelForm):
         labels = {
             "name": "Nom de l'entreprise *",
             "siret": "SIRET",
-            "email": "Email",
+            "email": "Email de l'entreprise",
             "phone": "Téléphone",
             "address": "Adresse",
             "city": "Ville",
             "postal_code": "Code postal",
             "country": "Pays",
         }
+
+    def clean_admin_email(self):
+        email = self.cleaned_data.get('admin_email')
+        if email:
+            # Check if user already exists with super_admin status
+            existing = User.objects.filter(email=email, is_super_admin=True).first()
+            if existing:
+                raise forms.ValidationError("Cet email appartient à un super administrateur.")
+        return email
 
 
 class AssignAdminForm(forms.Form):
