@@ -36,6 +36,16 @@
                 </svg>
                 Modifier
             </a>
+            <form method="post" action="{% url 'core:organization_delete' pk=organization.pk %}"
+                  onsubmit="return confirm('ATTENTION: Cette action est irréversible.\n\nSupprimer l\'entreprise {{ organization.name }} ?\n\nTous les membres seront retirés et toutes les données seront perdues.');">
+                {% csrf_token %}
+                <button type="submit" class="btn-secondary text-red-600 border-red-300 hover:bg-red-50">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                    </svg>
+                    Supprimer
+                </button>
+            </form>
             <a href="{% url 'core:organization_enter' pk=organization.pk %}" class="btn-primary">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>

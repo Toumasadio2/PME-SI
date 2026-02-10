@@ -18,6 +18,7 @@ urlpatterns = [
     path("entreprises/nouvelle/", views.create_organization, name="organization_create"),
     path("entreprises/<uuid:pk>/", views.OrganizationDetailView.as_view(), name="organization_detail"),
     path("entreprises/<uuid:pk>/modifier/", views.edit_organization, name="organization_edit"),
+    path("entreprises/<uuid:pk>/supprimer/", views.delete_organization, name="organization_delete"),
     path("entreprises/<uuid:pk>/entrer/", views.enter_organization, name="organization_enter"),
     path("entreprises/<uuid:pk>/assigner-admin/", views.assign_admin, name="assign_admin"),
     path("entreprises/<uuid:pk>/retirer-membre/<uuid:user_id>/", views.remove_member, name="remove_member"),

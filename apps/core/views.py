@@ -339,3 +339,40 @@ def exit_organization(request: HttpRequest) -> HttpResponse:
 
     messages.info(request, "Retour à la vue globale.")
     return redirect("dashboard:index")
+
+
+@login_required
+@require_POST
+def delete_organization(request: HttpRequest, pk) -> HttpResponse:
+    """Delete an organization (super admin only)."""
+    if not getattr(request.user, 'is_super_admin', False):
+        messages.error(request, "Accès réservé aux super administrateurs.")
+        return redirect("dashboard:index")
+
+    organization = get_object_or_404(Organization, pk=pk)
+    org_name = organization.name
+
+    # Check if super admin is currently in this organization
+    if request.user.active_organization == organization:
+        request.user.active_organization = None
+        request.user.save(update_fields=['active_organization'])
+
+    # Remove all memberships
+    OrganizationMembership.objects.filter(organization=organization).delete()
+
+    # Clear organization from all users who have it set
+    from apps.accounts.models import User
+    User.objects.filter(organization=organization).update(
+        organization=None,
+        active_organization=None,
+        is_organization_admin=False
+    )
+    User.objects.filter(active_organization=organization).update(
+        active_organization=None
+    )
+
+    # Delete the organization
+    organization.delete()
+
+    messages.success(request, f"L'entreprise '{org_name}' a été supprimée.")
+    return redirect("core:organization_list")
