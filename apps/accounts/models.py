@@ -187,6 +187,13 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
             return True
         return False
 
+    def save(self, *args, **kwargs):
+        """Override save to auto-set active_organization."""
+        # Auto-set active_organization if organization is set but active_organization is not
+        if self.organization and not self.active_organization:
+            self.active_organization = self.organization
+        super().save(*args, **kwargs)
+
 
 class UserInvitation(TimeStampedModel):
     """
@@ -241,4 +248,5 @@ class UserInvitation(TimeStampedModel):
         self.save(update_fields=["status", "accepted_at"])
 
         user.organization = self.organization
-        user.save(update_fields=["organization"])
+        user.active_organization = self.organization
+        user.save(update_fields=["organization", "active_organization"])
