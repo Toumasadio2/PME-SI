@@ -31,8 +31,10 @@ RUN pip install --no-cache-dir -r requirements/production.txt
 # Copy application code
 COPY --chown=appuser:appgroup . .
 
-# Collect static files
-RUN python manage.py collectstatic --noinput
+# Collect static files (using dummy key for build time only)
+RUN SECRET_KEY=build-time-secret-key-not-used-in-production \
+    DATABASE_URL=sqlite:///tmp.db \
+    python manage.py collectstatic --noinput
 
 # Switch to non-root user
 USER appuser
