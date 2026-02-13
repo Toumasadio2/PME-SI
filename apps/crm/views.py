@@ -20,7 +20,7 @@ from django.views.generic import (
     UpdateView,
 )
 
-from apps.permissions.mixins import PermissionRequiredMixin
+from apps.permissions.mixins import ModulePermissionMixin, PermissionRequiredMixin
 
 from .forms import (
     ActivityForm,
@@ -37,8 +37,10 @@ from .forms import (
 from .models import Activity, Company, Contact, Document, Opportunity, PipelineStage, Tag
 
 
-class CRMBaseMixin(LoginRequiredMixin):
-    """Base mixin for CRM views with tenant filtering."""
+class CRMBaseMixin(LoginRequiredMixin, ModulePermissionMixin):
+    """Base mixin for CRM views with tenant filtering and module permission."""
+
+    module_required = "crm"
 
     def get_queryset(self):
         """Filter by current organization."""
@@ -173,13 +175,14 @@ class CRMDashboardView(CRMBaseMixin, TemplateView):
 # Contacts
 # =============================================================================
 
-class ContactListView(CRMBaseMixin, ListView):
+class ContactListView(CRMBaseMixin, PermissionRequiredMixin, ListView):
     """List all contacts."""
 
     model = Contact
     template_name = "crm/contact_list.html"
     context_object_name = "contacts"
     paginate_by = 25
+    permission_required = "crm_view"
 
     def get_queryset(self):
         qs = super().get_queryset().select_related("company", "assigned_to")
@@ -216,12 +219,13 @@ class ContactListView(CRMBaseMixin, ListView):
         return context
 
 
-class ContactDetailView(CRMBaseMixin, DetailView):
+class ContactDetailView(CRMBaseMixin, PermissionRequiredMixin, DetailView):
     """Contact detail view."""
 
     model = Contact
     template_name = "crm/contact_detail.html"
     context_object_name = "contact"
+    permission_required = "crm_view"
 
     def get_queryset(self):
         return super().get_queryset().select_related(
@@ -240,12 +244,13 @@ class ContactDetailView(CRMBaseMixin, DetailView):
         return context
 
 
-class ContactCreateView(CRMBaseMixin, CreateView):
+class ContactCreateView(CRMBaseMixin, PermissionRequiredMixin, CreateView):
     """Create a new contact."""
 
     model = Contact
     form_class = ContactForm
     template_name = "crm/contact_form.html"
+    permission_required = "crm_create"
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
@@ -260,12 +265,13 @@ class ContactCreateView(CRMBaseMixin, CreateView):
         return super().form_valid(form)
 
 
-class ContactUpdateView(CRMBaseMixin, UpdateView):
+class ContactUpdateView(CRMBaseMixin, PermissionRequiredMixin, UpdateView):
     """Update a contact."""
 
     model = Contact
     form_class = ContactForm
     template_name = "crm/contact_form.html"
+    permission_required = "crm_edit"
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
@@ -280,12 +286,13 @@ class ContactUpdateView(CRMBaseMixin, UpdateView):
         return super().form_valid(form)
 
 
-class ContactDeleteView(CRMBaseMixin, DeleteView):
+class ContactDeleteView(CRMBaseMixin, PermissionRequiredMixin, DeleteView):
     """Delete a contact."""
 
     model = Contact
     template_name = "crm/contact_confirm_delete.html"
     success_url = reverse_lazy("crm:contact_list")
+    permission_required = "crm_delete"
 
     def form_valid(self, form):
         messages.success(self.request, "Contact supprimé avec succès.")
@@ -296,13 +303,14 @@ class ContactDeleteView(CRMBaseMixin, DeleteView):
 # Companies
 # =============================================================================
 
-class CompanyListView(CRMBaseMixin, ListView):
+class CompanyListView(CRMBaseMixin, PermissionRequiredMixin, ListView):
     """List all companies."""
 
     model = Company
     template_name = "crm/company_list.html"
     context_object_name = "companies"
     paginate_by = 25
+    permission_required = "crm_view"
 
     def get_queryset(self):
         qs = super().get_queryset().annotate(
@@ -334,12 +342,13 @@ class CompanyListView(CRMBaseMixin, ListView):
         return context
 
 
-class CompanyDetailView(CRMBaseMixin, DetailView):
+class CompanyDetailView(CRMBaseMixin, PermissionRequiredMixin, DetailView):
     """Company detail view."""
 
     model = Company
     template_name = "crm/company_detail.html"
     context_object_name = "company"
+    permission_required = "crm_view"
 
     def get_queryset(self):
         return super().get_queryset().select_related(
@@ -357,12 +366,13 @@ class CompanyDetailView(CRMBaseMixin, DetailView):
         return context
 
 
-class CompanyCreateView(CRMBaseMixin, CreateView):
+class CompanyCreateView(CRMBaseMixin, PermissionRequiredMixin, CreateView):
     """Create a new company."""
 
     model = Company
     form_class = CompanyForm
     template_name = "crm/company_form.html"
+    permission_required = "crm_create"
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
@@ -376,12 +386,13 @@ class CompanyCreateView(CRMBaseMixin, CreateView):
         return super().form_valid(form)
 
 
-class CompanyUpdateView(CRMBaseMixin, UpdateView):
+class CompanyUpdateView(CRMBaseMixin, PermissionRequiredMixin, UpdateView):
     """Update a company."""
 
     model = Company
     form_class = CompanyForm
     template_name = "crm/company_form.html"
+    permission_required = "crm_edit"
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
@@ -395,12 +406,13 @@ class CompanyUpdateView(CRMBaseMixin, UpdateView):
         return super().form_valid(form)
 
 
-class CompanyDeleteView(CRMBaseMixin, DeleteView):
+class CompanyDeleteView(CRMBaseMixin, PermissionRequiredMixin, DeleteView):
     """Delete a company."""
 
     model = Company
     template_name = "crm/company_confirm_delete.html"
     success_url = reverse_lazy("crm:company_list")
+    permission_required = "crm_delete"
 
     def form_valid(self, form):
         messages.success(self.request, "Entreprise supprimée avec succès.")
@@ -411,13 +423,14 @@ class CompanyDeleteView(CRMBaseMixin, DeleteView):
 # Opportunities
 # =============================================================================
 
-class OpportunityListView(CRMBaseMixin, ListView):
+class OpportunityListView(CRMBaseMixin, PermissionRequiredMixin, ListView):
     """List all opportunities."""
 
     model = Opportunity
     template_name = "crm/opportunity_list.html"
     context_object_name = "opportunities"
     paginate_by = 25
+    permission_required = "crm_view"
 
     def get_queryset(self):
         qs = super().get_queryset().select_related(
@@ -463,12 +476,13 @@ class OpportunityListView(CRMBaseMixin, ListView):
         return context
 
 
-class OpportunityDetailView(CRMBaseMixin, DetailView):
+class OpportunityDetailView(CRMBaseMixin, PermissionRequiredMixin, DetailView):
     """Opportunity detail view."""
 
     model = Opportunity
     template_name = "crm/opportunity_detail.html"
     context_object_name = "opportunity"
+    permission_required = "crm_view"
 
     def get_queryset(self):
         return super().get_queryset().select_related(
@@ -485,12 +499,13 @@ class OpportunityDetailView(CRMBaseMixin, DetailView):
         return context
 
 
-class OpportunityCreateView(CRMBaseMixin, CreateView):
+class OpportunityCreateView(CRMBaseMixin, PermissionRequiredMixin, CreateView):
     """Create a new opportunity."""
 
     model = Opportunity
     form_class = OpportunityForm
     template_name = "crm/opportunity_form.html"
+    permission_required = "crm_create"
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -505,12 +520,13 @@ class OpportunityCreateView(CRMBaseMixin, CreateView):
         return super().form_valid(form)
 
 
-class OpportunityUpdateView(CRMBaseMixin, UpdateView):
+class OpportunityUpdateView(CRMBaseMixin, PermissionRequiredMixin, UpdateView):
     """Update an opportunity."""
 
     model = Opportunity
     form_class = OpportunityForm
     template_name = "crm/opportunity_form.html"
+    permission_required = "crm_edit"
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -522,12 +538,13 @@ class OpportunityUpdateView(CRMBaseMixin, UpdateView):
         return super().form_valid(form)
 
 
-class OpportunityDeleteView(CRMBaseMixin, DeleteView):
+class OpportunityDeleteView(CRMBaseMixin, PermissionRequiredMixin, DeleteView):
     """Delete an opportunity."""
 
     model = Opportunity
     template_name = "crm/opportunity_confirm_delete.html"
     success_url = reverse_lazy("crm:opportunity_list")
+    permission_required = "crm_delete"
 
     def form_valid(self, form):
         messages.success(self.request, "Opportunité supprimée avec succès.")
@@ -538,10 +555,11 @@ class OpportunityDeleteView(CRMBaseMixin, DeleteView):
 # Pipeline Kanban
 # =============================================================================
 
-class PipelineKanbanView(CRMBaseMixin, TemplateView):
+class PipelineKanbanView(CRMBaseMixin, PermissionRequiredMixin, TemplateView):
     """Kanban board view for pipeline."""
 
     template_name = "crm/pipeline_kanban.html"
+    permission_required = "crm_view"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -585,8 +603,10 @@ class PipelineKanbanView(CRMBaseMixin, TemplateView):
         return context
 
 
-class OpportunityMoveStageView(CRMBaseMixin, View):
+class OpportunityMoveStageView(CRMBaseMixin, PermissionRequiredMixin, View):
     """HTMX view to move opportunity to a new stage."""
+
+    permission_required = "crm_edit"
 
     def post(self, request, pk):
         org = getattr(request, "organization", None)
@@ -616,13 +636,14 @@ class OpportunityMoveStageView(CRMBaseMixin, View):
 # Activities
 # =============================================================================
 
-class ActivityListView(CRMBaseMixin, ListView):
+class ActivityListView(CRMBaseMixin, PermissionRequiredMixin, ListView):
     """List all activities."""
 
     model = Activity
     template_name = "crm/activity_list.html"
     context_object_name = "activities"
     paginate_by = 50
+    permission_required = "crm_view"
 
     def get_queryset(self):
         qs = super().get_queryset().select_related(
@@ -656,12 +677,13 @@ class ActivityListView(CRMBaseMixin, ListView):
         return context
 
 
-class ActivityCreateView(CRMBaseMixin, CreateView):
+class ActivityCreateView(CRMBaseMixin, PermissionRequiredMixin, CreateView):
     """Create a new activity."""
 
     model = Activity
     form_class = ActivityForm
     template_name = "crm/activity_form.html"
+    permission_required = "crm_create"
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -767,71 +789,78 @@ class ActivityCompleteView(CRMBaseMixin, View):
 # Tags
 # =============================================================================
 
-class TagListView(CRMBaseMixin, ListView):
+class TagListView(CRMBaseMixin, PermissionRequiredMixin, ListView):
     """List all tags."""
 
     model = Tag
     template_name = "crm/tag_list.html"
     context_object_name = "tags"
+    permission_required = "crm_view"
 
 
-class TagCreateView(CRMBaseMixin, CreateView):
+class TagCreateView(CRMBaseMixin, PermissionRequiredMixin, CreateView):
     """Create a new tag."""
 
     model = Tag
     form_class = TagForm
     template_name = "crm/tag_form.html"
     success_url = reverse_lazy("crm:tag_list")
+    permission_required = "crm_create"
 
     def form_valid(self, form):
         messages.success(self.request, "Tag créé avec succès.")
         return super().form_valid(form)
 
 
-class TagDeleteView(CRMBaseMixin, DeleteView):
+class TagDeleteView(CRMBaseMixin, PermissionRequiredMixin, DeleteView):
     """Delete a tag."""
 
     model = Tag
     template_name = "crm/tag_confirm_delete.html"
     success_url = reverse_lazy("crm:tag_list")
+    permission_required = "crm_delete"
 
 
 # =============================================================================
 # Pipeline Stages
 # =============================================================================
 
-class PipelineStageListView(CRMBaseMixin, ListView):
+class PipelineStageListView(CRMBaseMixin, PermissionRequiredMixin, ListView):
     """List all pipeline stages."""
 
     model = PipelineStage
     template_name = "crm/pipeline_stage_list.html"
     context_object_name = "stages"
+    permission_required = "crm_view"
 
 
-class PipelineStageCreateView(CRMBaseMixin, CreateView):
+class PipelineStageCreateView(CRMBaseMixin, PermissionRequiredMixin, CreateView):
     """Create a new pipeline stage."""
 
     model = PipelineStage
     form_class = PipelineStageForm
     template_name = "crm/pipeline_stage_form.html"
     success_url = reverse_lazy("crm:pipeline_stage_list")
+    permission_required = "crm_create"
 
 
-class PipelineStageUpdateView(CRMBaseMixin, UpdateView):
+class PipelineStageUpdateView(CRMBaseMixin, PermissionRequiredMixin, UpdateView):
     """Update a pipeline stage."""
 
     model = PipelineStage
     form_class = PipelineStageForm
     template_name = "crm/pipeline_stage_form.html"
     success_url = reverse_lazy("crm:pipeline_stage_list")
+    permission_required = "crm_edit"
 
 
-class PipelineStageDeleteView(CRMBaseMixin, DeleteView):
+class PipelineStageDeleteView(CRMBaseMixin, PermissionRequiredMixin, DeleteView):
     """Delete a pipeline stage."""
 
     model = PipelineStage
     template_name = "crm/pipeline_stage_confirm_delete.html"
     success_url = reverse_lazy("crm:pipeline_stage_list")
+    permission_required = "crm_delete"
 
 
 # =============================================================================

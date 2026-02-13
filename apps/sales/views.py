@@ -7,13 +7,17 @@ from django.http import JsonResponse
 from django.urls import reverse_lazy
 from django.utils import timezone
 
+from apps.permissions.mixins import ModulePermissionMixin, PermissionRequiredMixin
+
 from .models import SalesTarget
 from .forms import SalesTargetForm
 from .services import SalesAnalyticsService
 
 
-class SalesBaseMixin(LoginRequiredMixin):
-    """Base mixin for Sales views with tenant filtering."""
+class SalesBaseMixin(LoginRequiredMixin, ModulePermissionMixin):
+    """Base mixin for Sales views with tenant filtering and module permission."""
+
+    module_required = "sales"
 
     def get_organization(self):
         """Get current organization from request."""
@@ -28,9 +32,10 @@ class SalesBaseMixin(LoginRequiredMixin):
         return qs.none()
 
 
-class SalesDashboardView(SalesBaseMixin, TemplateView):
+class SalesDashboardView(SalesBaseMixin, PermissionRequiredMixin, TemplateView):
     """Dashboard principal des ventes avec KPIs."""
     template_name = 'sales/dashboard.html'
+    permission_required = "sales_view"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -172,11 +177,12 @@ class QuotesChartAPIView(SalesBaseMixin, TemplateView):
         })
 
 
-class SalesTargetListView(SalesBaseMixin, ListView):
+class SalesTargetListView(SalesBaseMixin, PermissionRequiredMixin, ListView):
     """Liste des objectifs de vente."""
     model = SalesTarget
     template_name = 'sales/target_list.html'
     context_object_name = 'targets'
+    permission_required = "sales_view"
 
     def get_queryset(self):
         qs = super().get_queryset()
@@ -195,11 +201,12 @@ class SalesTargetListView(SalesBaseMixin, ListView):
         return context
 
 
-class SalesTargetDetailView(SalesBaseMixin, DetailView):
+class SalesTargetDetailView(SalesBaseMixin, PermissionRequiredMixin, DetailView):
     """Détail d'un objectif de vente avec suivi de progression."""
     model = SalesTarget
     template_name = 'sales/target_detail.html'
     context_object_name = 'target'
+    permission_required = "sales_view"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -242,12 +249,13 @@ class SalesTargetDetailView(SalesBaseMixin, DetailView):
         return context
 
 
-class SalesTargetCreateView(SalesBaseMixin, CreateView):
+class SalesTargetCreateView(SalesBaseMixin, PermissionRequiredMixin, CreateView):
     """Création d'un objectif de vente."""
     model = SalesTarget
     form_class = SalesTargetForm
     template_name = 'sales/target_form.html'
     success_url = reverse_lazy('sales:target_list')
+    permission_required = "sales_create"
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -260,12 +268,13 @@ class SalesTargetCreateView(SalesBaseMixin, CreateView):
         return super().form_valid(form)
 
 
-class SalesTargetUpdateView(SalesBaseMixin, UpdateView):
+class SalesTargetUpdateView(SalesBaseMixin, PermissionRequiredMixin, UpdateView):
     """Modification d'un objectif de vente."""
     model = SalesTarget
     form_class = SalesTargetForm
     template_name = 'sales/target_form.html'
     success_url = reverse_lazy('sales:target_list')
+    permission_required = "sales_edit"
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -277,11 +286,12 @@ class SalesTargetUpdateView(SalesBaseMixin, UpdateView):
         return super().form_valid(form)
 
 
-class SalesTargetDeleteView(SalesBaseMixin, DeleteView):
+class SalesTargetDeleteView(SalesBaseMixin, PermissionRequiredMixin, DeleteView):
     """Suppression d'un objectif de vente."""
     model = SalesTarget
     template_name = 'sales/target_confirm_delete.html'
     success_url = reverse_lazy('sales:target_list')
+    permission_required = "sales_delete"
 
     def form_valid(self, form):
         messages.success(self.request, 'Objectif supprimé.')

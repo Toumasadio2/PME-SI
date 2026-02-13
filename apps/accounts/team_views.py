@@ -225,6 +225,11 @@ class RemoveMemberView(LoginRequiredMixin, OrganizationAdminRequiredMixin, View)
             messages.error(request, "Vous ne pouvez pas vous retirer vous-même.")
             return redirect("accounts:team_list")
 
+        # Cannot remove an admin if you're not a super admin
+        if member.is_organization_admin and not request.user.is_superuser:
+            messages.error(request, "Vous ne pouvez pas supprimer un administrateur.")
+            return redirect("accounts:team_list")
+
         # Remove from organization
         member.organization = None
         member.is_organization_admin = False

@@ -126,7 +126,13 @@
             </a>
             {% else %}
             <!-- Regular User Menu (Organization-scoped) -->
+            {% has_module_perm "crm" as can_access_crm %}
+            {% has_module_perm "sales" as can_access_sales %}
+            {% has_module_perm "invoicing" as can_access_invoicing %}
+            {% has_module_perm "hr" as can_access_hr %}
+
             <!-- CRM Module -->
+            {% if can_access_crm %}
             <div x-data="{ open: {% if 'crm' in request.path %}true{% else %}false{% endif %} }">
                 <button @click="open = !open"
                     class="flex items-center w-full px-3 py-2 text-sm font-medium rounded-lg {% if 'crm' in request.path %}bg-primary-50 text-primary-700{% else %}text-gray-700 hover:bg-gray-100{% endif %}">
@@ -147,8 +153,10 @@
                     <a href="{% url 'crm:activity_list' %}" class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100">Activités</a>
                 </div>
             </div>
+            {% endif %}
 
             <!-- Sales Module (includes Invoicing) -->
+            {% if can_access_sales or can_access_invoicing %}
             <div x-data="{ open: {% if 'ventes' in request.path or 'facturation' in request.path %}true{% else %}false{% endif %} }">
                 <button @click="open = !open"
                     class="flex items-center w-full px-3 py-2 text-sm font-medium rounded-lg {% if 'ventes' in request.path or 'facturation' in request.path %}bg-primary-50 text-primary-700{% else %}text-gray-700 hover:bg-gray-100{% endif %}">
@@ -161,15 +169,21 @@
                     </svg>
                 </button>
                 <div x-show="open" x-collapse class="ml-8 mt-1 space-y-1">
+                    {% if can_access_sales %}
                     <a href="{% url 'sales:dashboard' %}" class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100">Dashboard</a>
                     <a href="{% url 'sales:target_list' %}" class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100">Objectifs</a>
+                    {% endif %}
+                    {% if can_access_invoicing %}
                     <a href="{% url 'invoicing:product_list' %}" class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100">Produits</a>
                     <a href="{% url 'invoicing:quote_list' %}" class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100">Devis</a>
                     <a href="{% url 'invoicing:invoice_list' %}" class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100">Factures</a>
+                    {% endif %}
                 </div>
             </div>
+            {% endif %}
 
             <!-- HR Module -->
+            {% if can_access_hr %}
             <div x-data="{ open: {% if 'rh' in request.path %}true{% else %}false{% endif %} }">
                 <button @click="open = !open"
                     class="flex items-center w-full px-3 py-2 text-sm font-medium rounded-lg {% if 'rh' in request.path %}bg-primary-50 text-primary-700{% else %}text-gray-700 hover:bg-gray-100{% endif %}">
@@ -190,6 +204,7 @@
                     <a href="{% url 'hr:timesheet' %}" class="block px-3 py-2 text-sm text-gray-600 rounded-lg hover:bg-gray-100">Temps de travail</a>
                 </div>
             </div>
+            {% endif %}
             {% endif %}
         </nav>
 

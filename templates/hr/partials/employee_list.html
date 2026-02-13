@@ -1,3 +1,7 @@
+{% load permissions_tags %}
+{% has_perm "hr_edit" as can_edit %}
+{% has_perm "hr_create" as can_create %}
+
 <table class="min-w-full divide-y divide-gray-200">
     <thead class="bg-gray-50">
         <tr>
@@ -74,9 +78,11 @@
                 <a href="{% url 'hr:employee_detail' employee.pk %}" class="text-primary-600 hover:text-primary-900 mr-3">
                     Voir
                 </a>
+                {% if can_edit %}
                 <a href="{% url 'hr:employee_update' employee.pk %}" class="text-gray-600 hover:text-gray-900">
                     Modifier
                 </a>
+                {% endif %}
             </td>
         </tr>
         {% empty %}
@@ -87,6 +93,7 @@
                 </svg>
                 <h3 class="mt-2 text-sm font-medium text-gray-900">Aucun employé</h3>
                 <p class="mt-1 text-sm text-gray-500">Commencez par ajouter votre premier employé.</p>
+                {% if can_create %}
                 <div class="mt-6">
                     <a href="{% url 'hr:employee_create' %}" class="btn-primary">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -95,6 +102,7 @@
                         Nouvel employé
                     </a>
                 </div>
+                {% endif %}
             </td>
         </tr>
         {% endfor %}

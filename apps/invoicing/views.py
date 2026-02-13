@@ -13,6 +13,9 @@ from django.http import JsonResponse, HttpResponse
 from django.db.models import Q
 from django.utils import timezone
 
+from apps.permissions.decorators import permission_required
+from apps.permissions.mixins import ModulePermissionMixin, PermissionRequiredMixin
+
 from .models import Product, ProductCategory, ProductTag, Quote, QuoteItem, Invoice, InvoiceItem, Payment
 from .forms import (
     ProductForm, ProductCategoryForm, ProductTagForm, QuoteForm, QuoteItemFormSet, InvoiceForm,
@@ -23,8 +26,10 @@ from .services import NumberingService, QuoteService
 from .pdf import PDFService, PDFGenerationError
 
 
-class InvoicingBaseMixin(LoginRequiredMixin):
-    """Base mixin for Invoicing views with tenant filtering."""
+class InvoicingBaseMixin(LoginRequiredMixin, ModulePermissionMixin):
+    """Base mixin for Invoicing views with tenant filtering and module permission."""
+
+    module_required = "invoicing"
 
     def get_organization(self):
         """Get current organization from request."""
@@ -168,12 +173,13 @@ class InvoicingDashboardView(InvoicingBaseMixin, TemplateView):
 # Products
 # =============================================================================
 
-class ProductListView(InvoicingBaseMixin, ListView):
+class ProductListView(InvoicingBaseMixin, PermissionRequiredMixin, ListView):
     """Liste des produits/services."""
     model = Product
     template_name = 'invoicing/product_list.html'
     context_object_name = 'products'
     paginate_by = 20
+    permission_required = "invoicing_view"
 
     def get_queryset(self):
         queryset = super().get_queryset().select_related('category').prefetch_related('tags')
@@ -230,12 +236,13 @@ class ProductListView(InvoicingBaseMixin, ListView):
         return context
 
 
-class ProductCreateView(InvoicingBaseMixin, CreateView):
+class ProductCreateView(InvoicingBaseMixin, PermissionRequiredMixin, CreateView):
     """Création d'un produit."""
     model = Product
     form_class = ProductForm
     template_name = 'invoicing/product_form.html'
     success_url = reverse_lazy('invoicing:product_list')
+    permission_required = "invoicing_create"
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -247,12 +254,13 @@ class ProductCreateView(InvoicingBaseMixin, CreateView):
         return super().form_valid(form)
 
 
-class ProductUpdateView(InvoicingBaseMixin, UpdateView):
+class ProductUpdateView(InvoicingBaseMixin, PermissionRequiredMixin, UpdateView):
     """Modification d'un produit."""
     model = Product
     form_class = ProductForm
     template_name = 'invoicing/product_form.html'
     success_url = reverse_lazy('invoicing:product_list')
+    permission_required = "invoicing_edit"
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -264,11 +272,12 @@ class ProductUpdateView(InvoicingBaseMixin, UpdateView):
         return super().form_valid(form)
 
 
-class ProductDeleteView(InvoicingBaseMixin, DeleteView):
+class ProductDeleteView(InvoicingBaseMixin, PermissionRequiredMixin, DeleteView):
     """Suppression d'un produit."""
     model = Product
     template_name = 'invoicing/product_confirm_delete.html'
     success_url = reverse_lazy('invoicing:product_list')
+    permission_required = "invoicing_delete"
 
     def form_valid(self, form):
         """Handle successful form submission (Django 4.x+)."""
@@ -280,22 +289,24 @@ class ProductDeleteView(InvoicingBaseMixin, DeleteView):
 # Product Categories
 # =============================================================================
 
-class ProductCategoryListView(InvoicingBaseMixin, ListView):
+class ProductCategoryListView(InvoicingBaseMixin, PermissionRequiredMixin, ListView):
     """Liste des catégories de produits."""
     model = ProductCategory
     template_name = 'invoicing/category_list.html'
     context_object_name = 'categories'
+    permission_required = "invoicing_view"
 
     def get_queryset(self):
         return super().get_queryset().filter(parent__isnull=True).prefetch_related('children')
 
 
-class ProductCategoryCreateView(InvoicingBaseMixin, CreateView):
+class ProductCategoryCreateView(InvoicingBaseMixin, PermissionRequiredMixin, CreateView):
     """Création d'une catégorie de produit."""
     model = ProductCategory
     form_class = ProductCategoryForm
     template_name = 'invoicing/category_form.html'
     success_url = reverse_lazy('invoicing:category_list')
+    permission_required = "invoicing_create"
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -307,12 +318,13 @@ class ProductCategoryCreateView(InvoicingBaseMixin, CreateView):
         return super().form_valid(form)
 
 
-class ProductCategoryUpdateView(InvoicingBaseMixin, UpdateView):
+class ProductCategoryUpdateView(InvoicingBaseMixin, PermissionRequiredMixin, UpdateView):
     """Modification d'une catégorie de produit."""
     model = ProductCategory
     form_class = ProductCategoryForm
     template_name = 'invoicing/category_form.html'
     success_url = reverse_lazy('invoicing:category_list')
+    permission_required = "invoicing_edit"
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -324,11 +336,12 @@ class ProductCategoryUpdateView(InvoicingBaseMixin, UpdateView):
         return super().form_valid(form)
 
 
-class ProductCategoryDeleteView(InvoicingBaseMixin, DeleteView):
+class ProductCategoryDeleteView(InvoicingBaseMixin, PermissionRequiredMixin, DeleteView):
     """Suppression d'une catégorie de produit."""
     model = ProductCategory
     template_name = 'invoicing/category_confirm_delete.html'
     success_url = reverse_lazy('invoicing:category_list')
+    permission_required = "invoicing_delete"
 
     def form_valid(self, form):
         messages.success(self.request, 'Catégorie supprimée avec succès.')
@@ -339,42 +352,46 @@ class ProductCategoryDeleteView(InvoicingBaseMixin, DeleteView):
 # Product Tags
 # =============================================================================
 
-class ProductTagListView(InvoicingBaseMixin, ListView):
+class ProductTagListView(InvoicingBaseMixin, PermissionRequiredMixin, ListView):
     """Liste des tags de produits."""
     model = ProductTag
     template_name = 'invoicing/tag_list.html'
     context_object_name = 'tags'
+    permission_required = "invoicing_view"
 
 
-class ProductTagCreateView(InvoicingBaseMixin, CreateView):
+class ProductTagCreateView(InvoicingBaseMixin, PermissionRequiredMixin, CreateView):
     """Création d'un tag de produit."""
     model = ProductTag
     form_class = ProductTagForm
     template_name = 'invoicing/tag_form.html'
     success_url = reverse_lazy('invoicing:tag_list')
+    permission_required = "invoicing_create"
 
     def form_valid(self, form):
         messages.success(self.request, 'Tag créé avec succès.')
         return super().form_valid(form)
 
 
-class ProductTagUpdateView(InvoicingBaseMixin, UpdateView):
+class ProductTagUpdateView(InvoicingBaseMixin, PermissionRequiredMixin, UpdateView):
     """Modification d'un tag de produit."""
     model = ProductTag
     form_class = ProductTagForm
     template_name = 'invoicing/tag_form.html'
     success_url = reverse_lazy('invoicing:tag_list')
+    permission_required = "invoicing_edit"
 
     def form_valid(self, form):
         messages.success(self.request, 'Tag modifié avec succès.')
         return super().form_valid(form)
 
 
-class ProductTagDeleteView(InvoicingBaseMixin, DeleteView):
+class ProductTagDeleteView(InvoicingBaseMixin, PermissionRequiredMixin, DeleteView):
     """Suppression d'un tag de produit."""
     model = ProductTag
     template_name = 'invoicing/tag_confirm_delete.html'
     success_url = reverse_lazy('invoicing:tag_list')
+    permission_required = "invoicing_delete"
 
     def form_valid(self, form):
         messages.success(self.request, 'Tag supprimé avec succès.')
@@ -385,12 +402,13 @@ class ProductTagDeleteView(InvoicingBaseMixin, DeleteView):
 # Quotes
 # =============================================================================
 
-class QuoteListView(InvoicingBaseMixin, ListView):
+class QuoteListView(InvoicingBaseMixin, PermissionRequiredMixin, ListView):
     """Liste des devis."""
     model = Quote
     template_name = 'invoicing/quote_list.html'
     context_object_name = 'quotes'
     paginate_by = 20
+    permission_required = "invoicing_view"
 
     def get_queryset(self):
         queryset = super().get_queryset().select_related('company', 'contact')
@@ -419,11 +437,12 @@ class QuoteListView(InvoicingBaseMixin, ListView):
         return context
 
 
-class QuoteDetailView(InvoicingBaseMixin, DetailView):
+class QuoteDetailView(InvoicingBaseMixin, PermissionRequiredMixin, DetailView):
     """Détail d'un devis."""
     model = Quote
     template_name = 'invoicing/quote_detail.html'
     context_object_name = 'quote'
+    permission_required = "invoicing_view"
 
     def get_queryset(self):
         return super().get_queryset().select_related(
@@ -431,11 +450,12 @@ class QuoteDetailView(InvoicingBaseMixin, DetailView):
         ).prefetch_related('items')
 
 
-class QuoteCreateView(InvoicingBaseMixin, CreateView):
+class QuoteCreateView(InvoicingBaseMixin, PermissionRequiredMixin, CreateView):
     """Création d'un devis."""
     model = Quote
     form_class = QuoteForm
     template_name = 'invoicing/quote_form.html'
+    permission_required = "invoicing_create"
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -485,11 +505,12 @@ class QuoteCreateView(InvoicingBaseMixin, CreateView):
             return self.render_to_response(context)
 
 
-class QuoteUpdateView(InvoicingBaseMixin, UpdateView):
+class QuoteUpdateView(InvoicingBaseMixin, PermissionRequiredMixin, UpdateView):
     """Modification d'un devis."""
     model = Quote
     form_class = QuoteForm
     template_name = 'invoicing/quote_form.html'
+    permission_required = "invoicing_edit"
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -532,11 +553,12 @@ class QuoteUpdateView(InvoicingBaseMixin, UpdateView):
             return self.render_to_response(context)
 
 
-class QuoteDeleteView(InvoicingBaseMixin, DeleteView):
+class QuoteDeleteView(InvoicingBaseMixin, PermissionRequiredMixin, DeleteView):
     """Suppression d'un devis."""
     model = Quote
     template_name = 'invoicing/quote_confirm_delete.html'
     success_url = reverse_lazy('invoicing:quote_list')
+    permission_required = "invoicing_delete"
 
     def form_valid(self, form):
         """Handle successful form submission (Django 4.x+)."""
@@ -546,6 +568,7 @@ class QuoteDeleteView(InvoicingBaseMixin, DeleteView):
 
 
 @login_required
+@permission_required("invoicing_approve")
 def quote_change_status(request, pk):
     """Change le statut d'un devis."""
     org = getattr(request, 'organization', None)
@@ -585,12 +608,13 @@ def quote_convert_to_invoice(request, pk):
 # Invoices
 # =============================================================================
 
-class InvoiceListView(InvoicingBaseMixin, ListView):
+class InvoiceListView(InvoicingBaseMixin, PermissionRequiredMixin, ListView):
     """Liste des factures."""
     model = Invoice
     template_name = 'invoicing/invoice_list.html'
     context_object_name = 'invoices'
     paginate_by = 20
+    permission_required = "invoicing_view"
 
     def get_queryset(self):
         queryset = super().get_queryset().select_related('company', 'contact')
@@ -622,11 +646,12 @@ class InvoiceListView(InvoicingBaseMixin, ListView):
         return context
 
 
-class InvoiceDetailView(InvoicingBaseMixin, DetailView):
+class InvoiceDetailView(InvoicingBaseMixin, PermissionRequiredMixin, DetailView):
     """Détail d'une facture."""
     model = Invoice
     template_name = 'invoicing/invoice_detail.html'
     context_object_name = 'invoice'
+    permission_required = "invoicing_view"
 
     def get_queryset(self):
         return super().get_queryset().select_related(
@@ -639,11 +664,12 @@ class InvoiceDetailView(InvoicingBaseMixin, DetailView):
         return context
 
 
-class InvoiceCreateView(InvoicingBaseMixin, CreateView):
+class InvoiceCreateView(InvoicingBaseMixin, PermissionRequiredMixin, CreateView):
     """Création d'une facture."""
     model = Invoice
     form_class = InvoiceForm
     template_name = 'invoicing/invoice_form.html'
+    permission_required = "invoicing_create"
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -692,11 +718,12 @@ class InvoiceCreateView(InvoicingBaseMixin, CreateView):
             return self.render_to_response(context)
 
 
-class InvoiceUpdateView(InvoicingBaseMixin, UpdateView):
+class InvoiceUpdateView(InvoicingBaseMixin, PermissionRequiredMixin, UpdateView):
     """Modification d'une facture."""
     model = Invoice
     form_class = InvoiceForm
     template_name = 'invoicing/invoice_form.html'
+    permission_required = "invoicing_edit"
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -739,11 +766,12 @@ class InvoiceUpdateView(InvoicingBaseMixin, UpdateView):
             return self.render_to_response(context)
 
 
-class InvoiceDeleteView(InvoicingBaseMixin, DeleteView):
+class InvoiceDeleteView(InvoicingBaseMixin, PermissionRequiredMixin, DeleteView):
     """Suppression d'une facture (soft-delete)."""
     model = Invoice
     template_name = 'invoicing/invoice_confirm_delete.html'
     success_url = reverse_lazy('invoicing:invoice_list')
+    permission_required = "invoicing_delete"
 
     def get_queryset(self):
         # Exclude already deleted invoices
@@ -769,6 +797,7 @@ class InvoiceDeleteView(InvoicingBaseMixin, DeleteView):
 
 
 @login_required
+@permission_required("invoicing_approve")
 def invoice_change_status(request, pk):
     """Change le statut d'une facture."""
     org = getattr(request, 'organization', None)
@@ -901,11 +930,12 @@ def invoice_pdf_view(request, pk):
 # Email Sending
 # =============================================================================
 
-class QuoteSendEmailView(InvoicingBaseMixin, DetailView):
+class QuoteSendEmailView(InvoicingBaseMixin, PermissionRequiredMixin, DetailView):
     """Formulaire d'envoi de devis par email."""
     model = Quote
     template_name = 'invoicing/quote_send_email.html'
     context_object_name = 'quote'
+    permission_required = "invoicing_edit"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -946,11 +976,12 @@ class QuoteSendEmailView(InvoicingBaseMixin, DetailView):
         return self.render_to_response(context)
 
 
-class InvoiceSendEmailView(InvoicingBaseMixin, DetailView):
+class InvoiceSendEmailView(InvoicingBaseMixin, PermissionRequiredMixin, DetailView):
     """Formulaire d'envoi de facture par email."""
     model = Invoice
     template_name = 'invoicing/invoice_send_email.html'
     context_object_name = 'invoice'
+    permission_required = "invoicing_edit"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -991,11 +1022,12 @@ class InvoiceSendEmailView(InvoicingBaseMixin, DetailView):
         return self.render_to_response(context)
 
 
-class InvoiceSendReminderView(InvoicingBaseMixin, DetailView):
+class InvoiceSendReminderView(InvoicingBaseMixin, PermissionRequiredMixin, DetailView):
     """Formulaire d'envoi de relance par email."""
     model = Invoice
     template_name = 'invoicing/invoice_send_reminder.html'
     context_object_name = 'invoice'
+    permission_required = "invoicing_edit"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)

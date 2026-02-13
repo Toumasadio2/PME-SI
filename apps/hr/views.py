@@ -21,6 +21,7 @@ from django.views.generic import (
     UpdateView,
 )
 
+from apps.permissions.decorators import permission_required as perm_required
 from apps.permissions.mixins import ModulePermissionMixin, PermissionRequiredMixin
 
 from .forms import (
@@ -50,8 +51,10 @@ from .models import (
 from .services import HRAnalyticsService, LeaveService, TimesheetService
 
 
-class HRBaseMixin(LoginRequiredMixin):
-    """Base mixin for HR views with tenant filtering."""
+class HRBaseMixin(LoginRequiredMixin, ModulePermissionMixin):
+    """Base mixin for HR views with tenant filtering and module permission."""
+
+    module_required = "hr"
 
     def get_queryset(self):
         """Filter by current organization."""
@@ -130,13 +133,14 @@ class HRDashboardView(HRBaseMixin, TemplateView):
 # Employees
 # =============================================================================
 
-class EmployeeListView(HRBaseMixin, ListView):
+class EmployeeListView(HRBaseMixin, PermissionRequiredMixin, ListView):
     """List all employees."""
 
     model = Employee
     template_name = "hr/employee_list.html"
     context_object_name = "employees"
     paginate_by = 25
+    permission_required = "hr_view"
 
     def get_queryset(self):
         qs = super().get_queryset().select_related("department", "position", "manager")
@@ -181,12 +185,13 @@ class EmployeeListView(HRBaseMixin, ListView):
         return context
 
 
-class EmployeeDetailView(HRBaseMixin, DetailView):
+class EmployeeDetailView(HRBaseMixin, PermissionRequiredMixin, DetailView):
     """Employee detail view with tabs."""
 
     model = Employee
     template_name = "hr/employee_detail.html"
     context_object_name = "employee"
+    permission_required = "hr_view"
 
     def get_queryset(self):
         return super().get_queryset().select_related(
@@ -233,12 +238,13 @@ class EmployeeDetailView(HRBaseMixin, DetailView):
         return context
 
 
-class EmployeeCreateView(HRBaseMixin, CreateView):
+class EmployeeCreateView(HRBaseMixin, PermissionRequiredMixin, CreateView):
     """Create a new employee."""
 
     model = Employee
     form_class = EmployeeForm
     template_name = "hr/employee_form.html"
+    permission_required = "hr_create"
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -266,12 +272,13 @@ class EmployeeCreateView(HRBaseMixin, CreateView):
         return response
 
 
-class EmployeeUpdateView(HRBaseMixin, UpdateView):
+class EmployeeUpdateView(HRBaseMixin, PermissionRequiredMixin, UpdateView):
     """Update an employee."""
 
     model = Employee
     form_class = EmployeeForm
     template_name = "hr/employee_form.html"
+    permission_required = "hr_edit"
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -331,12 +338,13 @@ class EmployeeUpdateView(HRBaseMixin, UpdateView):
         return response
 
 
-class EmployeeDeleteView(HRBaseMixin, DeleteView):
+class EmployeeDeleteView(HRBaseMixin, PermissionRequiredMixin, DeleteView):
     """Delete an employee."""
 
     model = Employee
     template_name = "hr/employee_confirm_delete.html"
     success_url = reverse_lazy("hr:employee_list")
+    permission_required = "hr_delete"
 
     def form_valid(self, form):
         messages.success(self.request, "Employé supprimé avec succès.")
@@ -353,13 +361,14 @@ class EmployeeListPartialView(EmployeeListView):
 # Leaves
 # =============================================================================
 
-class LeaveRequestListView(HRBaseMixin, ListView):
+class LeaveRequestListView(HRBaseMixin, PermissionRequiredMixin, ListView):
     """List leave requests."""
 
     model = LeaveRequest
     template_name = "hr/leave_list.html"
     context_object_name = "leaves"
     paginate_by = 25
+    permission_required = "hr_view"
 
     def get_queryset(self):
         qs = super().get_queryset().select_related("employee", "leave_type", "approved_by")
@@ -403,13 +412,14 @@ class LeaveRequestListView(HRBaseMixin, ListView):
         return context
 
 
-class LeaveRequestCreateView(HRBaseMixin, CreateView):
+class LeaveRequestCreateView(HRBaseMixin, PermissionRequiredMixin, CreateView):
     """Create a leave request."""
 
     model = LeaveRequest
     form_class = LeaveRequestForm
     template_name = "hr/leave_request_form.html"
     success_url = reverse_lazy("hr:leave_list")
+    permission_required = "hr_create"
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -457,12 +467,13 @@ class LeaveRequestCreateView(HRBaseMixin, CreateView):
         return response
 
 
-class LeaveRequestDetailView(HRBaseMixin, DetailView):
+class LeaveRequestDetailView(HRBaseMixin, PermissionRequiredMixin, DetailView):
     """Leave request detail view."""
 
     model = LeaveRequest
     template_name = "hr/leave_detail.html"
     context_object_name = "leave"
+    permission_required = "hr_view"
 
     def get_queryset(self):
         return super().get_queryset().select_related(
@@ -486,6 +497,7 @@ class LeaveRequestDetailView(HRBaseMixin, DetailView):
         return context
 
 
+@perm_required("hr_approve")
 def leave_approve(request, pk):
     """Approve a leave request."""
     if request.method != "POST":
@@ -507,6 +519,7 @@ def leave_approve(request, pk):
     return redirect("hr:leave_detail", pk=pk)
 
 
+@perm_required("hr_approve")
 def leave_reject(request, pk):
     """Reject a leave request."""
     if request.method != "POST":
@@ -814,13 +827,14 @@ def attendance_clock(request):
 # Documents
 # =============================================================================
 
-class HRDocumentListView(HRBaseMixin, ListView):
+class HRDocumentListView(HRBaseMixin, PermissionRequiredMixin, ListView):
     """List HR documents for an employee."""
 
     model = HRDocument
     template_name = "hr/document_list.html"
     context_object_name = "documents"
     paginate_by = 25
+    permission_required = "hr_view"
 
     def get_queryset(self):
         qs = super().get_queryset().select_related("employee", "uploaded_by")
@@ -843,12 +857,13 @@ class HRDocumentListView(HRBaseMixin, ListView):
         return context
 
 
-class HRDocumentUploadView(HRBaseMixin, CreateView):
+class HRDocumentUploadView(HRBaseMixin, PermissionRequiredMixin, CreateView):
     """Upload a new HR document."""
 
     model = HRDocument
     form_class = HRDocumentUploadForm
     template_name = "hr/document_upload.html"
+    permission_required = "hr_create"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -887,12 +902,13 @@ class HRDocumentUploadView(HRBaseMixin, CreateView):
 # Departments
 # =============================================================================
 
-class DepartmentListView(HRBaseMixin, ListView):
+class DepartmentListView(HRBaseMixin, PermissionRequiredMixin, ListView):
     """List departments."""
 
     model = Department
     template_name = "hr/department_list.html"
     context_object_name = "departments"
+    permission_required = "hr_view"
 
     def get_queryset(self):
         return super().get_queryset().select_related(
@@ -902,13 +918,14 @@ class DepartmentListView(HRBaseMixin, ListView):
         )
 
 
-class DepartmentCreateView(HRBaseMixin, CreateView):
+class DepartmentCreateView(HRBaseMixin, PermissionRequiredMixin, CreateView):
     """Create a department."""
 
     model = Department
     form_class = DepartmentForm
     template_name = "hr/department_form.html"
     success_url = reverse_lazy("hr:department_list")
+    permission_required = "hr_create"
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -920,13 +937,14 @@ class DepartmentCreateView(HRBaseMixin, CreateView):
         return super().form_valid(form)
 
 
-class DepartmentUpdateView(HRBaseMixin, UpdateView):
+class DepartmentUpdateView(HRBaseMixin, PermissionRequiredMixin, UpdateView):
     """Update a department."""
 
     model = Department
     form_class = DepartmentForm
     template_name = "hr/department_form.html"
     success_url = reverse_lazy("hr:department_list")
+    permission_required = "hr_edit"
 
     def get_form_kwargs(self):
         kwargs = super().get_form_kwargs()
@@ -942,34 +960,37 @@ class DepartmentUpdateView(HRBaseMixin, UpdateView):
 # Leave Types
 # =============================================================================
 
-class LeaveTypeListView(HRBaseMixin, ListView):
+class LeaveTypeListView(HRBaseMixin, PermissionRequiredMixin, ListView):
     """List leave types."""
 
     model = LeaveType
     template_name = "hr/leave_type_list.html"
     context_object_name = "leave_types"
+    permission_required = "hr_view"
 
 
-class LeaveTypeCreateView(HRBaseMixin, CreateView):
+class LeaveTypeCreateView(HRBaseMixin, PermissionRequiredMixin, CreateView):
     """Create a leave type."""
 
     model = LeaveType
     form_class = LeaveTypeForm
     template_name = "hr/leave_type_form.html"
     success_url = reverse_lazy("hr:leave_type_list")
+    permission_required = "hr_create"
 
     def form_valid(self, form):
         messages.success(self.request, "Type de congé créé avec succès.")
         return super().form_valid(form)
 
 
-class LeaveTypeUpdateView(HRBaseMixin, UpdateView):
+class LeaveTypeUpdateView(HRBaseMixin, PermissionRequiredMixin, UpdateView):
     """Update a leave type."""
 
     model = LeaveType
     form_class = LeaveTypeForm
     template_name = "hr/leave_type_form.html"
     success_url = reverse_lazy("hr:leave_type_list")
+    permission_required = "hr_edit"
 
     def form_valid(self, form):
         messages.success(self.request, "Type de congé mis à jour avec succès.")

@@ -1,9 +1,12 @@
 {% extends "layouts/app_layout.html" %}
-{% load humanize %}
+{% load humanize permissions_tags %}
 
 {% block title %}Opportunités - CRM{% endblock %}
 
 {% block content %}
+{% has_perm "crm_create" as can_create %}
+{% has_perm "crm_edit" as can_edit %}
+
 <div class="space-y-6">
     <!-- Header -->
     <div class="flex justify-between items-center">
@@ -18,9 +21,11 @@
             <a href="{% url 'crm:pipeline_kanban' %}" class="btn-secondary">
                 Vue Kanban
             </a>
+            {% if can_create %}
             <a href="{% url 'crm:opportunity_create' %}" class="btn-primary">
                 + Nouvelle opportunité
             </a>
+            {% endif %}
         </div>
     </div>
 
@@ -111,7 +116,9 @@
                     </td>
                     <td class="px-6 py-4 text-sm">
                         <a href="{{ opp.get_absolute_url }}" class="text-primary-600 hover:text-primary-900 mr-3">Voir</a>
+                        {% if can_edit %}
                         <a href="{% url 'crm:opportunity_update' opp.pk %}" class="text-gray-600 hover:text-gray-900">Modifier</a>
+                        {% endif %}
                     </td>
                 </tr>
                 {% endfor %}
@@ -124,9 +131,11 @@
             </svg>
             <h3 class="mt-2 text-sm font-medium text-gray-900">Aucune opportunité</h3>
             <p class="mt-1 text-sm text-gray-500">Créez votre première opportunité.</p>
+            {% if can_create %}
             <div class="mt-6">
                 <a href="{% url 'crm:opportunity_create' %}" class="btn-primary">+ Nouvelle opportunité</a>
             </div>
+            {% endif %}
         </div>
         {% endif %}
     </div>
