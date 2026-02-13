@@ -15,8 +15,10 @@ env = environ.Env(
     ALLOWED_HOSTS=(list, []),
 )
 
-# Read .env file
-environ.Env.read_env(BASE_DIR / ".env")
+# Read .env file if it exists (development), otherwise use system env vars (production)
+env_file = BASE_DIR / ".env"
+if env_file.exists():
+    environ.Env.read_env(env_file)
 
 # Security
 SECRET_KEY = env("SECRET_KEY")
