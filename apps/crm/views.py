@@ -52,7 +52,8 @@ class CRMBaseMixin(LoginRequiredMixin, ModulePermissionMixin):
     def form_valid(self, form):
         """Set organization on save."""
         if hasattr(self.request, "organization") and self.request.organization:
-            form.instance.organization = self.request.organization
+            if hasattr(form, 'instance'):
+                form.instance.organization = self.request.organization
         return super().form_valid(form)
 
 

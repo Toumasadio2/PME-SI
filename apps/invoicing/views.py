@@ -46,7 +46,7 @@ class InvoicingBaseMixin(LoginRequiredMixin, ModulePermissionMixin):
     def form_valid(self, form):
         """Set organization on save."""
         org = self.get_organization()
-        if org:
+        if org and hasattr(form, 'instance'):
             form.instance.organization = org
         return super().form_valid(form)
 
