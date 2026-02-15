@@ -99,6 +99,12 @@ class Product(models.Model):
         ('preorder', 'Précommande'),
     ]
 
+    CURRENCY_CHOICES = [
+        ('XOF', 'Franc CFA (XOF)'),
+        ('EUR', 'Euro (€)'),
+        ('USD', 'Dollar US ($)'),
+    ]
+
     organization = models.ForeignKey(
         Organization,
         on_delete=models.CASCADE,
@@ -144,6 +150,12 @@ class Product(models.Model):
         max_digits=10,
         decimal_places=2,
         validators=[MinValueValidator(Decimal('0.00'))]
+    )
+    currency = models.CharField(
+        'Devise',
+        max_length=3,
+        choices=CURRENCY_CHOICES,
+        default='XOF'
     )
     vat_rate = models.DecimalField(
         'Taux TVA (%)',

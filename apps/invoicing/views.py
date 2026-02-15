@@ -193,11 +193,6 @@ class ProductListView(InvoicingBaseMixin, PermissionRequiredMixin, ListView):
                 Q(description__icontains=q)
             )
 
-        # Filter by type
-        product_type = self.request.GET.get('product_type')
-        if product_type:
-            queryset = queryset.filter(product_type=product_type)
-
         # Filter by category
         category = self.request.GET.get('category')
         if category:
@@ -279,10 +274,10 @@ class ProductDeleteView(InvoicingBaseMixin, PermissionRequiredMixin, DeleteView)
     success_url = reverse_lazy('invoicing:product_list')
     permission_required = "invoicing_delete"
 
-    def form_valid(self, form):
-        """Handle successful form submission (Django 4.x+)."""
+    def post(self, request, *args, **kwargs):
+        """Handle POST request for deletion."""
         messages.success(self.request, 'Produit supprimé avec succès.')
-        return super().form_valid(form)
+        return super().post(request, *args, **kwargs)
 
 
 # =============================================================================
@@ -343,9 +338,9 @@ class ProductCategoryDeleteView(InvoicingBaseMixin, PermissionRequiredMixin, Del
     success_url = reverse_lazy('invoicing:category_list')
     permission_required = "invoicing_delete"
 
-    def form_valid(self, form):
+    def post(self, request, *args, **kwargs):
         messages.success(self.request, 'Catégorie supprimée avec succès.')
-        return super().form_valid(form)
+        return super().post(request, *args, **kwargs)
 
 
 # =============================================================================
@@ -393,9 +388,9 @@ class ProductTagDeleteView(InvoicingBaseMixin, PermissionRequiredMixin, DeleteVi
     success_url = reverse_lazy('invoicing:tag_list')
     permission_required = "invoicing_delete"
 
-    def form_valid(self, form):
+    def post(self, request, *args, **kwargs):
         messages.success(self.request, 'Tag supprimé avec succès.')
-        return super().form_valid(form)
+        return super().post(request, *args, **kwargs)
 
 
 # =============================================================================
@@ -560,11 +555,11 @@ class QuoteDeleteView(InvoicingBaseMixin, PermissionRequiredMixin, DeleteView):
     success_url = reverse_lazy('invoicing:quote_list')
     permission_required = "invoicing_delete"
 
-    def form_valid(self, form):
-        """Handle successful form submission (Django 4.x+)."""
+    def post(self, request, *args, **kwargs):
+        """Handle POST request for deletion."""
         quote = self.get_object()
         messages.success(self.request, f'Devis {quote.number} supprimé.')
-        return super().form_valid(form)
+        return super().post(request, *args, **kwargs)
 
 
 @login_required

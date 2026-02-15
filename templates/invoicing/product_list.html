@@ -43,16 +43,6 @@
                     <label class="form-label">Rechercher</label>
                     <input type="text" name="q" value="{{ request.GET.q }}" class="form-input" placeholder="Référence, nom...">
                 </div>
-                <div class="w-40">
-                    <label class="form-label">Type</label>
-                    <select name="product_type" class="form-select">
-                        <option value="">Tous</option>
-                        <option value="product" {% if request.GET.product_type == 'product' %}selected{% endif %}>Produit physique</option>
-                        <option value="service" {% if request.GET.product_type == 'service' %}selected{% endif %}>Service</option>
-                        <option value="subscription" {% if request.GET.product_type == 'subscription' %}selected{% endif %}>Abonnement</option>
-                        <option value="digital" {% if request.GET.product_type == 'digital' %}selected{% endif %}>Produit numérique</option>
-                    </select>
-                </div>
                 <div class="w-48">
                     <label class="form-label">Catégorie</label>
                     <select name="category" class="form-select">
@@ -95,7 +85,7 @@
                     <th class="w-16"></th>
                     <th>Référence</th>
                     <th>Nom</th>
-                    <th>Type / Catégorie</th>
+                    <th>Catégorie</th>
                     <th class="text-right">Prix HT</th>
                     <th>Stock</th>
                     <th>Statut</th>
@@ -133,16 +123,20 @@
                         {% endif %}
                     </td>
                     <td>
-                        <span class="badge {% if product.product_type == 'service' %}badge-info{% elif product.product_type == 'subscription' %}badge-warning{% elif product.product_type == 'digital' %}badge-purple{% else %}badge-secondary{% endif %}">
-                            {{ product.get_product_type_display }}
-                        </span>
                         {% if product.category %}
-                        <p class="text-xs text-gray-500 mt-1" style="color: {{ product.category.color }};">
+                        <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium" style="background-color: {{ product.category.color }}20; color: {{ product.category.color }};">
                             {{ product.category.name }}
-                        </p>
+                        </span>
+                        {% else %}
+                        <span class="text-gray-400">-</span>
                         {% endif %}
                     </td>
-                    <td class="text-right font-medium">{{ product.unit_price|floatformat:2|intcomma }} €</td>
+                    <td class="text-right font-medium">
+                        {{ product.unit_price|floatformat:2|intcomma }}
+                        <span class="text-gray-500 text-sm">
+                            {% if product.currency == 'XOF' %}FCFA{% elif product.currency == 'EUR' %}€{% elif product.currency == 'USD' %}${% else %}{{ product.currency }}{% endif %}
+                        </span>
+                    </td>
                     <td>
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ product.get_stock_status_display_class }}">
                             {{ product.get_stock_status_display }}

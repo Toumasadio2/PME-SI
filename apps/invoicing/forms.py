@@ -12,9 +12,9 @@ class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
         fields = [
-            'reference', 'name', 'description', 'product_type', 'image',
+            'reference', 'name', 'description', 'image',
             'category',
-            'unit_price',
+            'unit_price', 'currency',
             'track_stock', 'stock_quantity', 'stock_alert_threshold', 'stock_status',
             'is_active'
         ]
@@ -32,7 +32,6 @@ class ProductForm(forms.ModelForm):
                 'rows': 3,
                 'placeholder': 'Description détaillée...'
             }),
-            'product_type': forms.Select(attrs={'class': 'form-select'}),
             'image': forms.ClearableFileInput(attrs={
                 'class': 'form-input',
                 'accept': 'image/*'
@@ -43,6 +42,7 @@ class ProductForm(forms.ModelForm):
                 'step': '0.01',
                 'min': '0'
             }),
+            'currency': forms.Select(attrs={'class': 'form-select'}),
             'track_stock': forms.CheckboxInput(attrs={'class': 'form-checkbox'}),
             'stock_quantity': forms.NumberInput(attrs={
                 'class': 'form-input',
@@ -526,11 +526,6 @@ class ProductSearchForm(forms.Form):
             'class': 'form-input',
             'placeholder': 'Rechercher...'
         })
-    )
-    product_type = forms.ChoiceField(
-        required=False,
-        choices=[('', 'Tous types')] + Product.TYPE_CHOICES,
-        widget=forms.Select(attrs={'class': 'form-select'})
     )
     category = forms.ModelChoiceField(
         required=False,
