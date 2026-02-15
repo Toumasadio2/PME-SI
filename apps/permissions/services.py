@@ -43,12 +43,9 @@ class PermissionService:
         },
         "viewer": {
             "name": "Lecteur",
-            "description": "Accès en lecture seule",
+            "description": "Accès en lecture seule (CRM uniquement)",
             "permissions": [
                 "crm_view",
-                "invoicing_view",
-                "sales_view",
-                "hr_view",
             ],
         },
         "hr_manager": {
@@ -176,13 +173,13 @@ class PermissionService:
 
     @classmethod
     def create_system_roles(cls) -> None:
-        """Create default system roles."""
+        """Create or update default system roles."""
         cls.create_default_permissions()
 
         all_permissions = list(Permission.objects.all())
 
         for role_key, role_data in cls.SYSTEM_ROLES.items():
-            role, created = Role.objects.get_or_create(
+            role, created = Role.objects.update_or_create(
                 name=role_data["name"],
                 organization=None,
                 defaults={

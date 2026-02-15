@@ -13,8 +13,8 @@ class ProductForm(forms.ModelForm):
         model = Product
         fields = [
             'reference', 'name', 'description', 'product_type', 'image',
-            'category', 'tags',
-            'unit_price', 'vat_rate', 'unit',
+            'category',
+            'unit_price',
             'track_stock', 'stock_quantity', 'stock_alert_threshold', 'stock_status',
             'is_active'
         ]
@@ -38,22 +38,10 @@ class ProductForm(forms.ModelForm):
                 'accept': 'image/*'
             }),
             'category': forms.Select(attrs={'class': 'form-select'}),
-            'tags': forms.SelectMultiple(attrs={
-                'class': 'form-select',
-                'size': '4'
-            }),
             'unit_price': forms.NumberInput(attrs={
                 'class': 'form-input',
                 'step': '0.01',
                 'min': '0'
-            }),
-            'vat_rate': forms.NumberInput(attrs={
-                'class': 'form-input',
-                'step': '0.01'
-            }),
-            'unit': forms.TextInput(attrs={
-                'class': 'form-input',
-                'placeholder': 'unité, heure, jour...'
             }),
             'track_stock': forms.CheckboxInput(attrs={'class': 'form-checkbox'}),
             'stock_quantity': forms.NumberInput(attrs={
@@ -74,11 +62,7 @@ class ProductForm(forms.ModelForm):
             self.fields['category'].queryset = ProductCategory.objects.filter(
                 organization=organization, is_active=True
             )
-            self.fields['tags'].queryset = ProductTag.objects.filter(
-                organization=organization
-            )
         self.fields['category'].required = False
-        self.fields['tags'].required = False
         self.fields['image'].required = False
 
     def clean_image(self):

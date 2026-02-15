@@ -89,17 +89,23 @@
                 <div class="border-b pb-6">
                     <h2 class="text-lg font-medium text-gray-900 mb-4">Classification</h2>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div class="form-group">
-                            <label for="id_category" class="form-label">Catégorie</label>
-                            {{ form.category }}
+                    <div class="form-group">
+                        <label for="id_category" class="form-label">Catégorie</label>
+                        <div class="flex gap-2">
+                            <div class="flex-1">
+                                {{ form.category }}
+                            </div>
+                            <a href="{% url 'invoicing:category_create' %}"
+                               class="btn-secondary inline-flex items-center"
+                               title="Créer une nouvelle catégorie">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                </svg>
+                            </a>
                         </div>
-
-                        <div class="form-group">
-                            <label for="id_tags" class="form-label">Tags</label>
-                            {{ form.tags }}
-                            <p class="text-xs text-gray-500 mt-1">Maintenez Ctrl/Cmd pour sélectionner plusieurs tags</p>
-                        </div>
+                        <p class="text-xs text-gray-500 mt-1">
+                            Pas de catégorie ? <a href="{% url 'invoicing:category_create' %}" class="text-primary-600 hover:underline">Créez-en une d'abord</a>
+                        </p>
                     </div>
                 </div>
 
@@ -107,30 +113,15 @@
                 <div class="border-b pb-6">
                     <h2 class="text-lg font-medium text-gray-900 mb-4">Prix</h2>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="form-group">
-                            <label for="id_unit_price" class="form-label">Prix unitaire HT *</label>
-                            <div class="relative">
-                                {{ form.unit_price }}
-                                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">€</span>
-                            </div>
-                            {% if form.unit_price.errors %}
-                            <p class="form-error">{{ form.unit_price.errors.0 }}</p>
-                            {% endif %}
+                    <div class="form-group max-w-xs">
+                        <label for="id_unit_price" class="form-label">Prix unitaire HT *</label>
+                        <div class="relative">
+                            {{ form.unit_price }}
+                            <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">€</span>
                         </div>
-
-                        <div class="form-group">
-                            <label for="id_vat_rate" class="form-label">Taux TVA *</label>
-                            <div class="relative">
-                                {{ form.vat_rate }}
-                                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">%</span>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="id_unit" class="form-label">Unité</label>
-                            {{ form.unit }}
-                        </div>
+                        {% if form.unit_price.errors %}
+                        <p class="form-error">{{ form.unit_price.errors.0 }}</p>
+                        {% endif %}
                     </div>
                 </div>
 
