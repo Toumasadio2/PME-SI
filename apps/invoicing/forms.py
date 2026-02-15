@@ -181,7 +181,7 @@ class QuoteItemForm(forms.ModelForm):
     class Meta:
         model = QuoteItem
         fields = [
-            'product', 'description', 'quantity', 'unit',
+            'product', 'description', 'quantity',
             'unit_price', 'vat_rate', 'discount_percent'
         ]
         widgets = {
@@ -199,10 +199,6 @@ class QuoteItemForm(forms.ModelForm):
                 'step': '0.01',
                 'min': '0.01',
                 'value': '1'
-            }),
-            'unit': forms.TextInput(attrs={
-                'class': 'form-input',
-                'placeholder': 'unité'
             }),
             'unit_price': forms.NumberInput(attrs={
                 'class': 'form-input item-price',
@@ -351,7 +347,7 @@ class InvoiceItemForm(forms.ModelForm):
     class Meta:
         model = InvoiceItem
         fields = [
-            'product', 'description', 'quantity', 'unit',
+            'product', 'description', 'quantity',
             'unit_price', 'vat_rate', 'discount_percent'
         ]
         widgets = {
@@ -365,10 +361,6 @@ class InvoiceItemForm(forms.ModelForm):
                 'step': '0.01',
                 'min': '0.01',
                 'value': '1'
-            }),
-            'unit': forms.TextInput(attrs={
-                'class': 'form-input',
-                'placeholder': 'unité'
             }),
             'unit_price': forms.NumberInput(attrs={
                 'class': 'form-input item-price',
