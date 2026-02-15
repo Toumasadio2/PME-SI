@@ -294,9 +294,9 @@ class ContactDeleteView(CRMBaseMixin, PermissionRequiredMixin, DeleteView):
     success_url = reverse_lazy("crm:contact_list")
     permission_required = "crm_delete"
 
-    def form_valid(self, form):
-        messages.success(self.request, "Contact supprimé avec succès.")
-        return super().form_valid(form)
+    def post(self, request, *args, **kwargs):
+        messages.success(request, "Contact supprimé avec succès.")
+        return super().post(request, *args, **kwargs)
 
 
 # =============================================================================
@@ -367,23 +367,17 @@ class CompanyDetailView(CRMBaseMixin, PermissionRequiredMixin, DetailView):
 
 
 class CompanyCreateView(CRMBaseMixin, PermissionRequiredMixin, CreateView):
-    """Create a new company."""
+    """Create a new company - DISABLED."""
 
     model = Company
     form_class = CompanyForm
     template_name = "crm/company_form.html"
     permission_required = "crm_create"
 
-    def get_form(self, form_class=None):
-        form = super().get_form(form_class)
-        org = getattr(self.request, "organization", None)
-        if org:
-            form.fields["tags"].queryset = Tag.objects.filter(organization=org)
-        return form
-
-    def form_valid(self, form):
-        messages.success(self.request, "Entreprise créée avec succès.")
-        return super().form_valid(form)
+    def dispatch(self, request, *args, **kwargs):
+        """Disable company creation - redirect to list."""
+        messages.warning(request, "La création de nouvelles entreprises n'est pas autorisée. Vous pouvez uniquement modifier les entreprises existantes.")
+        return redirect("crm:company_list")
 
 
 class CompanyUpdateView(CRMBaseMixin, PermissionRequiredMixin, UpdateView):
@@ -414,9 +408,9 @@ class CompanyDeleteView(CRMBaseMixin, PermissionRequiredMixin, DeleteView):
     success_url = reverse_lazy("crm:company_list")
     permission_required = "crm_delete"
 
-    def form_valid(self, form):
-        messages.success(self.request, "Entreprise supprimée avec succès.")
-        return super().form_valid(form)
+    def post(self, request, *args, **kwargs):
+        messages.success(request, "Entreprise supprimée avec succès.")
+        return super().post(request, *args, **kwargs)
 
 
 # =============================================================================
@@ -546,9 +540,9 @@ class OpportunityDeleteView(CRMBaseMixin, PermissionRequiredMixin, DeleteView):
     success_url = reverse_lazy("crm:opportunity_list")
     permission_required = "crm_delete"
 
-    def form_valid(self, form):
-        messages.success(self.request, "Opportunité supprimée avec succès.")
-        return super().form_valid(form)
+    def post(self, request, *args, **kwargs):
+        messages.success(request, "Opportunité supprimée avec succès.")
+        return super().post(request, *args, **kwargs)
 
 
 # =============================================================================
