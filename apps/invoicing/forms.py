@@ -182,35 +182,14 @@ class QuoteItemForm(forms.ModelForm):
 
     class Meta:
         model = QuoteItem
-        fields = [
-            'product', 'description', 'quantity',
-            'unit_price', 'vat_rate', 'discount_percent'
-        ]
+        fields = ['product', 'quantity', 'discount_percent']
         widgets = {
-            'product': forms.Select(attrs={
-                'class': 'form-select item-product',
-                'hx-get': '',
-                'hx-trigger': 'change',
-            }),
-            'description': forms.TextInput(attrs={
-                'class': 'form-input',
-                'placeholder': 'Description'
-            }),
+            'product': forms.Select(attrs={'class': 'form-select item-product'}),
             'quantity': forms.NumberInput(attrs={
                 'class': 'form-input item-quantity',
-                'step': '0.01',
-                'min': '0.01',
+                'step': '1',
+                'min': '1',
                 'value': '1'
-            }),
-            'unit_price': forms.NumberInput(attrs={
-                'class': 'form-input item-price',
-                'step': '0.01',
-                'min': '0'
-            }),
-            'vat_rate': forms.NumberInput(attrs={
-                'class': 'form-input item-vat',
-                'step': '0.01',
-                'value': '20.00'
             }),
             'discount_percent': forms.NumberInput(attrs={
                 'class': 'form-input item-discount',
@@ -228,7 +207,30 @@ class QuoteItemForm(forms.ModelForm):
                 organization=organization,
                 is_active=True
             )
-        self.fields['product'].required = False
+        self.fields['product'].required = True
+        self.fields['product'].empty_label = "-- Sélectionner un produit --"
+
+    def clean(self):
+        cleaned_data = super().clean()
+        product = cleaned_data.get('product')
+        if product:
+            cleaned_data['description'] = product.name
+            cleaned_data['unit_price'] = product.unit_price
+            cleaned_data['vat_rate'] = product.vat_rate
+            cleaned_data['unit'] = product.unit
+        return cleaned_data
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        product = self.cleaned_data.get('product')
+        if product:
+            instance.description = product.name
+            instance.unit_price = product.unit_price
+            instance.vat_rate = product.vat_rate
+            instance.unit = product.unit
+        if commit:
+            instance.save()
+        return instance
 
 
 QuoteItemFormSet = inlineformset_factory(
@@ -348,31 +350,14 @@ class InvoiceItemForm(forms.ModelForm):
 
     class Meta:
         model = InvoiceItem
-        fields = [
-            'product', 'description', 'quantity',
-            'unit_price', 'vat_rate', 'discount_percent'
-        ]
+        fields = ['product', 'quantity', 'discount_percent']
         widgets = {
             'product': forms.Select(attrs={'class': 'form-select item-product'}),
-            'description': forms.TextInput(attrs={
-                'class': 'form-input',
-                'placeholder': 'Description'
-            }),
             'quantity': forms.NumberInput(attrs={
                 'class': 'form-input item-quantity',
-                'step': '0.01',
-                'min': '0.01',
+                'step': '1',
+                'min': '1',
                 'value': '1'
-            }),
-            'unit_price': forms.NumberInput(attrs={
-                'class': 'form-input item-price',
-                'step': '0.01',
-                'min': '0'
-            }),
-            'vat_rate': forms.NumberInput(attrs={
-                'class': 'form-input item-vat',
-                'step': '0.01',
-                'value': '20.00'
             }),
             'discount_percent': forms.NumberInput(attrs={
                 'class': 'form-input item-discount',
@@ -390,7 +375,31 @@ class InvoiceItemForm(forms.ModelForm):
                 organization=organization,
                 is_active=True
             )
-        self.fields['product'].required = False
+        self.fields['product'].required = True
+        self.fields['product'].empty_label = "-- Sélectionner un produit --"
+
+    def clean(self):
+        cleaned_data = super().clean()
+        product = cleaned_data.get('product')
+        if product:
+            # Auto-remplir depuis le produit
+            cleaned_data['description'] = product.name
+            cleaned_data['unit_price'] = product.unit_price
+            cleaned_data['vat_rate'] = product.vat_rate
+            cleaned_data['unit'] = product.unit
+        return cleaned_data
+
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        product = self.cleaned_data.get('product')
+        if product:
+            instance.description = product.name
+            instance.unit_price = product.unit_price
+            instance.vat_rate = product.vat_rate
+            instance.unit = product.unit
+        if commit:
+            instance.save()
+        return instance
 
 
 InvoiceItemFormSet = inlineformset_factory(

@@ -132,12 +132,9 @@
                 <table class="w-full">
                     <thead class="bg-gray-50 text-xs text-gray-500 uppercase">
                         <tr>
-                            <th class="px-4 py-3 text-left w-16">Produit</th>
-                            <th class="px-4 py-3 text-left">Description</th>
+                            <th class="px-4 py-3 text-left">Produit</th>
                             <th class="px-4 py-3 text-right w-24">Qté</th>
-                            <th class="px-4 py-3 text-right w-28">Prix HT</th>
-                            <th class="px-4 py-3 text-right w-20">TVA %</th>
-                            <th class="px-4 py-3 text-right w-20">Remise %</th>
+                            <th class="px-4 py-3 text-right w-24">Remise %</th>
                             <th class="px-4 py-3 w-12"></th>
                         </tr>
                     </thead>
@@ -148,10 +145,7 @@
                                 {{ item_form.id }}
                                 {{ item_form.product }}
                             </td>
-                            <td class="px-4 py-3">{{ item_form.description }}</td>
                             <td class="px-4 py-3">{{ item_form.quantity }}</td>
-                            <td class="px-4 py-3">{{ item_form.unit_price }}</td>
-                            <td class="px-4 py-3">{{ item_form.vat_rate }}</td>
                             <td class="px-4 py-3">{{ item_form.discount_percent }}</td>
                             <td class="px-4 py-3 text-center">
                                 {{ item_form.DELETE }}
@@ -159,7 +153,7 @@
                         </tr>
                         {% if item_form.errors %}
                         <tr>
-                            <td colspan="7" class="px-4 py-2 bg-red-50 text-red-600 text-sm">
+                            <td colspan="4" class="px-4 py-2 bg-red-50 text-red-600 text-sm">
                                 {% for error in item_form.errors.values %}{{ error.0 }}{% endfor %}
                             </td>
                         </tr>
