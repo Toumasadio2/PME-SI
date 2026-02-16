@@ -21,6 +21,22 @@
             <form method="post" enctype="multipart/form-data" class="space-y-6">
                 {% csrf_token %}
 
+                {% if form.errors %}
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                    <h3 class="text-red-800 font-medium mb-2">Erreurs dans le formulaire :</h3>
+                    <ul class="list-disc list-inside text-red-700 text-sm">
+                        {% for field in form %}
+                            {% for error in field.errors %}
+                            <li><strong>{{ field.label }}</strong> : {{ error }}</li>
+                            {% endfor %}
+                        {% endfor %}
+                        {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
                 <!-- Informations de base -->
                 <div class="border-b pb-6">
                     <h2 class="text-lg font-medium text-gray-900 mb-4">Informations de base</h2>
@@ -200,11 +216,15 @@ function toggleStockFields() {
     const thresholdField = document.getElementById('id_stock_alert_threshold');
 
     if (trackStockCheckbox.checked) {
-        quantityField.removeAttribute('disabled');
-        thresholdField.removeAttribute('disabled');
+        quantityField.removeAttribute('readonly');
+        thresholdField.removeAttribute('readonly');
+        quantityField.classList.remove('bg-gray-100');
+        thresholdField.classList.remove('bg-gray-100');
     } else {
-        quantityField.setAttribute('disabled', 'disabled');
-        thresholdField.setAttribute('disabled', 'disabled');
+        quantityField.setAttribute('readonly', 'readonly');
+        thresholdField.setAttribute('readonly', 'readonly');
+        quantityField.classList.add('bg-gray-100');
+        thresholdField.classList.add('bg-gray-100');
     }
 }
 

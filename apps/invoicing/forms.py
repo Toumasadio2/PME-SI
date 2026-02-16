@@ -64,6 +64,8 @@ class ProductForm(forms.ModelForm):
             )
         self.fields['category'].required = False
         self.fields['image'].required = False
+        self.fields['stock_quantity'].required = False
+        self.fields['stock_alert_threshold'].required = False
 
     def clean_image(self):
         """Valide l'image uploadée."""
