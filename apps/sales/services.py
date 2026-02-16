@@ -15,9 +15,12 @@ class SalesAnalyticsService:
     """Service d'analyse des ventes."""
 
     @staticmethod
-    def get_revenue_stats(organization, start_date=None, end_date=None):
+    def get_revenue_stats(organization, start_date=None, end_date=None, paid_only=False):
         """
         Calcule les statistiques de chiffre d'affaires.
+
+        Args:
+            paid_only: Si True, ne compte que les factures payées
 
         Returns dict with:
         - total_revenue: CA total TTC
@@ -33,11 +36,16 @@ class SalesAnalyticsService:
         if start_date is None:
             start_date = date(end_date.year, 1, 1)
 
+        if paid_only:
+            status_filter = ['paid']
+        else:
+            status_filter = ['sent', 'paid', 'partial', 'overdue']
+
         invoices = Invoice.objects.filter(
             organization=organization,
             issue_date__gte=start_date,
             issue_date__lte=end_date,
-            status__in=['sent', 'paid', 'partial', 'overdue']
+            status__in=status_filter
         )
 
         total_ht = invoices.aggregate(total=Sum('total_ht'))['total'] or Decimal('0')
@@ -106,9 +114,12 @@ class SalesAnalyticsService:
         }
 
     @staticmethod
-    def get_monthly_revenue(organization, year=None, months=12):
+    def get_monthly_revenue(organization, year=None, months=12, paid_only=False):
         """
         Récupère le CA mensuel.
+
+        Args:
+            paid_only: Si True, ne compte que les factures payées
 
         Returns list of dicts with:
         - month: Mois (datetime)
@@ -121,11 +132,16 @@ class SalesAnalyticsService:
         end_date = date(year, 12, 31)
         start_date = end_date - timedelta(days=months * 31)
 
+        if paid_only:
+            status_filter = ['paid']
+        else:
+            status_filter = ['sent', 'paid', 'partial', 'overdue']
+
         invoices = Invoice.objects.filter(
             organization=organization,
             issue_date__gte=start_date,
             issue_date__lte=end_date,
-            status__in=['sent', 'paid', 'partial', 'overdue']
+            status__in=status_filter
         ).annotate(
             month=TruncMonth('issue_date')
         ).values('month').annotate(
@@ -136,9 +152,12 @@ class SalesAnalyticsService:
         return list(invoices)
 
     @staticmethod
-    def get_top_clients(organization, start_date=None, end_date=None, limit=10):
+    def get_top_clients(organization, start_date=None, end_date=None, limit=10, paid_only=False):
         """
         Récupère les meilleurs clients par CA.
+
+        Args:
+            paid_only: Si True, ne compte que les factures payées
 
         Returns list of dicts with:
         - company: Entreprise
@@ -150,11 +169,16 @@ class SalesAnalyticsService:
         if start_date is None:
             start_date = date(end_date.year, 1, 1)
 
+        if paid_only:
+            status_filter = ['paid']
+        else:
+            status_filter = ['sent', 'paid', 'partial', 'overdue']
+
         clients = Invoice.objects.filter(
             organization=organization,
             issue_date__gte=start_date,
             issue_date__lte=end_date,
-            status__in=['sent', 'paid', 'partial', 'overdue']
+            status__in=status_filter
         ).values(
             'company__id', 'company__name'
         ).annotate(
@@ -306,9 +330,12 @@ class SalesAnalyticsService:
         }
 
     @staticmethod
-    def get_comparison_period(organization, current_start, current_end):
+    def get_comparison_period(organization, current_start, current_end, paid_only=False):
         """
         Compare avec la période précédente.
+
+        Args:
+            paid_only: Si True, ne compte que les factures payées
 
         Returns dict with growth rates.
         """
@@ -318,10 +345,10 @@ class SalesAnalyticsService:
         previous_start = previous_end - timedelta(days=period_days)
 
         current_stats = SalesAnalyticsService.get_revenue_stats(
-            organization, current_start, current_end
+            organization, current_start, current_end, paid_only=paid_only
         )
         previous_stats = SalesAnalyticsService.get_revenue_stats(
-            organization, previous_start, previous_end
+            organization, previous_start, previous_end, paid_only=paid_only
         )
 
         def calc_growth(current, previous):

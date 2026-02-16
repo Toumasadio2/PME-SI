@@ -1,0 +1,188 @@
+{% extends "layouts/app_layout.html" %}
+{% load humanize %}
+
+{% block title %}Depenses - PME-SI{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="md:flex md:items-center md:justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Depenses</h1>
+            <p class="mt-1 text-sm text-gray-500">
+                Gerez les depenses de votre entreprise
+            </p>
+        </div>
+        <div class="mt-4 md:mt-0 flex gap-2">
+            <a href="{% url 'sales:dashboard' %}" class="btn-secondary">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+                Dashboard
+            </a>
+            <a href="{% url 'sales:expense_create' %}" class="btn-primary">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                </svg>
+                Nouvelle depense
+            </a>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="card">
+            <div class="card-body">
+                <p class="text-sm text-gray-500">Total des depenses</p>
+                <p class="text-2xl font-bold text-red-600">{{ total_amount|floatformat:0|intcomma }} FCFA</p>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-body">
+                <p class="text-sm text-gray-500">Nombre de depenses</p>
+                <p class="text-2xl font-bold text-gray-900">{{ expense_count }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card">
+        <div class="card-body">
+            <form method="get" class="flex flex-wrap items-end gap-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Categorie</label>
+                    <select name="category" class="form-select">
+                        <option value="">Toutes</option>
+                        {% for value, label in categories %}
+                        <option value="{{ value }}" {% if value == current_category %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Annee</label>
+                    <select name="year" class="form-select">
+                        {% for year in years %}
+                        <option value="{{ year }}" {% if year == current_year %}selected{% endif %}>{{ year }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Mois</label>
+                    <select name="month" class="form-select">
+                        <option value="">Tous</option>
+                        <option value="1" {% if current_month == "1" %}selected{% endif %}>Janvier</option>
+                        <option value="2" {% if current_month == "2" %}selected{% endif %}>Fevrier</option>
+                        <option value="3" {% if current_month == "3" %}selected{% endif %}>Mars</option>
+                        <option value="4" {% if current_month == "4" %}selected{% endif %}>Avril</option>
+                        <option value="5" {% if current_month == "5" %}selected{% endif %}>Mai</option>
+                        <option value="6" {% if current_month == "6" %}selected{% endif %}>Juin</option>
+                        <option value="7" {% if current_month == "7" %}selected{% endif %}>Juillet</option>
+                        <option value="8" {% if current_month == "8" %}selected{% endif %}>Aout</option>
+                        <option value="9" {% if current_month == "9" %}selected{% endif %}>Septembre</option>
+                        <option value="10" {% if current_month == "10" %}selected{% endif %}>Octobre</option>
+                        <option value="11" {% if current_month == "11" %}selected{% endif %}>Novembre</option>
+                        <option value="12" {% if current_month == "12" %}selected{% endif %}>Decembre</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-secondary">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+                    </svg>
+                    Filtrer
+                </button>
+                <a href="{% url 'sales:expense_list' %}" class="text-sm text-gray-500 hover:text-gray-700">
+                    Reinitialiser
+                </a>
+            </form>
+        </div>
+    </div>
+
+    <!-- Expenses List -->
+    <div class="card overflow-hidden">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Description</th>
+                    <th>Categorie</th>
+                    <th>Fournisseur</th>
+                    <th class="text-right">Montant</th>
+                    <th class="text-right">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for expense in expenses %}
+                <tr>
+                    <td class="whitespace-nowrap">{{ expense.date|date:"d/m/Y" }}</td>
+                    <td class="font-medium">{{ expense.description }}</td>
+                    <td>
+                        <span class="badge badge-secondary">{{ expense.get_category_display }}</span>
+                    </td>
+                    <td>{{ expense.supplier|default:"-" }}</td>
+                    <td class="text-right font-medium text-red-600">
+                        {{ expense.amount|floatformat:0|intcomma }} {{ expense.get_currency_symbol }}
+                    </td>
+                    <td class="text-right">
+                        <div class="flex justify-end gap-2">
+                            <a href="{% url 'sales:expense_update' expense.pk %}" class="text-yellow-600 hover:text-yellow-700" title="Modifier">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                </svg>
+                            </a>
+                            <a href="{% url 'sales:expense_delete' expense.pk %}" class="text-red-600 hover:text-red-700" title="Supprimer">
+                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                </svg>
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-12 text-gray-500">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                        <h3 class="mt-2 text-sm font-medium text-gray-900">Aucune depense</h3>
+                        <p class="mt-1 text-sm text-gray-500">
+                            Commencez par enregistrer votre premiere depense.
+                        </p>
+                        <div class="mt-4">
+                            <a href="{% url 'sales:expense_create' %}" class="btn-primary">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                </svg>
+                                Nouvelle depense
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <div class="flex justify-center">
+        <nav class="flex gap-1">
+            {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}&category={{ current_category }}&year={{ current_year }}&month={{ current_month }}" class="px-3 py-2 text-sm border rounded hover:bg-gray-50">
+                Precedent
+            </a>
+            {% endif %}
+
+            <span class="px-3 py-2 text-sm">
+                Page {{ page_obj.number }} sur {{ page_obj.paginator.num_pages }}
+            </span>
+
+            {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}&category={{ current_category }}&year={{ current_year }}&month={{ current_month }}" class="px-3 py-2 text-sm border rounded hover:bg-gray-50">
+                Suivant
+            </a>
+            {% endif %}
+        </nav>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

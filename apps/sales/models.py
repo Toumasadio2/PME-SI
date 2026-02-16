@@ -113,6 +113,86 @@ class SalesTarget(models.Model):
         return timezone.datetime(self.year, 12, 31).date()
 
 
+class Expense(models.Model):
+    """Dépense de l'entreprise."""
+
+    CATEGORY_CHOICES = [
+        ('salary', 'Salaires'),
+        ('rent', 'Loyer'),
+        ('utilities', 'Services (eau, électricité, internet)'),
+        ('supplies', 'Fournitures'),
+        ('transport', 'Transport'),
+        ('marketing', 'Marketing'),
+        ('equipment', 'Équipements'),
+        ('maintenance', 'Maintenance'),
+        ('taxes', 'Taxes et impôts'),
+        ('insurance', 'Assurances'),
+        ('other', 'Autres'),
+    ]
+
+    CURRENCY_CHOICES = [
+        ('XOF', 'Franc CFA (XOF)'),
+        ('EUR', 'Euro (€)'),
+        ('USD', 'Dollar US ($)'),
+    ]
+
+    organization = models.ForeignKey(
+        Organization,
+        on_delete=models.CASCADE,
+        related_name='expenses'
+    )
+    description = models.CharField('Description', max_length=255)
+    category = models.CharField(
+        'Catégorie',
+        max_length=20,
+        choices=CATEGORY_CHOICES,
+        default='other'
+    )
+    amount = models.DecimalField(
+        'Montant',
+        max_digits=12,
+        decimal_places=2,
+        validators=[MinValueValidator(Decimal('0.01'))]
+    )
+    currency = models.CharField(
+        'Devise',
+        max_length=3,
+        choices=CURRENCY_CHOICES,
+        default='XOF'
+    )
+    date = models.DateField('Date')
+    supplier = models.CharField('Fournisseur', max_length=200, blank=True)
+    reference = models.CharField('Référence', max_length=100, blank=True)
+    notes = models.TextField('Notes', blank=True)
+    receipt = models.FileField(
+        'Justificatif',
+        upload_to='expenses/receipts/',
+        null=True,
+        blank=True
+    )
+
+    created_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='created_expenses'
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = 'Dépense'
+        verbose_name_plural = 'Dépenses'
+        ordering = ['-date', '-created_at']
+
+    def __str__(self):
+        return f"{self.description} - {self.amount} {self.currency}"
+
+    def get_currency_symbol(self):
+        symbols = {'XOF': 'FCFA', 'EUR': '€', 'USD': '$'}
+        return symbols.get(self.currency, self.currency)
+
+
 class SalesKPI(models.Model):
     """KPI de vente calculé et stocké pour historique."""
 

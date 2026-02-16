@@ -13,7 +13,13 @@
                 Performances commerciales {{ current_year }}
             </p>
         </div>
-        <div class="mt-4 md:mt-0">
+        <div class="mt-4 md:mt-0 flex gap-3">
+            <a href="{% url 'sales:expense_list' %}" class="btn-secondary">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+                Depenses
+            </a>
             <a href="{% url 'sales:target_list' %}" class="btn-secondary">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
@@ -25,23 +31,24 @@
 
     {% if no_organization %}
     <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-        <p class="text-yellow-800">Aucune entreprise configurée. Contactez votre administrateur.</p>
+        <p class="text-yellow-800">Aucune entreprise configuree. Contactez votre administrateur.</p>
     </div>
     {% else %}
 
     <!-- KPI Cards -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <!-- CA Annuel -->
+        <!-- CA Annuel (Factures payees) -->
         <div class="card">
             <div class="card-body">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-500">CA Annuel</p>
+                        <p class="text-sm text-gray-500">CA Annuel (paye)</p>
                         <p class="text-2xl font-bold text-gray-900">
-                            {{ revenue_ytd.total_revenue|floatformat:0|intcomma }} €
+                            {{ revenue_ytd.total_revenue|floatformat:0|intcomma }}
+                            <span class="text-base font-normal text-gray-500">{{ currency_symbol }}</span>
                         </p>
                         <p class="text-xs text-gray-500 mt-1">
-                            {{ revenue_ytd.invoice_count }} factures
+                            {{ revenue_ytd.invoice_count }} facture(s) payee(s)
                         </p>
                     </div>
                     <div class="p-3 bg-primary-100 rounded-full">
@@ -53,22 +60,23 @@
             </div>
         </div>
 
-        <!-- CA Mensuel -->
+        <!-- CA Mensuel (Factures payees) -->
         <div class="card">
             <div class="card-body">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-500">CA Mensuel</p>
+                        <p class="text-sm text-gray-500">CA Mensuel (paye)</p>
                         <p class="text-2xl font-bold text-gray-900">
-                            {{ revenue_mtd.total_revenue|floatformat:0|intcomma }} €
+                            {{ revenue_mtd.total_revenue|floatformat:0|intcomma }}
+                            <span class="text-base font-normal text-gray-500">{{ currency_symbol }}</span>
                         </p>
                         {% if comparison.revenue_growth > 0 %}
                         <p class="text-xs text-green-600 mt-1">
-                            +{{ comparison.revenue_growth|floatformat:1 }}% vs mois précédent
+                            +{{ comparison.revenue_growth|floatformat:1 }}% vs mois precedent
                         </p>
                         {% elif comparison.revenue_growth < 0 %}
                         <p class="text-xs text-red-600 mt-1">
-                            {{ comparison.revenue_growth|floatformat:1 }}% vs mois précédent
+                            {{ comparison.revenue_growth|floatformat:1 }}% vs mois precedent
                         </p>
                         {% endif %}
                     </div>
@@ -81,44 +89,50 @@
             </div>
         </div>
 
-        <!-- Taux de conversion -->
+        <!-- Depenses Mensuelles -->
         <div class="card">
             <div class="card-body">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-500">Taux de conversion</p>
-                        <p class="text-2xl font-bold text-gray-900">
-                            {{ quotes_ytd.conversion_rate|floatformat:1 }}%
+                        <p class="text-sm text-gray-500">Depenses du mois</p>
+                        <p class="text-2xl font-bold text-red-600">
+                            {{ expenses_mtd.total|floatformat:0|intcomma }}
+                            <span class="text-base font-normal text-gray-500">{{ currency_symbol }}</span>
                         </p>
                         <p class="text-xs text-gray-500 mt-1">
-                            {{ quotes_ytd.total_accepted }} / {{ quotes_ytd.total_sent }} devis
+                            {{ expenses_mtd.count }} depense(s)
                         </p>
                     </div>
-                    <div class="p-3 bg-purple-100 rounded-full">
-                        <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                    <div class="p-3 bg-red-100 rounded-full">
+                        <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
                         </svg>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Impayés -->
+        <!-- Resultat (CA - Depenses) -->
         <div class="card">
             <div class="card-body">
                 <div class="flex items-center justify-between">
                     <div>
-                        <p class="text-sm text-gray-500">Impayés</p>
-                        <p class="text-2xl font-bold {% if overdue.total_overdue > 0 %}text-red-600{% else %}text-gray-900{% endif %}">
-                            {{ overdue.total_overdue|floatformat:0|intcomma }} €
+                        <p class="text-sm text-gray-500">Resultat mensuel</p>
+                        <p class="text-2xl font-bold {% if monthly_profit >= 0 %}text-green-600{% else %}text-red-600{% endif %}">
+                            {% if monthly_profit >= 0 %}+{% endif %}{{ monthly_profit|floatformat:0|intcomma }}
+                            <span class="text-base font-normal text-gray-500">{{ currency_symbol }}</span>
                         </p>
                         <p class="text-xs text-gray-500 mt-1">
-                            {{ overdue.overdue_count }} facture(s) en retard
+                            CA - Depenses
                         </p>
                     </div>
-                    <div class="p-3 {% if overdue.total_overdue > 0 %}bg-red-100{% else %}bg-gray-100{% endif %} rounded-full">
-                        <svg class="w-6 h-6 {% if overdue.total_overdue > 0 %}text-red-600{% else %}text-gray-600{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    <div class="p-3 {% if monthly_profit >= 0 %}bg-green-100{% else %}bg-red-100{% endif %} rounded-full">
+                        <svg class="w-6 h-6 {% if monthly_profit >= 0 %}text-green-600{% else %}text-red-600{% endif %}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            {% if monthly_profit >= 0 %}
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            {% else %}
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            {% endif %}
                         </svg>
                     </div>
                 </div>
@@ -131,20 +145,20 @@
         <!-- Revenue Chart -->
         <div class="card">
             <div class="card-header">
-                <h2 class="card-title">Chiffre d'affaires mensuel</h2>
+                <h2 class="card-title">Chiffre d'affaires mensuel (factures payees)</h2>
             </div>
             <div class="card-body">
                 <canvas id="revenueChart" height="300"></canvas>
             </div>
         </div>
 
-        <!-- Quotes Funnel -->
+        <!-- Revenue vs Expenses Chart -->
         <div class="card">
             <div class="card-header">
-                <h2 class="card-title">Entonnoir des devis</h2>
+                <h2 class="card-title">CA vs Depenses</h2>
             </div>
             <div class="card-body">
-                <canvas id="quotesChart" height="300"></canvas>
+                <canvas id="profitChart" height="300"></canvas>
             </div>
         </div>
     </div>
@@ -165,53 +179,40 @@
                             <p class="font-medium text-gray-900 truncate">{{ client.company__name }}</p>
                             <p class="text-sm text-gray-500">{{ client.invoice_count }} facture(s)</p>
                         </div>
-                        <p class="font-bold text-primary-600">{{ client.revenue|floatformat:0|intcomma }} €</p>
+                        <p class="font-bold text-primary-600">{{ client.revenue|floatformat:0|intcomma }} {{ currency_symbol }}</p>
                     </div>
                     {% endfor %}
                 </div>
                 {% else %}
-                <p class="text-gray-500 text-center py-4">Aucune donnée</p>
+                <p class="text-gray-500 text-center py-4">Aucune donnee</p>
                 {% endif %}
             </div>
         </div>
 
-        <!-- Pipeline -->
+        <!-- Expenses by Category -->
         <div class="card">
-            <div class="card-header">
-                <h2 class="card-title">Pipeline d'opportunités</h2>
+            <div class="card-header flex justify-between items-center">
+                <h2 class="card-title">Depenses par categorie</h2>
+                <a href="{% url 'sales:expense_create' %}" class="text-sm text-primary-600 hover:underline">+ Ajouter</a>
             </div>
             <div class="card-body">
-                <div class="mb-4">
-                    <div class="flex justify-between text-sm">
-                        <span class="text-gray-500">Valeur totale</span>
-                        <span class="font-bold">{{ pipeline.total_value|floatformat:0|intcomma }} €</span>
-                    </div>
-                    <div class="flex justify-between text-sm">
-                        <span class="text-gray-500">Valeur pondérée</span>
-                        <span class="font-medium text-primary-600">{{ pipeline.weighted_value|floatformat:0|intcomma }} €</span>
-                    </div>
-                    <div class="flex justify-between text-sm">
-                        <span class="text-gray-500">Opportunités</span>
-                        <span>{{ pipeline.opportunity_count }}</span>
-                    </div>
-                </div>
-
-                {% if pipeline.by_stage %}
+                {% if expenses_by_category %}
                 <div class="space-y-3">
-                    {% for stage_name, stage_data in pipeline.by_stage.items %}
-                    <div>
-                        <div class="flex justify-between text-sm mb-1">
-                            <span class="text-gray-700">{{ stage_name }}</span>
-                            <span class="text-gray-500">{{ stage_data.count }} ({{ stage_data.value|floatformat:0|intcomma }} €)</span>
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2">
-                            <div class="bg-primary-600 h-2 rounded-full" style="width: {{ stage_data.probability }}%"></div>
-                        </div>
+                    {% for item in expenses_by_category %}
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm text-gray-700">{{ item.category_display }}</span>
+                        <span class="font-medium text-gray-900">{{ item.total|floatformat:0|intcomma }} {{ currency_symbol }}</span>
                     </div>
                     {% endfor %}
                 </div>
                 {% else %}
-                <p class="text-gray-500 text-center py-4">Aucune opportunité</p>
+                <div class="text-center py-8">
+                    <svg class="w-12 h-12 mx-auto text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    </svg>
+                    <p class="mt-2 text-gray-500">Aucune depense</p>
+                    <a href="{% url 'sales:expense_create' %}" class="mt-2 inline-block text-primary-600 hover:underline">Ajouter une depense</a>
+                </div>
                 {% endif %}
             </div>
         </div>
@@ -219,26 +220,26 @@
         <!-- Overdue Analysis -->
         <div class="card">
             <div class="card-header">
-                <h2 class="card-title">Analyse des impayés</h2>
+                <h2 class="card-title">Impayes</h2>
             </div>
             <div class="card-body">
                 {% if overdue.overdue_count > 0 %}
-                <div class="space-y-3">
-                    <div class="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
-                        <span class="text-sm text-yellow-800">0-30 jours</span>
-                        <span class="font-medium text-yellow-900">{{ overdue.by_age.0_30|floatformat:0|intcomma }} €</span>
+                <div class="mb-4">
+                    <p class="text-2xl font-bold text-red-600">{{ overdue.total_overdue|floatformat:0|intcomma }} {{ currency_symbol }}</p>
+                    <p class="text-sm text-gray-500">{{ overdue.overdue_count }} facture(s) en retard</p>
+                </div>
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center p-2 bg-yellow-50 rounded">
+                        <span class="text-xs text-yellow-800">0-30 jours</span>
+                        <span class="text-sm font-medium">{{ overdue.by_age.0_30|floatformat:0|intcomma }} {{ currency_symbol }}</span>
                     </div>
-                    <div class="flex justify-between items-center p-3 bg-orange-50 rounded-lg">
-                        <span class="text-sm text-orange-800">31-60 jours</span>
-                        <span class="font-medium text-orange-900">{{ overdue.by_age.31_60|floatformat:0|intcomma }} €</span>
+                    <div class="flex justify-between items-center p-2 bg-orange-50 rounded">
+                        <span class="text-xs text-orange-800">31-60 jours</span>
+                        <span class="text-sm font-medium">{{ overdue.by_age.31_60|floatformat:0|intcomma }} {{ currency_symbol }}</span>
                     </div>
-                    <div class="flex justify-between items-center p-3 bg-red-50 rounded-lg">
-                        <span class="text-sm text-red-800">61-90 jours</span>
-                        <span class="font-medium text-red-900">{{ overdue.by_age.61_90|floatformat:0|intcomma }} €</span>
-                    </div>
-                    <div class="flex justify-between items-center p-3 bg-red-100 rounded-lg">
-                        <span class="text-sm text-red-800">+90 jours</span>
-                        <span class="font-bold text-red-900">{{ overdue.by_age.90_plus|floatformat:0|intcomma }} €</span>
+                    <div class="flex justify-between items-center p-2 bg-red-50 rounded">
+                        <span class="text-xs text-red-800">+60 jours</span>
+                        <span class="text-sm font-medium">{{ overdue.by_age.61_90|floatformat:0|intcomma }} {{ currency_symbol }}</span>
                     </div>
                 </div>
                 {% else %}
@@ -246,7 +247,7 @@
                     <svg class="w-12 h-12 mx-auto text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
-                    <p class="mt-2 text-gray-500">Aucun impayé</p>
+                    <p class="mt-2 text-gray-500">Aucun impaye</p>
                 </div>
                 {% endif %}
             </div>
@@ -270,44 +271,31 @@ document.addEventListener('DOMContentLoaded', function() {
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    interaction: {
-                        mode: 'index',
-                        intersect: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
                     },
                     scales: {
                         y: {
-                            type: 'linear',
-                            display: true,
-                            position: 'left',
+                            beginAtZero: true,
                             title: {
                                 display: true,
-                                text: 'Chiffre d\'affaires (€)'
+                                text: 'Montant ({{ currency_symbol }})'
                             }
-                        },
-                        y1: {
-                            type: 'linear',
-                            display: true,
-                            position: 'right',
-                            grid: {
-                                drawOnChartArea: false,
-                            },
-                            title: {
-                                display: true,
-                                text: 'Nombre de factures'
-                            }
-                        },
+                        }
                     }
                 }
             });
         });
 
-    // Quotes Funnel Chart
-    fetch('{% url "sales:quotes_chart_api" %}')
+    // Profit Chart (Revenue vs Expenses)
+    fetch('{% url "sales:profit_chart_api" %}')
         .then(response => response.json())
         .then(data => {
-            const ctx = document.getElementById('quotesChart').getContext('2d');
+            const ctx = document.getElementById('profitChart').getContext('2d');
             new Chart(ctx, {
-                type: 'doughnut',
+                type: 'line',
                 data: data,
                 options: {
                     responsive: true,
@@ -315,10 +303,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     plugins: {
                         legend: {
                             position: 'bottom'
-                        },
-                        title: {
-                            display: true,
-                            text: 'Taux de conversion: ' + data.conversion_rate.toFixed(1) + '%'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Montant ({{ currency_symbol }})'
+                            }
                         }
                     }
                 }

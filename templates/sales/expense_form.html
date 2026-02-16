@@ -1,0 +1,147 @@
+{% extends "layouts/app_layout.html" %}
+
+{% block title %}{% if object %}Modifier{% else %}Nouvelle{% endif %} depense - PME-SI{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">
+                {% if object %}Modifier la depense{% else %}Nouvelle depense{% endif %}
+            </h1>
+            <p class="mt-1 text-sm text-gray-500">
+                {% if object %}{{ object.description }}{% else %}Enregistrez une depense de l'entreprise{% endif %}
+            </p>
+        </div>
+        <a href="{% url 'sales:expense_list' %}" class="btn-secondary">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+            Annuler
+        </a>
+    </div>
+
+    <!-- Form -->
+    <div class="card">
+        <form method="post" enctype="multipart/form-data" class="card-body space-y-6">
+            {% csrf_token %}
+
+            <!-- Description -->
+            <div>
+                <label for="id_description" class="form-label">Description *</label>
+                <input type="text" name="description" id="id_description"
+                       value="{{ form.description.value|default:'' }}"
+                       class="form-input {% if form.description.errors %}border-red-500{% endif %}"
+                       placeholder="Ex: Facture electricite janvier" required>
+                {% if form.description.errors %}
+                <p class="mt-1 text-sm text-red-600">{{ form.description.errors.0 }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Category & Date -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="id_category" class="form-label">Categorie *</label>
+                    <select name="category" id="id_category" class="form-select" required>
+                        {% for value, label in form.fields.category.choices %}
+                        <option value="{{ value }}" {% if form.category.value == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label for="id_date" class="form-label">Date *</label>
+                    <input type="date" name="date" id="id_date"
+                           value="{{ form.date.value|date:'Y-m-d'|default:form.date.value }}"
+                           class="form-input {% if form.date.errors %}border-red-500{% endif %}" required>
+                    {% if form.date.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.date.errors.0 }}</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Amount & Currency -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="id_amount" class="form-label">Montant *</label>
+                    <input type="number" name="amount" id="id_amount"
+                           value="{{ form.amount.value|default:'' }}"
+                           class="form-input {% if form.amount.errors %}border-red-500{% endif %}"
+                           step="0.01" min="0.01" placeholder="0.00" required>
+                    {% if form.amount.errors %}
+                    <p class="mt-1 text-sm text-red-600">{{ form.amount.errors.0 }}</p>
+                    {% endif %}
+                </div>
+                <div>
+                    <label for="id_currency" class="form-label">Devise *</label>
+                    <select name="currency" id="id_currency" class="form-select" required>
+                        {% for value, label in form.fields.currency.choices %}
+                        <option value="{{ value }}" {% if form.currency.value == value %}selected{% endif %}>{{ label }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <!-- Supplier & Reference -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label for="id_supplier" class="form-label">Fournisseur</label>
+                    <input type="text" name="supplier" id="id_supplier"
+                           value="{{ form.supplier.value|default:'' }}"
+                           class="form-input"
+                           placeholder="Nom du fournisseur">
+                </div>
+                <div>
+                    <label for="id_reference" class="form-label">Reference</label>
+                    <input type="text" name="reference" id="id_reference"
+                           value="{{ form.reference.value|default:'' }}"
+                           class="form-input"
+                           placeholder="Numero de facture, reference...">
+                </div>
+            </div>
+
+            <!-- Notes -->
+            <div>
+                <label for="id_notes" class="form-label">Notes</label>
+                <textarea name="notes" id="id_notes" rows="3"
+                          class="form-textarea"
+                          placeholder="Notes additionnelles...">{{ form.notes.value|default:'' }}</textarea>
+            </div>
+
+            <!-- Receipt -->
+            <div>
+                <label for="id_receipt" class="form-label">Justificatif</label>
+                {% if object and object.receipt %}
+                <div class="mb-2">
+                    <span class="text-sm text-gray-500">Fichier actuel:</span>
+                    <a href="{{ object.receipt.url }}" target="_blank" class="text-sm text-primary-600 hover:underline">
+                        {{ object.receipt.name|cut:"expenses/receipts/" }}
+                    </a>
+                </div>
+                {% endif %}
+                <input type="file" name="receipt" id="id_receipt"
+                       class="form-input"
+                       accept="image/*,.pdf">
+                <p class="mt-1 text-xs text-gray-500">
+                    Formats acceptes: images (JPG, PNG) ou PDF
+                </p>
+            </div>
+
+            <!-- Non-field errors -->
+            {% if form.non_field_errors %}
+            <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                <p class="text-sm text-red-600">{{ form.non_field_errors.0 }}</p>
+            </div>
+            {% endif %}
+
+            <!-- Submit -->
+            <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
+                <a href="{% url 'sales:expense_list' %}" class="btn-secondary">Annuler</a>
+                <button type="submit" class="btn-primary">
+                    {% if object %}Enregistrer{% else %}Ajouter la depense{% endif %}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

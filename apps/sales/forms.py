@@ -2,7 +2,7 @@
 from django import forms
 from django.utils import timezone
 
-from .models import SalesTarget
+from .models import SalesTarget, Expense
 
 
 class SalesTargetForm(forms.ModelForm):
@@ -88,3 +88,55 @@ class SalesTargetForm(forms.ModelForm):
             cleaned_data['month'] = None
 
         return cleaned_data
+
+
+class ExpenseForm(forms.ModelForm):
+    """Formulaire pour les dépenses."""
+
+    class Meta:
+        model = Expense
+        fields = [
+            'description', 'category', 'amount', 'currency', 'date',
+            'supplier', 'reference', 'notes', 'receipt'
+        ]
+        widgets = {
+            'description': forms.TextInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'Ex: Facture électricité janvier'
+            }),
+            'category': forms.Select(attrs={'class': 'form-select'}),
+            'amount': forms.NumberInput(attrs={
+                'class': 'form-input',
+                'step': '0.01',
+                'min': '0.01',
+                'placeholder': '0.00'
+            }),
+            'currency': forms.Select(attrs={'class': 'form-select'}),
+            'date': forms.DateInput(attrs={
+                'class': 'form-input',
+                'type': 'date'
+            }),
+            'supplier': forms.TextInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'Nom du fournisseur'
+            }),
+            'reference': forms.TextInput(attrs={
+                'class': 'form-input',
+                'placeholder': 'Numéro de facture, référence...'
+            }),
+            'notes': forms.Textarea(attrs={
+                'class': 'form-textarea',
+                'rows': 3,
+                'placeholder': 'Notes additionnelles...'
+            }),
+            'receipt': forms.FileInput(attrs={
+                'class': 'form-input',
+                'accept': 'image/*,.pdf'
+            }),
+        }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Set default date to today
+        if not self.instance.pk:
+            self.fields['date'].initial = timezone.now().date()
