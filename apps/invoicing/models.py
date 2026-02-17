@@ -6,6 +6,7 @@ from django.utils import timezone
 from django.core.validators import MinValueValidator
 
 from apps.core.models import Organization
+from apps.core.validators import validate_image_file
 from apps.crm.models import Company, Contact
 
 
@@ -126,7 +127,8 @@ class Product(models.Model):
         upload_to=product_image_path,
         null=True,
         blank=True,
-        help_text='Image du produit (JPG, PNG, max 5MB)'
+        help_text='Image du produit (JPG, PNG, max 5MB)',
+        validators=[validate_image_file]
     )
 
     # Catégorie et tags

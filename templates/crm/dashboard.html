@@ -316,7 +316,7 @@
 {% block extra_js %}
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const pipelineData = {{ pipeline_by_stage|safe }};
+    const pipelineData = JSON.parse('{{ pipeline_by_stage|escapejs }}');
 
     if (pipelineData && pipelineData.length > 0) {
         const ctx = document.getElementById('pipelineChart').getContext('2d');

@@ -9,6 +9,7 @@ from django.db import models
 from django.utils import timezone
 
 from apps.core.models import Organization, TimeStampedModel
+from apps.core.validators import validate_image_file
 
 
 class UserManager(BaseUserManager):
@@ -61,7 +62,12 @@ class User(AbstractBaseUser, PermissionsMixin, TimeStampedModel):
     first_name = models.CharField(max_length=150, blank=True, verbose_name="Prénom")
     last_name = models.CharField(max_length=150, blank=True, verbose_name="Nom")
     phone = models.CharField(max_length=20, blank=True, verbose_name="Téléphone")
-    avatar = models.ImageField(upload_to="avatars/", blank=True, verbose_name="Avatar")
+    avatar = models.ImageField(
+        upload_to="avatars/",
+        blank=True,
+        verbose_name="Avatar",
+        validators=[validate_image_file]
+    )
     job_title = models.CharField(max_length=100, blank=True, verbose_name="Fonction")
 
     # Organization (legacy - kept for backward compatibility)

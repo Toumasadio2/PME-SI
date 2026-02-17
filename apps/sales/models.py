@@ -10,6 +10,7 @@ from django.core.validators import MinValueValidator
 from django.utils import timezone
 
 from apps.core.models import Organization
+from apps.core.validators import validate_receipt_file
 
 
 class SalesTarget(models.Model):
@@ -168,7 +169,8 @@ class Expense(models.Model):
         'Justificatif',
         upload_to='expenses/receipts/',
         null=True,
-        blank=True
+        blank=True,
+        validators=[validate_receipt_file]
     )
 
     created_by = models.ForeignKey(

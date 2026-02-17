@@ -11,6 +11,7 @@ from django.urls import reverse
 from django.utils import timezone
 
 from apps.core.models import TenantModel, TimeStampedModel
+from apps.core.validators import validate_image_file, validate_document_file
 
 
 class Department(TenantModel):
@@ -233,7 +234,8 @@ class Employee(TenantModel):
     photo = models.ImageField(
         "Photo",
         upload_to="hr/employees/photos/",
-        blank=True
+        blank=True,
+        validators=[validate_image_file]
     )
 
     # Notes
@@ -617,7 +619,8 @@ class HRDocument(TenantModel):
     title = models.CharField("Titre", max_length=255)
     file = models.FileField(
         "Fichier",
-        upload_to="hr/documents/%Y/%m/"
+        upload_to="hr/documents/%Y/%m/",
+        validators=[validate_document_file]
     )
     file_size = models.PositiveIntegerField("Taille (octets)", default=0)
     is_confidential = models.BooleanField("Confidentiel", default=False)

@@ -9,6 +9,8 @@ from django.db import models
 from django.utils import timezone
 from django.utils.text import slugify
 
+from apps.core.validators import validate_image_file
+
 if TYPE_CHECKING:
     from django.db.models import Manager
 
@@ -58,7 +60,11 @@ class Organization(TimeStampedModel):
     bic = models.CharField("BIC/SWIFT", max_length=11, blank=True)
 
     # Branding
-    logo = models.ImageField(upload_to="organizations/logos/", blank=True)
+    logo = models.ImageField(
+        upload_to="organizations/logos/",
+        blank=True,
+        validators=[validate_image_file]
+    )
     primary_color = models.CharField(max_length=7, default="#3B82F6")
     secondary_color = models.CharField(max_length=7, default="#1E40AF")
 

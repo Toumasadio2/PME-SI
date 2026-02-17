@@ -256,7 +256,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Monthly Revenue Chart
-    const revenueData = {{ monthly_revenue_json|safe }};
+    const revenueData = JSON.parse('{{ monthly_revenue_json|escapejs }}');
     if (revenueData && revenueData.length > 0) {
         const ctx = document.getElementById('revenueChart').getContext('2d');
         new Chart(ctx, {
@@ -302,7 +302,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Invoice Status Chart
-    const statusData = {{ invoice_status_json|safe }};
+    const statusData = JSON.parse('{{ invoice_status_json|escapejs }}');
     if (statusData && Object.keys(statusData).length > 0) {
         const statusColors = {
             'Brouillon': '#9CA3AF',
