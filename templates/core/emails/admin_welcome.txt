@@ -1,8 +1,8 @@
-Bienvenue sur PME-SI !
+Bienvenue sur ABSERVICE !
 
 Bonjour {{ first_name|default:"" }},
 
-Vous avez été désigné(e) comme administrateur de l'entreprise "{{ organization_name }}" sur PME-SI.
+Vous avez été désigné(e) comme administrateur de l'entreprise "{{ organization_name }}" sur ABSERVICE.
 
 VOS IDENTIFIANTS DE CONNEXION
 -----------------------------
@@ -22,4 +22,4 @@ EN TANT QU'ADMINISTRATEUR, VOUS POUVEZ :
 Si vous n'êtes pas à l'origine de cette demande, veuillez ignorer cet email.
 
 ---
-PME-SI - Système d'Information pour PME
+ABSERVICE - Système d'Information pour PME

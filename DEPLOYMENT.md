@@ -1,6 +1,6 @@
-# Guide de Déploiement PME-SI sur IONOS
+# Guide de Déploiement ABSERVICE sur IONOS
 
-Ce guide explique comment déployer PME-SI sur un VPS IONOS avec GitHub.
+Ce guide explique comment déployer ABSERVICE sur un VPS IONOS avec GitHub.
 
 ## Prérequis
 

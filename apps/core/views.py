@@ -334,7 +334,7 @@ def create_organization(request: HttpRequest) -> HttpResponse:
                     text_message = render_to_string('core/emails/admin_welcome.txt', context)
 
                     send_mail(
-                        subject=f"Bienvenue sur PME-SI - Vous êtes administrateur de {organization.name}",
+                        subject=f"Bienvenue sur ABSERVICE - Vous êtes administrateur de {organization.name}",
                         message=text_message,
                         from_email=settings.DEFAULT_FROM_EMAIL,
                         recipient_list=[admin_email],

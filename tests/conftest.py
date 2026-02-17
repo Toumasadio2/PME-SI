@@ -1,5 +1,5 @@
 """
-Pytest configuration and fixtures for PME-SI tests.
+Pytest configuration and fixtures for ABSERVICE tests.
 """
 import pytest
 from django.contrib.auth import get_user_model

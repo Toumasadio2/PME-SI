@@ -1,5 +1,5 @@
 """
-Production settings for PME-SI.
+Production settings for ABSERVICE.
 
 This file contains settings optimized for production deployment.
 It imports base settings and overrides them with production-specific values.

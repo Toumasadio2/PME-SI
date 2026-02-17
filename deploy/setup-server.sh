@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# PME-SI - Script d'installation initiale sur VPS IONOS
+# ABSERVICE - Script d'installation initiale sur VPS IONOS
 # =============================================================================
 # Usage: curl -sSL https://raw.githubusercontent.com/VOTRE_USER/pme-si/main/deploy/setup-server.sh | bash
 # Ou: bash setup-server.sh votredomaine.com
@@ -12,7 +12,7 @@ APP_DIR="/opt/pme-si"
 GITHUB_REPO="VOTRE_USER/pme-si"  # À modifier
 
 echo "=============================================="
-echo "Installation PME-SI sur VPS IONOS"
+echo "Installation ABSERVICE sur VPS IONOS"
 echo "Domaine: $DOMAIN"
 echo "=============================================="
 

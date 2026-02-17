@@ -1,5 +1,5 @@
 """
-ASGI config for PME-SI project.
+ASGI config for ABSERVICE project.
 """
 import os
 

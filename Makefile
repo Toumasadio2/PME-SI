@@ -12,7 +12,7 @@ YELLOW := \033[0;33m
 NC := \033[0m # No Color
 
 help: ## Show this help
-	@echo "PME-SI - Makefile commands"
+	@echo "ABSERVICE - Makefile commands"
 	@echo ""
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "$(GREEN)%-20s$(NC) %s\n", $$1, $$2}'
 

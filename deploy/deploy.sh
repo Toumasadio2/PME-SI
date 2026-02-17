@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# PME-SI - Script de déploiement
+# ABSERVICE - Script de déploiement
 # =============================================================================
 # Usage: ./deploy.sh
 
@@ -13,7 +13,7 @@ DATE=$(date +%Y%m%d_%H%M%S)
 cd $APP_DIR
 
 echo "=============================================="
-echo "Déploiement PME-SI - $(date)"
+echo "Déploiement ABSERVICE - $(date)"
 echo "=============================================="
 
 # Backup de la base de données avant déploiement

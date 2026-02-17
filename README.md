@@ -1,6 +1,6 @@
-# PME-SI - Systeme d'Information pour PME
+# ABSERVICE - Systeme d'Information pour PME
 
-PME-SI est une solution complete de gestion d'entreprise pour les petites et moyennes entreprises. Elle offre une architecture multi-tenant permettant a plusieurs organisations d'utiliser la meme instance de maniere isolee.
+ABSERVICE est une solution complete de gestion d'entreprise pour les petites et moyennes entreprises. Elle offre une architecture multi-tenant permettant a plusieurs organisations d'utiliser la meme instance de maniere isolee.
 
 ## Fonctionnalites
 
@@ -141,7 +141,7 @@ pme-si/
 
 ## Architecture Multi-tenant
 
-PME-SI utilise une architecture multi-tenant au niveau des donnees. Chaque organisation a ses propres donnees isolees des autres.
+ABSERVICE utilise une architecture multi-tenant au niveau des donnees. Chaque organisation a ses propres donnees isolees des autres.
 
 ### Caracteristiques
 - Un utilisateur peut appartenir a plusieurs organisations

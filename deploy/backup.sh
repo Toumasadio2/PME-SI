@@ -1,6 +1,6 @@
 #!/bin/bash
 # =============================================================================
-# PME-SI - Script de backup
+# ABSERVICE - Script de backup
 # =============================================================================
 # Usage: ./backup.sh
 # Ajouter au cron: 0 2 * * * /opt/pme-si/deploy/backup.sh >> /var/log/pme-si/backup.log 2>&1
@@ -15,7 +15,7 @@ RETENTION_DAYS=30
 cd $APP_DIR
 
 echo "=============================================="
-echo "Backup PME-SI - $(date)"
+echo "Backup ABSERVICE - $(date)"
 echo "=============================================="
 
 # Backup base de données

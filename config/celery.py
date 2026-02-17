@@ -1,5 +1,5 @@
 """
-Celery configuration for PME-SI project.
+Celery configuration for ABSERVICE project.
 """
 import os
 

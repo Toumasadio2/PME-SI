@@ -118,7 +118,7 @@ def setup_2fa(request: HttpRequest) -> HttpResponse:
     totp = pyotp.TOTP(user.totp_secret)
     provisioning_uri = totp.provisioning_uri(
         name=user.email,
-        issuer_name="PME-SI"
+        issuer_name="ABSERVICE"
     )
 
     # Generate QR code as SVG

@@ -1,5 +1,5 @@
 """
-Base settings for PME-SI project.
+Base settings for ABSERVICE project.
 """
 import os
 from pathlib import Path

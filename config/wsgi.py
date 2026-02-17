@@ -1,5 +1,5 @@
 """
-WSGI config for PME-SI project.
+WSGI config for ABSERVICE project.
 """
 import os
 

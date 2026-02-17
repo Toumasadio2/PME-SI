@@ -1,5 +1,5 @@
 """
-URL configuration for PME-SI project.
+URL configuration for ABSERVICE project.
 """
 from django.conf import settings
 from django.conf.urls.static import static
