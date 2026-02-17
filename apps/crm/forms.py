@@ -129,6 +129,20 @@ class CompanyForm(forms.ModelForm):
             }),
         }
 
+    def __init__(self, *args, **kwargs):
+        organization = kwargs.pop("organization", None)
+        super().__init__(*args, **kwargs)
+
+        if organization:
+            from apps.accounts.models import OrganizationMembership
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            member_ids = OrganizationMembership.objects.filter(
+                organization=organization,
+                is_active=True
+            ).values_list('user_id', flat=True)
+            self.fields["assigned_to"].queryset = User.objects.filter(id__in=member_ids)
+
 
 class ContactForm(forms.ModelForm):
     """Form for creating/editing contacts."""
@@ -192,6 +206,22 @@ class ContactForm(forms.ModelForm):
             }),
         }
 
+    def __init__(self, *args, **kwargs):
+        organization = kwargs.pop("organization", None)
+        super().__init__(*args, **kwargs)
+
+        if organization:
+            from apps.accounts.models import OrganizationMembership
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            member_ids = OrganizationMembership.objects.filter(
+                organization=organization,
+                is_active=True
+            ).values_list('user_id', flat=True)
+            self.fields["assigned_to"].queryset = User.objects.filter(id__in=member_ids)
+            self.fields["company"].queryset = Company.objects.filter(organization=organization)
+            self.fields["tags"].queryset = Tag.objects.filter(organization=organization)
+
 
 class OpportunityForm(forms.ModelForm):
     """Form for creating/editing opportunities."""
@@ -250,6 +280,15 @@ class OpportunityForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         if organization:
+            from apps.accounts.models import OrganizationMembership
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            # Filter users by organization members
+            member_ids = OrganizationMembership.objects.filter(
+                organization=organization,
+                is_active=True
+            ).values_list('user_id', flat=True)
+            self.fields["assigned_to"].queryset = User.objects.filter(id__in=member_ids)
             # Filter companies and contacts by organization
             self.fields["company"].queryset = Company.objects.filter(
                 organization=organization
@@ -315,6 +354,15 @@ class ActivityForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
 
         if organization:
+            from apps.accounts.models import OrganizationMembership
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            # Filter users by organization members
+            member_ids = OrganizationMembership.objects.filter(
+                organization=organization,
+                is_active=True
+            ).values_list('user_id', flat=True)
+            self.fields["assigned_to"].queryset = User.objects.filter(id__in=member_ids)
             self.fields["contact"].queryset = Contact.objects.filter(
                 organization=organization
             )
@@ -468,3 +516,15 @@ class OpportunitySearchForm(forms.Form):
             self.fields["stage"].queryset = PipelineStage.objects.filter(
                 organization=organization
             )
+            # Filter assigned_to by organization members
+            from apps.accounts.models import OrganizationMembership
+            from django.contrib.auth import get_user_model
+            User = get_user_model()
+            member_ids = OrganizationMembership.objects.filter(
+                organization=organization,
+                is_active=True
+            ).values_list('user_id', flat=True)
+            members = User.objects.filter(id__in=member_ids)
+            self.fields["assigned_to"].choices = [("", "Tous les commerciaux")] + [
+                (str(user.id), user.get_full_name() or user.email) for user in members
+            ]

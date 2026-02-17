@@ -253,13 +253,10 @@ class ContactCreateView(CRMBaseMixin, PermissionRequiredMixin, CreateView):
     template_name = "crm/contact_form.html"
     permission_required = "crm_create"
 
-    def get_form(self, form_class=None):
-        form = super().get_form(form_class)
-        org = getattr(self.request, "organization", None)
-        if org:
-            form.fields["company"].queryset = Company.objects.filter(organization=org)
-            form.fields["tags"].queryset = Tag.objects.filter(organization=org)
-        return form
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["organization"] = getattr(self.request, "organization", None)
+        return kwargs
 
     def form_valid(self, form):
         messages.success(self.request, "Contact créé avec succès.")
@@ -274,13 +271,10 @@ class ContactUpdateView(CRMBaseMixin, PermissionRequiredMixin, UpdateView):
     template_name = "crm/contact_form.html"
     permission_required = "crm_edit"
 
-    def get_form(self, form_class=None):
-        form = super().get_form(form_class)
-        org = getattr(self.request, "organization", None)
-        if org:
-            form.fields["company"].queryset = Company.objects.filter(organization=org)
-            form.fields["tags"].queryset = Tag.objects.filter(organization=org)
-        return form
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["organization"] = getattr(self.request, "organization", None)
+        return kwargs
 
     def form_valid(self, form):
         messages.success(self.request, "Contact mis à jour avec succès.")
@@ -388,6 +382,11 @@ class CompanyUpdateView(CRMBaseMixin, PermissionRequiredMixin, UpdateView):
     form_class = CompanyForm
     template_name = "crm/company_form.html"
     permission_required = "crm_edit"
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs["organization"] = getattr(self.request, "organization", None)
+        return kwargs
 
     def get_form(self, form_class=None):
         form = super().get_form(form_class)
