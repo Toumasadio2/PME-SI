@@ -471,7 +471,22 @@ def delete_organization(request: HttpRequest, pk) -> HttpResponse:
         active_organization=None
     )
 
-    # Delete the organization
+    # Delete all related data that has PROTECT constraints
+    # This must be done before deleting the organization
+    from apps.invoicing.models import Payment, Invoice, Quote
+    from apps.crm.models import Company
+
+    # 1. Delete payments first (they protect invoices)
+    Payment.objects.filter(invoice__organization=organization).delete()
+
+    # 2. Delete invoices and quotes (they protect companies)
+    Invoice.objects.filter(organization=organization).delete()
+    Quote.objects.filter(organization=organization).delete()
+
+    # 3. Delete CRM companies (protected by invoices/quotes, now safe)
+    Company.objects.filter(organization=organization).delete()
+
+    # Delete the organization (cascades remaining data)
     organization.delete()
 
     messages.success(request, f"L'entreprise '{org_name}' a été supprimée.")
