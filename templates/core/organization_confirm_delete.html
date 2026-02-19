@@ -1,0 +1,80 @@
+{% extends "layouts/app_layout.html" %}
+
+{% block title %}Supprimer {{ organization.name }}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="card">
+        <div class="card-header bg-red-50 border-b border-red-200">
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
+                    <svg class="w-6 h-6 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                </div>
+                <h1 class="text-xl font-bold text-red-800">Supprimer l'entreprise</h1>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="mb-6">
+                <div class="flex items-center gap-4 p-4 bg-gray-50 rounded-lg mb-4">
+                    {% if organization.logo %}
+                    <img src="{{ organization.logo.url }}" alt="{{ organization.name }}" class="w-16 h-16 rounded-lg object-cover">
+                    {% else %}
+                    <div class="w-16 h-16 rounded-lg bg-primary-100 flex items-center justify-center">
+                        <span class="text-2xl font-bold text-primary-600">{{ organization.name|slice:":2"|upper }}</span>
+                    </div>
+                    {% endif %}
+                    <div>
+                        <h2 class="text-lg font-semibold text-gray-900">{{ organization.name }}</h2>
+                        {% if organization.email %}
+                        <p class="text-sm text-gray-500">{{ organization.email }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-4">
+                    <h3 class="font-semibold text-red-800 mb-2">Attention : Cette action est irréversible !</h3>
+                    <p class="text-red-700 text-sm mb-3">
+                        La suppression de cette entreprise entraînera la perte définitive de :
+                    </p>
+                    <ul class="list-disc list-inside text-red-700 text-sm space-y-1">
+                        <li>Tous les contacts et entreprises clients</li>
+                        <li>Toutes les factures et devis</li>
+                        <li>Tout l'historique des ventes</li>
+                        <li>Toutes les données RH (employés, congés, etc.)</li>
+                        <li>Tous les membres et leurs accès</li>
+                    </ul>
+                </div>
+
+                {% if member_count > 0 %}
+                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                    <p class="text-yellow-800">
+                        <strong>{{ member_count }} membre{% if member_count > 1 %}s{% endif %}</strong>
+                        {% if member_count > 1 %}seront retirés{% else %}sera retiré{% endif %} de cette entreprise.
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3">
+                <a href="{% url 'core:organization_detail' pk=organization.pk %}" class="btn-secondary flex-1 text-center">
+                    <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
+                    </svg>
+                    Annuler
+                </a>
+                <form method="post" class="flex-1">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-primary w-full bg-red-600 hover:bg-red-700 border-red-600 hover:border-red-700">
+                        <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                        </svg>
+                        Confirmer la suppression
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -430,7 +430,6 @@ def exit_organization(request: HttpRequest) -> HttpResponse:
 
 
 @login_required
-@require_POST
 def delete_organization(request: HttpRequest, pk) -> HttpResponse:
     """Delete an organization (super admin only)."""
     if not getattr(request.user, 'is_super_admin', False):
@@ -438,6 +437,19 @@ def delete_organization(request: HttpRequest, pk) -> HttpResponse:
         return redirect("dashboard:index")
 
     organization = get_object_or_404(Organization, pk=pk)
+
+    # GET: Show confirmation page
+    if request.method == "GET":
+        member_count = OrganizationMembership.objects.filter(
+            organization=organization,
+            is_active=True
+        ).count()
+        return render(request, "core/organization_confirm_delete.html", {
+            "organization": organization,
+            "member_count": member_count,
+        })
+
+    # POST: Perform deletion
     org_name = organization.name
 
     # Check if super admin is currently in this organization
