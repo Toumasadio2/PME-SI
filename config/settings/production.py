@@ -24,8 +24,8 @@ CSRF_COOKIE_SECURE = env.bool("CSRF_COOKIE_SECURE", default=True)  # noqa: F405
 X_FRAME_OPTIONS = "DENY"
 
 # Cookie SameSite protection
-SESSION_COOKIE_SAMESITE = "Strict"
-CSRF_COOKIE_SAMESITE = "Strict"
+SESSION_COOKIE_SAMESITE = "Lax"
+CSRF_COOKIE_SAMESITE = "Lax"
 
 # Limite taille des uploads (5MB par defaut)
 DATA_UPLOAD_MAX_MEMORY_SIZE = 5 * 1024 * 1024
