@@ -703,7 +703,7 @@
                 </div>
                 <div class="stat-label">Contacts CRM</div>
                 <div class="stat-value" x-data="{ count: 0 }" x-init="
-                    let target = {{ stats.contacts|default:247 }};
+                    let target = {{ stats.contacts|default:0 }};
                     let duration = 1500;
                     let start = performance.now();
                     function animate(now) {
@@ -729,7 +729,7 @@
                 </div>
                 <div class="stat-label">Chiffre d'affaires</div>
                 <div class="stat-value" x-data="{ count: 0 }" x-init="
-                    let target = {{ stats.revenue|default:84500 }};
+                    let target = {{ stats.revenue|default:0 }};
                     let duration = 1500;
                     let start = performance.now();
                     function animate(now) {
@@ -757,7 +757,7 @@
                 </div>
                 <div class="stat-label">Employés actifs</div>
                 <div class="stat-value" x-data="{ count: 0 }" x-init="
-                    let target = {{ stats.employees|default:32 }};
+                    let target = {{ stats.employees|default:0 }};
                     let duration = 1500;
                     let start = performance.now();
                     function animate(now) {
@@ -783,7 +783,7 @@
                 </div>
                 <div class="stat-label">Factures en attente</div>
                 <div class="stat-value" x-data="{ count: 0 }" x-init="
-                    let target = {{ stats.pending_invoices|default:18 }};
+                    let target = {{ stats.pending_invoices|default:0 }};
                     let duration = 1500;
                     let start = performance.now();
                     function animate(now) {

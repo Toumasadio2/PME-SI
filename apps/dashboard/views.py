@@ -74,10 +74,60 @@ def organization_dashboard(request: HttpRequest) -> HttpResponse:
     # Get user permissions for showing/hiding widgets
     permissions = PermissionService.get_user_permissions(user, organization)
 
+    # Calculate real statistics
+    stats = {
+        "contacts": 0,
+        "revenue": 0,
+        "employees": 0,
+        "pending_invoices": 0,
+    }
+
+    if organization:
+        # CRM Stats
+        try:
+            from apps.crm.models import Contact
+            stats["contacts"] = Contact.objects.filter(organization=organization).count()
+        except Exception:
+            pass
+
+        # HR Stats
+        try:
+            from apps.hr.models import Employee
+            stats["employees"] = Employee.objects.filter(
+                organization=organization,
+                status=Employee.Status.ACTIVE
+            ).count()
+        except Exception:
+            pass
+
+        # Invoicing Stats
+        try:
+            from apps.invoicing.models import Invoice
+            from decimal import Decimal
+
+            # Pending invoices count
+            pending_invoices = Invoice.objects.filter(
+                organization=organization,
+                status__in=[Invoice.Status.DRAFT, Invoice.Status.SENT, Invoice.Status.OVERDUE]
+            )
+            stats["pending_invoices"] = pending_invoices.count()
+
+            # Monthly revenue (paid invoices this month)
+            current_month_start = timezone.now().replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+            paid_this_month = Invoice.objects.filter(
+                organization=organization,
+                status=Invoice.Status.PAID,
+                paid_date__gte=current_month_start
+            ).aggregate(total=Sum('total_amount'))
+            stats["revenue"] = int(paid_this_month['total'] or 0)
+        except Exception:
+            pass
+
     context = {
         "user": user,
         "organization": organization,
         "permissions": permissions,
+        "stats": stats,
         "can_view_crm": "crm_view" in permissions,
         "can_view_invoicing": "invoicing_view" in permissions,
         "can_view_sales": "sales_view" in permissions,
