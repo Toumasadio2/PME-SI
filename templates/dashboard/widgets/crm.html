@@ -94,7 +94,7 @@
                 font-weight: 700;
                 color: #f59e0b;
                 line-height: 1;
-            ">{{ pipeline_value|default:"0" }}<span style="font-size: 0.875rem; margin-left: 0.25rem;">€</span></p>
+            ">{{ pipeline_value|default:"0" }}<span style="font-size: 0.875rem; margin-left: 0.25rem;">{{ organization.currency_symbol|default:"€" }}</span></p>
         </div>
     </div>
 

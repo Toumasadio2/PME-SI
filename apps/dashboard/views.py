@@ -178,6 +178,7 @@ def widget_crm(request: HttpRequest) -> HttpResponse:
 
     # Placeholder data - will be replaced with real queries later
     context = {
+        "organization": organization,
         "contacts_count": 0,
         "companies_count": 0,
         "opportunities_count": 0,
@@ -194,6 +195,7 @@ def widget_invoicing(request: HttpRequest) -> HttpResponse:
     organization = getattr(request, "organization", None)
 
     context = {
+        "organization": organization,
         "pending_quotes": 0,
         "pending_invoices": 0,
         "unpaid_amount": 0,
@@ -210,6 +212,7 @@ def widget_sales(request: HttpRequest) -> HttpResponse:
     organization = getattr(request, "organization", None)
 
     context = {
+        "organization": organization,
         "monthly_sales": 0,
         "conversion_rate": 0,
         "average_deal": 0,

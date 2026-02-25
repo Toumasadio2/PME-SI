@@ -739,7 +739,7 @@
                     }
                     requestAnimationFrame(animate);
                 ">
-                    <span x-text="count.toLocaleString('fr-FR')">0</span><span class="text-lg ml-1">€</span>
+                    <span x-text="count.toLocaleString('fr-FR')">0</span><span class="text-lg ml-1">{{ organization.currency_symbol|default:"€" }}</span>
                 </div>
                 <div class="stat-trend up">
                     <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">

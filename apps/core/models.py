@@ -37,6 +37,29 @@ class Organization(TimeStampedModel):
         MINIMAL = "minimal", "Minimaliste"
         ELEGANT = "elegant", "Élégant"
 
+    class Currency(models.TextChoices):
+        EUR = "EUR", "Euro (€)"
+        XOF = "XOF", "Franc CFA BCEAO (FCFA)"
+        XAF = "XAF", "Franc CFA BEAC (FCFA)"
+        USD = "USD", "Dollar US ($)"
+        GBP = "GBP", "Livre Sterling (£)"
+        CHF = "CHF", "Franc Suisse (CHF)"
+        MAD = "MAD", "Dirham Marocain (DH)"
+        TND = "TND", "Dinar Tunisien (DT)"
+        DZD = "DZD", "Dinar Algérien (DA)"
+
+    CURRENCY_SYMBOLS = {
+        "EUR": "€",
+        "XOF": "FCFA",
+        "XAF": "FCFA",
+        "USD": "$",
+        "GBP": "£",
+        "CHF": "CHF",
+        "MAD": "DH",
+        "TND": "DT",
+        "DZD": "DA",
+    }
+
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=255)
     slug = models.SlugField(max_length=100, unique=True)
@@ -79,7 +102,13 @@ class Organization(TimeStampedModel):
 
     # Settings
     timezone = models.CharField(max_length=50, default="Europe/Paris")
-    currency = models.CharField(max_length=3, default="EUR")
+    currency = models.CharField(
+        "Devise",
+        max_length=3,
+        choices=Currency.choices,
+        default=Currency.EUR,
+        help_text="Devise utilisée pour les devis et factures"
+    )
     date_format = models.CharField(max_length=20, default="%d/%m/%Y")
 
     # Status
@@ -113,6 +142,11 @@ class Organization(TimeStampedModel):
         if self.trial_ends_at is None:
             return False
         return timezone.now() > self.trial_ends_at
+
+    @property
+    def currency_symbol(self) -> str:
+        """Return the symbol for the organization's currency."""
+        return self.CURRENCY_SYMBOLS.get(self.currency, "€")
 
 
 class TenantMixin(models.Model):
