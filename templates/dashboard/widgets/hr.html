@@ -1,44 +1,153 @@
-<div>
-    <div class="flex items-center justify-between mb-4">
-        <h3 class="text-lg font-medium text-gray-900">Ressources Humaines</h3>
-        <a href="{% url 'hr:dashboard' %}" class="text-sm text-primary-600 hover:text-primary-700">Voir tout</a>
-    </div>
-    <div class="grid grid-cols-2 gap-4">
-        <div class="bg-gray-50 rounded-lg p-4">
-            <p class="text-2xl font-bold text-gray-900">{{ employees_count }}</p>
-            <p class="text-sm text-gray-500">Employés actifs</p>
+<div style="font-family: 'Outfit', system-ui, sans-serif;">
+    <!-- Stats Row -->
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-bottom: 1rem;">
+        <!-- Employés actifs -->
+        <div style="
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            transition: all 0.3s;
+        " onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='rgba(245, 158, 11, 0.4)';"
+           onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(245, 158, 11, 0.2)';">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <svg width="14" height="14" fill="none" stroke="#f59e0b" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                <span style="color: #64748b; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em;">Employés</span>
+            </div>
+            <p style="
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 1.5rem;
+                font-weight: 700;
+                color: #fff;
+                line-height: 1;
+            ">{{ employees_count|default:"0" }}</p>
         </div>
-        <div class="bg-gray-50 rounded-lg p-4">
-            <p class="text-2xl font-bold text-yellow-600">{{ pending_leaves }}</p>
-            <p class="text-sm text-gray-500">Congés en attente</p>
+
+        <!-- Congés en attente -->
+        <div style="
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            transition: all 0.3s;
+        " onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='rgba(239, 68, 68, 0.4)';"
+           onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(239, 68, 68, 0.2)';">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <svg width="14" height="14" fill="none" stroke="#ef4444" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span style="color: #64748b; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em;">En attente</span>
+            </div>
+            <p style="
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 1.5rem;
+                font-weight: 700;
+                color: {% if pending_leaves > 0 %}#ef4444{% else %}#10b981{% endif %};
+                line-height: 1;
+            ">{{ pending_leaves|default:"0" }}</p>
         </div>
     </div>
+
     {% if birthdays_this_month %}
-    <div class="mt-4">
-        <p class="text-sm font-medium text-gray-700 mb-2">Anniversaires à venir</p>
-        <ul class="text-sm text-gray-600 space-y-1">
+    <!-- Anniversaires -->
+    <div style="
+        background: rgba(236, 72, 153, 0.05);
+        border: 1px solid rgba(236, 72, 153, 0.2);
+        border-radius: 0.75rem;
+        padding: 0.875rem;
+        margin-bottom: 0.75rem;
+    ">
+        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.625rem;">
+            <svg width="14" height="14" fill="none" stroke="#ec4899" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0A2.704 2.704 0 003 15.546V12a9 9 0 0118 0v3.546z"/>
+            </svg>
+            <span style="color: #ec4899; font-size: 0.75rem; font-weight: 500;">Anniversaires</span>
+        </div>
+        <ul style="margin: 0; padding: 0; list-style: none;">
             {% for birthday in birthdays_this_month %}
-                <li class="flex items-center">
-                    <svg class="w-4 h-4 mr-2 text-pink-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0A2.704 2.704 0 003 15.546V12a9 9 0 0118 0v3.546z"></path>
-                    </svg>
-                    {{ birthday }}
-                </li>
+            <li style="
+                display: flex;
+                align-items: center;
+                padding: 0.375rem 0;
+                color: #e2e8f0;
+                font-size: 0.8rem;
+                {% if not forloop.last %}border-bottom: 1px solid rgba(148, 163, 184, 0.1);{% endif %}
+            ">
+                <span style="
+                    width: 6px;
+                    height: 6px;
+                    background: #ec4899;
+                    border-radius: 50%;
+                    margin-right: 0.5rem;
+                "></span>
+                {{ birthday }}
+            </li>
             {% endfor %}
         </ul>
     </div>
     {% endif %}
+
     {% if upcoming_leaves %}
-    <div class="mt-4">
-        <p class="text-sm font-medium text-gray-700 mb-2">Congés à venir</p>
-        <ul class="text-sm text-gray-600 space-y-1">
+    <!-- Congés à venir -->
+    <div style="
+        background: rgba(59, 130, 246, 0.05);
+        border: 1px solid rgba(59, 130, 246, 0.2);
+        border-radius: 0.75rem;
+        padding: 0.875rem;
+    ">
+        <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.625rem;">
+            <svg width="14" height="14" fill="none" stroke="#3b82f6" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            <span style="color: #3b82f6; font-size: 0.75rem; font-weight: 500;">Congés à venir</span>
+        </div>
+        <ul style="margin: 0; padding: 0; list-style: none;">
             {% for leave in upcoming_leaves %}
-                <li class="flex items-center justify-between">
-                    <span>{{ leave.employee.full_name }}</span>
-                    <span class="text-gray-400">{{ leave.start_date|date:"d/m" }} - {{ leave.end_date|date:"d/m" }}</span>
-                </li>
+            <li style="
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 0.375rem 0;
+                {% if not forloop.last %}border-bottom: 1px solid rgba(148, 163, 184, 0.1);{% endif %}
+            ">
+                <span style="color: #e2e8f0; font-size: 0.8rem;">{{ leave.employee.full_name }}</span>
+                <span style="
+                    color: #64748b;
+                    font-size: 0.7rem;
+                    font-family: 'JetBrains Mono', monospace;
+                    background: rgba(148, 163, 184, 0.1);
+                    padding: 0.125rem 0.375rem;
+                    border-radius: 0.25rem;
+                ">{{ leave.start_date|date:"d/m" }} → {{ leave.end_date|date:"d/m" }}</span>
+            </li>
             {% endfor %}
         </ul>
     </div>
     {% endif %}
+
+    <!-- Quick Action -->
+    <a href="{% url 'hr:dashboard' %}" style="
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        padding: 0.75rem;
+        background: rgba(245, 158, 11, 0.1);
+        border: 1px solid rgba(245, 158, 11, 0.2);
+        border-radius: 0.5rem;
+        color: #f59e0b;
+        font-size: 0.8rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s;
+    " onmouseover="this.style.background='rgba(245, 158, 11, 0.2)'; this.style.borderColor='rgba(245, 158, 11, 0.4)';"
+       onmouseout="this.style.background='rgba(245, 158, 11, 0.1)'; this.style.borderColor='rgba(245, 158, 11, 0.2)';">
+        <span>Dashboard RH</span>
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+        </svg>
+    </a>
 </div>

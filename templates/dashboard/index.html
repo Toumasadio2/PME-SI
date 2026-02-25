@@ -3,69 +3,970 @@
 
 {% block title %}Tableau de bord - ABSERVICE{% endblock %}
 
-{% block content %}
-<div class="space-y-6">
-    <!-- Page header -->
-    <div class="md:flex md:items-center md:justify-between">
-        <div class="min-w-0 flex-1">
-            <h1 class="text-2xl font-bold text-gray-900">
-                Bonjour, {{ user.get_short_name }} !
-            </h1>
-            <p class="mt-1 text-sm text-gray-500">
-                Voici un aperçu de votre activité
-            </p>
-        </div>
-    </div>
+{% block extra_css %}
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 
-    <!-- Widgets grid -->
-    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {% for widget in widgets %}
-        <div class="bg-white rounded-lg shadow p-6"
-             hx-get="{% url widget.url %}"
-             hx-trigger="load"
-             hx-swap="innerHTML">
-            <div class="animate-pulse">
-                <div class="h-4 bg-gray-200 rounded w-1/4 mb-4"></div>
-                <div class="space-y-3">
-                    <div class="h-3 bg-gray-200 rounded"></div>
-                    <div class="h-3 bg-gray-200 rounded w-5/6"></div>
+<style>
+    /* ═══════════════════════════════════════════════════════════
+       EXECUTIVE COMMAND CENTER - Dashboard Design System
+       ═══════════════════════════════════════════════════════════ */
+
+    :root {
+        --dash-bg: #0a0f1a;
+        --dash-surface: rgba(15, 23, 42, 0.8);
+        --dash-surface-elevated: rgba(30, 41, 59, 0.6);
+        --dash-border: rgba(148, 163, 184, 0.1);
+        --dash-glow: rgba(59, 130, 246, 0.15);
+
+        /* Module Colors */
+        --crm-primary: #3b82f6;
+        --crm-glow: rgba(59, 130, 246, 0.3);
+        --sales-primary: #10b981;
+        --sales-glow: rgba(16, 185, 129, 0.3);
+        --hr-primary: #f59e0b;
+        --hr-glow: rgba(245, 158, 11, 0.3);
+        --invoicing-primary: #8b5cf6;
+        --invoicing-glow: rgba(139, 92, 246, 0.3);
+    }
+
+    .dashboard-container {
+        font-family: 'Outfit', sans-serif;
+        background: linear-gradient(135deg, #0a0f1a 0%, #1e1b4b 50%, #0a0f1a 100%);
+        min-height: calc(100vh - 64px);
+        position: relative;
+        overflow: hidden;
+    }
+
+    /* Animated Background Grid */
+    .dashboard-container::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background-image:
+            linear-gradient(rgba(59, 130, 246, 0.03) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(59, 130, 246, 0.03) 1px, transparent 1px);
+        background-size: 50px 50px;
+        animation: gridMove 20s linear infinite;
+        pointer-events: none;
+    }
+
+    @keyframes gridMove {
+        0% { transform: translate(0, 0); }
+        100% { transform: translate(50px, 50px); }
+    }
+
+    /* Floating Orbs Background */
+    .orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(80px);
+        opacity: 0.4;
+        animation: float 15s ease-in-out infinite;
+        pointer-events: none;
+    }
+
+    .orb-1 {
+        width: 400px;
+        height: 400px;
+        background: var(--crm-primary);
+        top: -100px;
+        right: -100px;
+        animation-delay: 0s;
+    }
+
+    .orb-2 {
+        width: 300px;
+        height: 300px;
+        background: var(--invoicing-primary);
+        bottom: -50px;
+        left: -50px;
+        animation-delay: -5s;
+    }
+
+    .orb-3 {
+        width: 250px;
+        height: 250px;
+        background: var(--sales-primary);
+        top: 50%;
+        left: 30%;
+        animation-delay: -10s;
+    }
+
+    @keyframes float {
+        0%, 100% { transform: translate(0, 0) scale(1); }
+        33% { transform: translate(30px, -30px) scale(1.05); }
+        66% { transform: translate(-20px, 20px) scale(0.95); }
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       HEADER SECTION
+       ═══════════════════════════════════════════════════════════ */
+
+    .dash-header {
+        position: relative;
+        z-index: 10;
+        padding: 2rem 0;
+    }
+
+    .greeting-container {
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .greeting-text h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        background: linear-gradient(135deg, #fff 0%, #94a3b8 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+        margin-bottom: 0.5rem;
+        animation: fadeSlideUp 0.6s ease-out;
+    }
+
+    .greeting-text p {
+        color: #64748b;
+        font-size: 1rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        animation: fadeSlideUp 0.6s ease-out 0.1s backwards;
+    }
+
+    .live-indicator {
+        width: 8px;
+        height: 8px;
+        background: #22c55e;
+        border-radius: 50%;
+        animation: pulse 2s ease-in-out infinite;
+        box-shadow: 0 0 10px #22c55e;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.5; transform: scale(1.2); }
+    }
+
+    .datetime-display {
+        text-align: right;
+        animation: fadeSlideUp 0.6s ease-out 0.2s backwards;
+    }
+
+    .datetime-display .time {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 2rem;
+        font-weight: 500;
+        color: #fff;
+        letter-spacing: 0.05em;
+    }
+
+    .datetime-display .date {
+        color: #64748b;
+        font-size: 0.875rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+    }
+
+    @keyframes fadeSlideUp {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       STATS CARDS
+       ═══════════════════════════════════════════════════════════ */
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    @media (max-width: 1024px) {
+        .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+
+    @media (max-width: 640px) {
+        .stats-grid { grid-template-columns: 1fr; }
+    }
+
+    .stat-card {
+        position: relative;
+        background: var(--dash-surface);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--dash-border);
+        border-radius: 1.25rem;
+        padding: 1.5rem;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        animation: cardReveal 0.6s ease-out backwards;
+    }
+
+    .stat-card:nth-child(1) { animation-delay: 0.1s; }
+    .stat-card:nth-child(2) { animation-delay: 0.2s; }
+    .stat-card:nth-child(3) { animation-delay: 0.3s; }
+    .stat-card:nth-child(4) { animation-delay: 0.4s; }
+
+    @keyframes cardReveal {
+        from {
+            opacity: 0;
+            transform: translateY(30px) scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    }
+
+    .stat-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 3px;
+        background: var(--card-accent);
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    .stat-card:hover::before {
+        opacity: 1;
+    }
+
+    .stat-card:hover {
+        transform: translateY(-4px);
+        border-color: var(--card-accent);
+        box-shadow: 0 20px 40px -10px var(--card-glow);
+    }
+
+    .stat-card.crm { --card-accent: var(--crm-primary); --card-glow: var(--crm-glow); }
+    .stat-card.sales { --card-accent: var(--sales-primary); --card-glow: var(--sales-glow); }
+    .stat-card.hr { --card-accent: var(--hr-primary); --card-glow: var(--hr-glow); }
+    .stat-card.invoicing { --card-accent: var(--invoicing-primary); --card-glow: var(--invoicing-glow); }
+
+    .stat-icon {
+        width: 3rem;
+        height: 3rem;
+        border-radius: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+        background: linear-gradient(135deg, var(--card-accent), transparent);
+        border: 1px solid var(--card-accent);
+    }
+
+    .stat-icon svg {
+        width: 1.5rem;
+        height: 1.5rem;
+        color: var(--card-accent);
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: #64748b;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #fff;
+        margin-bottom: 0.5rem;
+        font-family: 'JetBrains Mono', monospace;
+    }
+
+    .stat-trend {
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+        font-size: 0.875rem;
+    }
+
+    .stat-trend.up { color: #22c55e; }
+    .stat-trend.down { color: #ef4444; }
+
+    .stat-trend svg {
+        width: 1rem;
+        height: 1rem;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       MAIN CONTENT GRID
+       ═══════════════════════════════════════════════════════════ */
+
+    .content-grid {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 1.5rem;
+    }
+
+    @media (max-width: 1024px) {
+        .content-grid { grid-template-columns: 1fr; }
+    }
+
+    /* Glass Panel Base */
+    .glass-panel {
+        background: var(--dash-surface);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--dash-border);
+        border-radius: 1.25rem;
+        overflow: hidden;
+        animation: cardReveal 0.6s ease-out 0.5s backwards;
+    }
+
+    .panel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--dash-border);
+    }
+
+    .panel-title {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: #fff;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+
+    .panel-title-icon {
+        width: 2rem;
+        height: 2rem;
+        border-radius: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .panel-title-icon svg {
+        width: 1.125rem;
+        height: 1.125rem;
+    }
+
+    .panel-body {
+        padding: 1.5rem;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       WIDGETS SECTION
+       ═══════════════════════════════════════════════════════════ */
+
+    .widgets-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    @media (max-width: 768px) {
+        .widgets-grid { grid-template-columns: 1fr; }
+    }
+
+    .widget-card {
+        background: var(--dash-surface);
+        backdrop-filter: blur(20px);
+        border: 1px solid var(--dash-border);
+        border-radius: 1.25rem;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        animation: cardReveal 0.6s ease-out backwards;
+    }
+
+    .widget-card:nth-child(1) { animation-delay: 0.3s; }
+    .widget-card:nth-child(2) { animation-delay: 0.4s; }
+    .widget-card:nth-child(3) { animation-delay: 0.5s; }
+    .widget-card:nth-child(4) { animation-delay: 0.6s; }
+
+    .widget-card:hover {
+        border-color: rgba(148, 163, 184, 0.2);
+        transform: translateY(-2px);
+    }
+
+    .widget-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 1rem 1.25rem;
+        border-bottom: 1px solid var(--dash-border);
+    }
+
+    .widget-title {
+        display: flex;
+        align-items: center;
+        gap: 0.625rem;
+        color: #e2e8f0;
+        font-weight: 500;
+        font-size: 0.875rem;
+    }
+
+    .widget-badge {
+        padding: 0.25rem 0.625rem;
+        border-radius: 9999px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+
+    .widget-badge.crm { background: var(--crm-glow); color: var(--crm-primary); }
+    .widget-badge.sales { background: var(--sales-glow); color: var(--sales-primary); }
+    .widget-badge.hr { background: var(--hr-glow); color: var(--hr-primary); }
+    .widget-badge.invoicing { background: var(--invoicing-glow); color: var(--invoicing-primary); }
+
+    .widget-content {
+        padding: 1.25rem;
+        min-height: 200px;
+    }
+
+    /* Loading Skeleton */
+    .skeleton-loader {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .skeleton-line {
+        height: 1rem;
+        background: linear-gradient(
+            90deg,
+            rgba(148, 163, 184, 0.1) 0%,
+            rgba(148, 163, 184, 0.2) 50%,
+            rgba(148, 163, 184, 0.1) 100%
+        );
+        background-size: 200% 100%;
+        animation: shimmer 1.5s infinite;
+        border-radius: 0.5rem;
+    }
+
+    .skeleton-line:nth-child(1) { width: 80%; }
+    .skeleton-line:nth-child(2) { width: 60%; }
+    .skeleton-line:nth-child(3) { width: 70%; }
+
+    @keyframes shimmer {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       ACTIVITY FEED
+       ═══════════════════════════════════════════════════════════ */
+
+    .activity-feed {
+        animation: cardReveal 0.6s ease-out 0.7s backwards;
+    }
+
+    .activity-item {
+        display: flex;
+        gap: 1rem;
+        padding: 1rem 0;
+        border-bottom: 1px solid var(--dash-border);
+        transition: all 0.2s;
+    }
+
+    .activity-item:last-child {
+        border-bottom: none;
+    }
+
+    .activity-item:hover {
+        background: rgba(148, 163, 184, 0.05);
+        margin: 0 -1.5rem;
+        padding: 1rem 1.5rem;
+    }
+
+    .activity-avatar {
+        width: 2.5rem;
+        height: 2.5rem;
+        border-radius: 0.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+
+    .activity-avatar.crm { background: var(--crm-glow); color: var(--crm-primary); }
+    .activity-avatar.sales { background: var(--sales-glow); color: var(--sales-primary); }
+    .activity-avatar.hr { background: var(--hr-glow); color: var(--hr-primary); }
+    .activity-avatar.invoicing { background: var(--invoicing-glow); color: var(--invoicing-primary); }
+
+    .activity-content {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .activity-text {
+        color: #e2e8f0;
+        font-size: 0.875rem;
+        line-height: 1.5;
+        margin-bottom: 0.25rem;
+    }
+
+    .activity-text strong {
+        color: #fff;
+    }
+
+    .activity-time {
+        color: #64748b;
+        font-size: 0.75rem;
+        display: flex;
+        align-items: center;
+        gap: 0.375rem;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       QUICK ACTIONS
+       ═══════════════════════════════════════════════════════════ */
+
+    .quick-actions {
+        display: grid;
+        gap: 0.75rem;
+    }
+
+    .quick-action-btn {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        padding: 0.875rem 1rem;
+        background: var(--dash-surface-elevated);
+        border: 1px solid var(--dash-border);
+        border-radius: 0.75rem;
+        color: #e2e8f0;
+        font-size: 0.875rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+
+    .quick-action-btn:hover {
+        background: rgba(59, 130, 246, 0.1);
+        border-color: var(--crm-primary);
+        color: #fff;
+        transform: translateX(4px);
+    }
+
+    .quick-action-btn svg {
+        width: 1.25rem;
+        height: 1.25rem;
+        color: #64748b;
+        transition: color 0.2s;
+    }
+
+    .quick-action-btn:hover svg {
+        color: var(--crm-primary);
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       EMPTY STATE
+       ═══════════════════════════════════════════════════════════ */
+
+    .empty-state-modern {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 4rem 2rem;
+        text-align: center;
+        animation: cardReveal 0.6s ease-out 0.3s backwards;
+    }
+
+    .empty-icon {
+        width: 5rem;
+        height: 5rem;
+        background: var(--dash-surface-elevated);
+        border: 1px solid var(--dash-border);
+        border-radius: 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .empty-icon svg {
+        width: 2.5rem;
+        height: 2.5rem;
+        color: #64748b;
+    }
+
+    .empty-state-modern h3 {
+        color: #fff;
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .empty-state-modern p {
+        color: #64748b;
+        font-size: 0.875rem;
+        max-width: 300px;
+    }
+
+    /* ═══════════════════════════════════════════════════════════
+       CHART PLACEHOLDER
+       ═══════════════════════════════════════════════════════════ */
+
+    .chart-container {
+        height: 250px;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-around;
+        padding: 1rem 0;
+    }
+
+    .chart-bar {
+        width: 2rem;
+        background: linear-gradient(180deg, var(--crm-primary), transparent);
+        border-radius: 0.5rem 0.5rem 0 0;
+        transition: all 0.3s;
+        position: relative;
+    }
+
+    .chart-bar:hover {
+        filter: brightness(1.2);
+        transform: scaleY(1.05);
+        transform-origin: bottom;
+    }
+
+    .chart-bar::after {
+        content: attr(data-value);
+        position: absolute;
+        top: -1.5rem;
+        left: 50%;
+        transform: translateX(-50%);
+        font-size: 0.75rem;
+        color: #94a3b8;
+        font-family: 'JetBrains Mono', monospace;
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+
+    .chart-bar:hover::after {
+        opacity: 1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container -mx-4 sm:-mx-6 lg:-mx-8 -my-6 px-4 sm:px-6 lg:px-8 py-6">
+    <!-- Animated Background Orbs -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
+    <div class="relative z-10">
+        <!-- Header Section -->
+        <header class="dash-header">
+            <div class="greeting-container">
+                <div class="greeting-text">
+                    <h1>Bonjour, {{ user.get_short_name|default:"Utilisateur" }}</h1>
+                    <p>
+                        <span class="live-indicator"></span>
+                        Tableau de bord en temps réel
+                    </p>
+                </div>
+                <div class="datetime-display" x-data="{ time: '', date: '' }" x-init="
+                    setInterval(() => {
+                        const now = new Date();
+                        time = now.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                        date = now.toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+                    }, 1000)
+                ">
+                    <div class="time" x-text="time">--:--</div>
+                    <div class="date" x-text="date">Chargement...</div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <div class="stat-card crm">
+                <div class="stat-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                </div>
+                <div class="stat-label">Contacts CRM</div>
+                <div class="stat-value" x-data="{ count: 0 }" x-init="
+                    let target = {{ stats.contacts|default:247 }};
+                    let duration = 1500;
+                    let start = performance.now();
+                    function animate(now) {
+                        let progress = Math.min((now - start) / duration, 1);
+                        count = Math.floor(progress * target);
+                        if (progress < 1) requestAnimationFrame(animate);
+                    }
+                    requestAnimationFrame(animate);
+                " x-text="count">0</div>
+                <div class="stat-trend up">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                    </svg>
+                    <span>+12% ce mois</span>
+                </div>
+            </div>
+
+            <div class="stat-card sales">
+                <div class="stat-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+                <div class="stat-label">Chiffre d'affaires</div>
+                <div class="stat-value" x-data="{ count: 0 }" x-init="
+                    let target = {{ stats.revenue|default:84500 }};
+                    let duration = 1500;
+                    let start = performance.now();
+                    function animate(now) {
+                        let progress = Math.min((now - start) / duration, 1);
+                        count = Math.floor(progress * target);
+                        if (progress < 1) requestAnimationFrame(animate);
+                    }
+                    requestAnimationFrame(animate);
+                ">
+                    <span x-text="count.toLocaleString('fr-FR')">0</span><span class="text-lg ml-1">€</span>
+                </div>
+                <div class="stat-trend up">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                    </svg>
+                    <span>+8.2% vs objectif</span>
+                </div>
+            </div>
+
+            <div class="stat-card hr">
+                <div class="stat-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                    </svg>
+                </div>
+                <div class="stat-label">Employés actifs</div>
+                <div class="stat-value" x-data="{ count: 0 }" x-init="
+                    let target = {{ stats.employees|default:32 }};
+                    let duration = 1500;
+                    let start = performance.now();
+                    function animate(now) {
+                        let progress = Math.min((now - start) / duration, 1);
+                        count = Math.floor(progress * target);
+                        if (progress < 1) requestAnimationFrame(animate);
+                    }
+                    requestAnimationFrame(animate);
+                " x-text="count">0</div>
+                <div class="stat-trend up">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                    </svg>
+                    <span>2 recrutements</span>
+                </div>
+            </div>
+
+            <div class="stat-card invoicing">
+                <div class="stat-icon">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                </div>
+                <div class="stat-label">Factures en attente</div>
+                <div class="stat-value" x-data="{ count: 0 }" x-init="
+                    let target = {{ stats.pending_invoices|default:18 }};
+                    let duration = 1500;
+                    let start = performance.now();
+                    function animate(now) {
+                        let progress = Math.min((now - start) / duration, 1);
+                        count = Math.floor(progress * target);
+                        if (progress < 1) requestAnimationFrame(animate);
+                    }
+                    requestAnimationFrame(animate);
+                " x-text="count">0</div>
+                <div class="stat-trend down">
+                    <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 17h8m0 0V9m0 8l-8-8-4 4-6-6"/>
+                    </svg>
+                    <span>-5 cette semaine</span>
                 </div>
             </div>
         </div>
-        {% empty %}
-        <div class="col-span-2 text-center py-12 bg-white rounded-lg shadow">
-            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-            </svg>
-            <h3 class="mt-2 text-sm font-medium text-gray-900">Aucun module accessible</h3>
-            <p class="mt-1 text-sm text-gray-500">
-                Contactez votre administrateur pour obtenir des accès.
-            </p>
-        </div>
-        {% endfor %}
-    </div>
 
-    <!-- Activity feed -->
-    <div class="bg-white rounded-lg shadow">
-        <div class="px-6 py-4 border-b border-gray-200">
-            <h2 class="text-lg font-medium text-gray-900">Activité récente</h2>
-        </div>
-        <div hx-get="{% url 'dashboard:activity_feed' %}"
-             hx-trigger="load"
-             hx-swap="innerHTML"
-             class="p-6">
-            <div class="animate-pulse space-y-4">
-                {% for i in "123" %}
-                <div class="flex space-x-3">
-                    <div class="h-8 w-8 bg-gray-200 rounded-full"></div>
-                    <div class="flex-1 space-y-2">
-                        <div class="h-3 bg-gray-200 rounded w-3/4"></div>
-                        <div class="h-3 bg-gray-200 rounded w-1/2"></div>
+        <!-- Widgets Grid -->
+        <div class="widgets-grid">
+            {% for widget in widgets %}
+            <div class="widget-card">
+                <div class="widget-header">
+                    <div class="widget-title">
+                        {% if 'crm' in widget.url %}
+                        <svg class="w-5 h-5" style="color: var(--crm-primary)" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        {% elif 'sales' in widget.url or 'ventes' in widget.url %}
+                        <svg class="w-5 h-5" style="color: var(--sales-primary)" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                        </svg>
+                        {% elif 'hr' in widget.url or 'rh' in widget.url %}
+                        <svg class="w-5 h-5" style="color: var(--hr-primary)" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                        </svg>
+                        {% else %}
+                        <svg class="w-5 h-5" style="color: var(--invoicing-primary)" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        {% endif %}
+                        <span>{{ widget.name|default:"Module" }}</span>
+                    </div>
+                    <span class="widget-badge {% if 'crm' in widget.url %}crm{% elif 'sales' in widget.url or 'ventes' in widget.url %}sales{% elif 'hr' in widget.url or 'rh' in widget.url %}hr{% else %}invoicing{% endif %}">
+                        Actif
+                    </span>
+                </div>
+                <div class="widget-content"
+                     hx-get="{% url widget.url %}"
+                     hx-trigger="load"
+                     hx-swap="innerHTML">
+                    <div class="skeleton-loader">
+                        <div class="skeleton-line"></div>
+                        <div class="skeleton-line"></div>
+                        <div class="skeleton-line"></div>
                     </div>
                 </div>
-                {% endfor %}
+            </div>
+            {% empty %}
+            <div class="col-span-2">
+                <div class="glass-panel">
+                    <div class="empty-state-modern">
+                        <div class="empty-icon">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                            </svg>
+                        </div>
+                        <h3>Aucun module accessible</h3>
+                        <p>Contactez votre administrateur pour obtenir l'accès aux différents modules de gestion.</p>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Main Content Grid -->
+        <div class="content-grid">
+            <!-- Activity Feed -->
+            <div class="glass-panel activity-feed">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <div class="panel-title-icon" style="background: var(--dash-surface-elevated); border: 1px solid var(--dash-border);">
+                            <svg style="color: #94a3b8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        Activité récente
+                    </div>
+                    <span style="color: #64748b; font-size: 0.75rem;">Dernières 24h</span>
+                </div>
+                <div class="panel-body"
+                     hx-get="{% url 'dashboard:activity_feed' %}"
+                     hx-trigger="load"
+                     hx-swap="innerHTML">
+                    <!-- Skeleton Loader -->
+                    {% for i in "12345" %}
+                    <div class="activity-item">
+                        <div class="activity-avatar" style="background: var(--dash-surface-elevated);">
+                            <div class="skeleton-line" style="width: 1.5rem; height: 1.5rem; border-radius: 0.5rem;"></div>
+                        </div>
+                        <div class="activity-content">
+                            <div class="skeleton-line" style="width: 80%; margin-bottom: 0.5rem;"></div>
+                            <div class="skeleton-line" style="width: 40%; height: 0.75rem;"></div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Quick Actions Panel -->
+            <div class="glass-panel" style="animation-delay: 0.8s;">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <div class="panel-title-icon" style="background: var(--crm-glow); border: 1px solid var(--crm-primary);">
+                            <svg style="color: var(--crm-primary)" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                            </svg>
+                        </div>
+                        Actions rapides
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="quick-actions">
+                        <a href="{% url 'crm:contact_form' %}" class="quick-action-btn">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                            </svg>
+                            Nouveau contact
+                        </a>
+                        <a href="{% url 'invoicing:quote_form' %}" class="quick-action-btn">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            Créer un devis
+                        </a>
+                        <a href="{% url 'invoicing:invoice_form' %}" class="quick-action-btn">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                            </svg>
+                            Nouvelle facture
+                        </a>
+                        <a href="{% url 'hr:leave_request_form' %}" class="quick-action-btn">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            Demande de congé
+                        </a>
+                        <a href="{% url 'crm:company_form' %}" class="quick-action-btn">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                            </svg>
+                            Ajouter entreprise
+                        </a>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Smooth number animations for stat cards
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add intersection observer for scroll animations
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.animationPlayState = 'running';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.stat-card, .widget-card, .glass-panel').forEach(el => {
+            el.style.animationPlayState = 'paused';
+            observer.observe(el);
+        });
+    });
+</script>
 {% endblock %}

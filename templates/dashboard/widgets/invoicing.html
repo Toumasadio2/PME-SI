@@ -1,21 +1,162 @@
-<div>
-    <h3 class="text-lg font-medium text-gray-900 mb-4">Facturation</h3>
-    <div class="grid grid-cols-2 gap-4">
-        <div class="bg-gray-50 rounded-lg p-4">
-            <p class="text-2xl font-bold text-gray-900">{{ pending_quotes }}</p>
-            <p class="text-sm text-gray-500">Devis en attente</p>
+<div style="font-family: 'Outfit', system-ui, sans-serif;">
+    <!-- Mini Stats Grid -->
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;">
+        <!-- Devis en attente -->
+        <div style="
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            transition: all 0.3s;
+        " onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='rgba(139, 92, 246, 0.4)';"
+           onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(139, 92, 246, 0.2)';">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <svg width="14" height="14" fill="none" stroke="#8b5cf6" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                <span style="color: #64748b; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em;">Devis</span>
+            </div>
+            <p style="
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 1.5rem;
+                font-weight: 700;
+                color: #fff;
+                line-height: 1;
+            ">{{ pending_quotes|default:"0" }}</p>
         </div>
-        <div class="bg-gray-50 rounded-lg p-4">
-            <p class="text-2xl font-bold text-gray-900">{{ pending_invoices }}</p>
-            <p class="text-sm text-gray-500">Factures impayées</p>
+
+        <!-- Factures impayées -->
+        <div style="
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            transition: all 0.3s;
+        " onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='rgba(245, 158, 11, 0.4)';"
+           onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(245, 158, 11, 0.2)';">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <svg width="14" height="14" fill="none" stroke="#f59e0b" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span style="color: #64748b; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em;">Impayées</span>
+            </div>
+            <p style="
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 1.5rem;
+                font-weight: 700;
+                color: {% if pending_invoices > 5 %}#ef4444{% elif pending_invoices > 0 %}#f59e0b{% else %}#10b981{% endif %};
+                line-height: 1;
+            ">{{ pending_invoices|default:"0" }}</p>
         </div>
-        <div class="bg-gray-50 rounded-lg p-4">
-            <p class="text-2xl font-bold text-red-600">{{ unpaid_amount|default:"0" }} €</p>
-            <p class="text-sm text-gray-500">Montant dû</p>
+
+        <!-- Montant dû -->
+        <div style="
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1) 0%, rgba(239, 68, 68, 0.05) 100%);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            transition: all 0.3s;
+        " onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='rgba(239, 68, 68, 0.4)';"
+           onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(239, 68, 68, 0.2)';">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <svg width="14" height="14" fill="none" stroke="#ef4444" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                </svg>
+                <span style="color: #64748b; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em;">Montant dû</span>
+            </div>
+            <p style="
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 1.25rem;
+                font-weight: 700;
+                color: #ef4444;
+                line-height: 1;
+            ">{{ unpaid_amount|default:"0" }}<span style="font-size: 0.75rem; margin-left: 0.25rem;">€</span></p>
         </div>
-        <div class="bg-gray-50 rounded-lg p-4">
-            <p class="text-2xl font-bold text-green-600">{{ monthly_revenue|default:"0" }} €</p>
-            <p class="text-sm text-gray-500">CA mensuel</p>
+
+        <!-- CA mensuel -->
+        <div style="
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            transition: all 0.3s;
+        " onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='rgba(16, 185, 129, 0.4)';"
+           onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(16, 185, 129, 0.2)';">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <svg width="14" height="14" fill="none" stroke="#10b981" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                </svg>
+                <span style="color: #64748b; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em;">CA mensuel</span>
+            </div>
+            <p style="
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 1.25rem;
+                font-weight: 700;
+                color: #10b981;
+                line-height: 1;
+            ">{{ monthly_revenue|default:"0" }}<span style="font-size: 0.75rem; margin-left: 0.25rem;">€</span></p>
         </div>
     </div>
+
+    <!-- Revenue Indicator Bar -->
+    <div style="
+        margin-top: 1rem;
+        padding: 0.75rem;
+        background: rgba(30, 41, 59, 0.6);
+        border: 1px solid rgba(148, 163, 184, 0.1);
+        border-radius: 0.5rem;
+    ">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+            <span style="color: #94a3b8; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em;">Santé financière</span>
+            <span style="
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 0.75rem;
+                color: {% if unpaid_amount > monthly_revenue %}#ef4444{% elif unpaid_amount > 0 %}#f59e0b{% else %}#10b981{% endif %};
+            ">{% if unpaid_amount > monthly_revenue %}Attention{% elif unpaid_amount > 0 %}À surveiller{% else %}Excellent{% endif %}</span>
+        </div>
+        <div style="
+            height: 6px;
+            background: rgba(148, 163, 184, 0.2);
+            border-radius: 3px;
+            overflow: hidden;
+            display: flex;
+        ">
+            <div style="
+                flex: 1;
+                background: linear-gradient(90deg, #10b981, #22c55e);
+                border-radius: 3px 0 0 3px;
+            "></div>
+            {% if unpaid_amount > 0 %}
+            <div style="
+                width: 30%;
+                background: linear-gradient(90deg, #f59e0b, #ef4444);
+                border-radius: 0 3px 3px 0;
+            "></div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Quick Action -->
+    <a href="{% url 'invoicing:invoice_list' %}" style="
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        padding: 0.75rem;
+        background: rgba(139, 92, 246, 0.1);
+        border: 1px solid rgba(139, 92, 246, 0.2);
+        border-radius: 0.5rem;
+        color: #8b5cf6;
+        font-size: 0.8rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s;
+    " onmouseover="this.style.background='rgba(139, 92, 246, 0.2)'; this.style.borderColor='rgba(139, 92, 246, 0.4)';"
+       onmouseout="this.style.background='rgba(139, 92, 246, 0.1)'; this.style.borderColor='rgba(139, 92, 246, 0.2)';">
+        <span>Gérer les factures</span>
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+        </svg>
+    </a>
 </div>

@@ -1,21 +1,143 @@
-<div>
-    <h3 class="text-lg font-medium text-gray-900 mb-4">Ventes</h3>
-    <div class="grid grid-cols-2 gap-4">
-        <div class="bg-gray-50 rounded-lg p-4">
-            <p class="text-2xl font-bold text-gray-900">{{ monthly_sales|default:"0" }} €</p>
-            <p class="text-sm text-gray-500">Ventes du mois</p>
+<div style="font-family: 'Outfit', system-ui, sans-serif;">
+    <!-- Mini Stats Grid -->
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem;">
+        <!-- Ventes du mois -->
+        <div style="
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(16, 185, 129, 0.05) 100%);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            transition: all 0.3s;
+        " onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='rgba(16, 185, 129, 0.4)';"
+           onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(16, 185, 129, 0.2)';">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <svg width="14" height="14" fill="none" stroke="#10b981" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                </svg>
+                <span style="color: #64748b; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em;">Ventes/mois</span>
+            </div>
+            <p style="
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 1.25rem;
+                font-weight: 700;
+                color: #10b981;
+                line-height: 1;
+            ">{{ monthly_sales|default:"0" }}<span style="font-size: 0.75rem; margin-left: 0.25rem;">€</span></p>
         </div>
-        <div class="bg-gray-50 rounded-lg p-4">
-            <p class="text-2xl font-bold text-gray-900">{{ conversion_rate|default:"0" }}%</p>
-            <p class="text-sm text-gray-500">Taux conversion</p>
+
+        <!-- Taux de conversion -->
+        <div style="
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            transition: all 0.3s;
+        " onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='rgba(59, 130, 246, 0.4)';"
+           onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(59, 130, 246, 0.2)';">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <svg width="14" height="14" fill="none" stroke="#3b82f6" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                </svg>
+                <span style="color: #64748b; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em;">Conversion</span>
+            </div>
+            <p style="
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 1.5rem;
+                font-weight: 700;
+                color: #fff;
+                line-height: 1;
+            ">{{ conversion_rate|default:"0" }}<span style="font-size: 0.875rem; margin-left: 0.125rem;">%</span></p>
         </div>
-        <div class="bg-gray-50 rounded-lg p-4">
-            <p class="text-2xl font-bold text-gray-900">{{ average_deal|default:"0" }} €</p>
-            <p class="text-sm text-gray-500">Panier moyen</p>
+
+        <!-- Panier moyen -->
+        <div style="
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(139, 92, 246, 0.05) 100%);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            transition: all 0.3s;
+        " onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='rgba(139, 92, 246, 0.4)';"
+           onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(139, 92, 246, 0.2)';">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <svg width="14" height="14" fill="none" stroke="#8b5cf6" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+                <span style="color: #64748b; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em;">Panier moy.</span>
+            </div>
+            <p style="
+                font-family: 'JetBrains Mono', monospace;
+                font-size: 1.25rem;
+                font-weight: 700;
+                color: #fff;
+                line-height: 1;
+            ">{{ average_deal|default:"0" }}<span style="font-size: 0.75rem; margin-left: 0.25rem;">€</span></p>
         </div>
-        <div class="bg-gray-50 rounded-lg p-4">
-            <p class="text-2xl font-bold text-primary-600">{{ sales_target_progress|default:"0" }}%</p>
-            <p class="text-sm text-gray-500">Objectif</p>
+
+        <!-- Objectif -->
+        <div style="
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.05) 100%);
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            border-radius: 0.75rem;
+            padding: 1rem;
+            transition: all 0.3s;
+        " onmouseover="this.style.transform='translateY(-2px)'; this.style.borderColor='rgba(245, 158, 11, 0.4)';"
+           onmouseout="this.style.transform='translateY(0)'; this.style.borderColor='rgba(245, 158, 11, 0.2)';">
+            <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+                <svg width="14" height="14" fill="none" stroke="#f59e0b" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                </svg>
+                <span style="color: #64748b; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em;">Objectif</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <p style="
+                    font-family: 'JetBrains Mono', monospace;
+                    font-size: 1.5rem;
+                    font-weight: 700;
+                    color: {% if sales_target_progress >= 100 %}#10b981{% elif sales_target_progress >= 75 %}#f59e0b{% else %}#ef4444{% endif %};
+                    line-height: 1;
+                ">{{ sales_target_progress|default:"0" }}<span style="font-size: 0.875rem;">%</span></p>
+            </div>
+            <!-- Progress bar -->
+            <div style="
+                margin-top: 0.5rem;
+                height: 4px;
+                background: rgba(148, 163, 184, 0.2);
+                border-radius: 2px;
+                overflow: hidden;
+            ">
+                <div style="
+                    width: {{ sales_target_progress|default:0 }}%;
+                    max-width: 100%;
+                    height: 100%;
+                    background: linear-gradient(90deg, #f59e0b, #10b981);
+                    border-radius: 2px;
+                    transition: width 0.5s ease;
+                "></div>
+            </div>
         </div>
     </div>
+
+    <!-- Quick Action -->
+    <a href="{% url 'sales:dashboard' %}" style="
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 1rem;
+        padding: 0.75rem;
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid rgba(16, 185, 129, 0.2);
+        border-radius: 0.5rem;
+        color: #10b981;
+        font-size: 0.8rem;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.2s;
+    " onmouseover="this.style.background='rgba(16, 185, 129, 0.2)'; this.style.borderColor='rgba(16, 185, 129, 0.4)';"
+       onmouseout="this.style.background='rgba(16, 185, 129, 0.1)'; this.style.borderColor='rgba(16, 185, 129, 0.2)';">
+        <span>Dashboard ventes</span>
+        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8l4 4m0 0l-4 4m4-4H3"/>
+        </svg>
+    </a>
 </div>
